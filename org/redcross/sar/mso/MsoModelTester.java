@@ -1,7 +1,6 @@
 package org.redcross.sar.mso;
 
 import java.util.EnumSet;
-import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -11,8 +10,8 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.Change;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 
 public class MsoModelTester {
 
@@ -28,7 +27,7 @@ public class MsoModelTester {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				model.getEventManager().addClientUpdateListener(new IMsoUpdateListenerIf() {
+				model.getEventManager().addLocalUpdateListener(new IMsoUpdateListenerIf() {
 
 					@Override
 					public EnumSet<MsoClassCode> getInterests() {
@@ -37,8 +36,8 @@ public class MsoModelTester {
 					}
 
 					@Override
-					public void handleMsoUpdateEvent(UpdateList e) {
-						for(Update it : e.getEvents()) {
+					public void handleMsoChangeEvent(ChangeList e) {
+						for(Change it : e.getEvents()) {
 							if(it.isLoopbackMode()) {
 								IMsoObjectIf msoObj = it.getSource();
 								for(IMsoAttributeIf<?> attr : msoObj.getAttributes().values()) {

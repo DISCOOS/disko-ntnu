@@ -5,7 +5,12 @@ package org.redcross.sar.util.except;
  */
 public class IllegalMsoArgumentException extends MsoException
 {
-    public IllegalMsoArgumentException(String aMessage)
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public IllegalMsoArgumentException(String aMessage)
     {
         super(aMessage);
     }

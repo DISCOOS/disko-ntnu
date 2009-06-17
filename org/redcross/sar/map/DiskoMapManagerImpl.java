@@ -35,8 +35,10 @@ import org.redcross.sar.util.MapInfoComparator;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkLoop;
 import org.redcross.sar.work.WorkPool;
+import org.redcross.sar.work.IWork.WorkerType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -67,8 +69,9 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 	private final Logger logger = Logger.getLogger(getClass());
 	private final List<IDiskoMap> maps = new ArrayList<IDiskoMap>();
 	private final Map<String,MapSourceInfo> mxdDocs = new HashMap<String,MapSourceInfo>();
-	private final WorkLoop m_loop = new WorkLoop(500,2000);
+	private final WorkLoop m_loop = new WorkLoop(500,0.8);
 	private final EventListenerList mapListeners = new EventListenerList();
+	private final WorkPool m_pool = WorkPool.getInstance();
 
 	public DiskoMapManagerImpl(IApplication app, File file)  throws Exception {
 		// prepare
@@ -888,7 +891,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 			if(onWorkLoop)
 				schedule(work);
 			else {
-				work.doWork();
+				work.doWork(null);
 			}
 		}
 		catch(Exception e) {
@@ -927,7 +930,16 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 
 	@Override
 	public void schedule(IMapWork work) {
-		m_loop.schedule(work);
+		if(work!=null)
+		{
+			if(WorkerType.UNSAFE.equals(work.getWorkOnType()))
+			{
+				m_loop.schedule(work);				
+			}
+			else {
+				m_pool.schedule(work);
+			}
+		}
 	}
 
 	private List<String> getMxdDocsInCatalog(String path) {
@@ -1010,7 +1022,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		 */
 		SelectMapWork(boolean autoselect) throws Exception {
 			// forward
-			super(HIGH_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Velger kart",500,true,false);
+			super(HIGH_PRIORITY,false,true,WorkerType.SAFE,"Velger kart",500,true,false);
 			// prepare
 			m_autoSelect = autoselect;
 		}
@@ -1020,7 +1032,7 @@ public class DiskoMapManagerImpl implements IDiskoMapManager {
 		 *
 		 */
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 
 			try {
 				// has maps?

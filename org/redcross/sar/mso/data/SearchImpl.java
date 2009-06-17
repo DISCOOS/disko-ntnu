@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.IllegalOperationException;
 
@@ -82,20 +83,22 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
     * Methods for ENUM attributes
     *-------------------------------------------------------------------------------------------*/
 
-    public void setSubType(SearchSubType aSubType)
+    @SuppressWarnings("unchecked")
+	public void setSubType(SearchSubType aSubType)
     {
     	// update number?
-        if(m_owningMainList!=null) {
-        	setNumber(m_owningMainList.makeSerialNumber(aSubType));
+        if(m_mainList!=null) {
+        	setNumber(m_mainList.makeSerialNumber(aSubType));
         }
         m_subType.setValue(aSubType);
     }
 
-    public void setSubType(String aSubType)
+    @SuppressWarnings("unchecked")
+	public void setSubType(String aSubType)
     {
     	// update number?
-        if(m_owningMainList!=null) {
-        	setNumber(m_owningMainList.makeSerialNumber(SearchSubType.valueOf(aSubType)));
+        if(m_mainList!=null) {
+        	setNumber(m_mainList.makeSerialNumber(SearchSubType.valueOf(aSubType)));
         }
         m_subType.setValue(aSubType);
     }
@@ -110,9 +113,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_subType.getInternationalName();
 
     }
-    public IMsoModelIf.ModificationState getSubTypeState()
+    public IData.DataOrigin getSubTypeState()
     {
-        return m_subType.getState();
+        return m_subType.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<SearchSubType> getSubTypeAttribute()
@@ -134,9 +137,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedAccuracy.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPlannedAccuracyState()
+    public IData.DataOrigin getPlannedAccuracyState()
     {
-        return m_plannedAccuracy.getState();
+        return m_plannedAccuracy.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPlannedAccuracyAttribute()
@@ -154,9 +157,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedCoverage.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPlannedCoverageState()
+    public IData.DataOrigin getPlannedCoverageState()
     {
-        return m_plannedCoverage.getState();
+        return m_plannedCoverage.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPlannedCoverageAttribute()
@@ -174,9 +177,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedPersonnel.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPlannedPersonnelState()
+    public IData.DataOrigin getPlannedPersonnelState()
     {
-        return m_plannedPersonnel.getState();
+        return m_plannedPersonnel.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPlannedPersonnelAttribute()
@@ -194,9 +197,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedProgress.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPlannedProgressState()
+    public IData.DataOrigin getPlannedProgressState()
     {
-        return m_plannedProgress.getState();
+        return m_plannedProgress.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPlannedProgressAttribute()
@@ -214,9 +217,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_plannedSearchMethod.getString();
     }
 
-    public IMsoModelIf.ModificationState getPlannedSearchMethodState()
+    public IData.DataOrigin getPlannedSearchMethodState()
     {
-        return m_plannedSearchMethod.getState();
+        return m_plannedSearchMethod.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getPlannedSearchMethodAttribute()
@@ -234,9 +237,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedAccuracy.intValue();
     }
 
-    public IMsoModelIf.ModificationState getReportedAccuracyState()
+    public IData.DataOrigin getReportedAccuracyState()
     {
-        return m_reportedAccuracy.getState();
+        return m_reportedAccuracy.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedAccuracyAttribute()
@@ -254,9 +257,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedCoverage.intValue();
     }
 
-    public IMsoModelIf.ModificationState getReportedCoverageState()
+    public IData.DataOrigin getReportedCoverageState()
     {
-        return m_reportedCoverage.getState();
+        return m_reportedCoverage.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedCoverageAttribute()
@@ -274,9 +277,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedPersonnel.intValue();
     }
 
-    public IMsoModelIf.ModificationState getReportedPersonnelState()
+    public IData.DataOrigin getReportedPersonnelState()
     {
-        return m_reportedPersonnel.getState();
+        return m_reportedPersonnel.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedPersonnelAttribute()
@@ -294,9 +297,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedProgress.intValue();
     }
 
-    public IMsoModelIf.ModificationState getReportedProgressState()
+    public IData.DataOrigin getReportedProgressState()
     {
-        return m_reportedProgress.getState();
+        return m_reportedProgress.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedProgressAttribute()
@@ -314,9 +317,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_reportedSearchMethod.intValue();
     }
 
-    public IMsoModelIf.ModificationState getReportedSearchMethodState()
+    public IData.DataOrigin getReportedSearchMethodState()
     {
-        return m_reportedSearchMethod.getState();
+        return m_reportedSearchMethod.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedSearchMethodAttribute()
@@ -334,9 +337,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_start.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getStartState()
+    public IData.DataOrigin getStartState()
     {
-        return m_start.getState();
+        return m_start.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getStartAttribute()
@@ -354,9 +357,9 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         return m_stop.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getStopState()
+    public IData.DataOrigin getStopState()
     {
-        return m_stop.getState();
+        return m_stop.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getStopAttribute()

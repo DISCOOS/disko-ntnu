@@ -7,7 +7,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.swing.event.EventListenerList;
 
-import org.redcross.sar.work.IWork.ThreadType;
+import org.apache.log4j.Logger;
+import org.redcross.sar.work.IWork.WorkerType;
 import org.redcross.sar.work.IWork.WorkState;
 import org.redcross.sar.work.event.IWorkListener;
 import org.redcross.sar.work.event.IWorkLoopListener;
@@ -16,6 +17,13 @@ import org.redcross.sar.work.event.WorkLoopEvent;
 
 public abstract class AbstractWorkLoop implements IWorkLoop {
 
+	protected final static long LOG_DELAY_PRECISION = 15;
+	
+	/**
+	 * Logger object
+	 */
+	protected final Logger m_logger; 
+	
 	/**
 	 * Maximum number of logged work time durations
 	 */
@@ -32,14 +40,23 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	protected final ConcurrentLinkedQueue<Long> m_workTimeLog = new ConcurrentLinkedQueue<Long>();
 
 	/**
+	 * Last time work was started (start of work cycle)
+	 */
+	protected long m_sTic = 0;
+	
+	/**
+	 * Duty cycle startup delay log
+	 */
+	protected final ConcurrentLinkedQueue<Long> m_startupDelayLog = new ConcurrentLinkedQueue<Long>();
+	/**
 	 * Work Loop ID on Work Pool
 	 */
-	protected long m_id;
+	protected long m_id = 0;
 
 	/**
-	 * Type of thread that loop should be implemented on
+	 * Type of worker that loop should be implemented on
 	 */
-	protected ThreadType m_thread;
+	protected WorkerType m_workOn;
 
 	/**
 	 * Loop State
@@ -47,15 +64,15 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	protected LoopState m_state = LoopState.PENDING;
 
 	/**
-	 * Time out in milliseconds. Exits doWork() after given timeout
+	 * Requested utilization in percent of duty cycle
 	 */
-	protected long m_timeOut;
+	protected double m_requestedUtilization;
 
 	/**
 	 * Duty cycle in milliseconds. Work Pool will try
 	 * to execute doWork() every duty cycle
 	 */
-	protected long m_dutyCycle;
+	protected long m_requestedDutyCycle;
 
 	/**
 	 * The Work Pool
@@ -78,18 +95,19 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 
 	/**
 	 * This implements a work loop (deamon) that will be executed on
-	 * a new thread if scheduled on the WorkPool. The target
-	 * duty cycle is in milliseconds, same for the work cycle timeout.
-	 * The message is used to for logging. </p>
-	 *
+	 * a new thread if scheduled on the WorkPool. TThe requested
+	 * duty cycle is in milliseconds, duty cycle utilization is
+	 * a factor greater than zero and less than one. The message is 
+	 * used to for logging. </p>
+	 * 
 	 * <b>IMPORTANT</b>: Work executed on deamon work loops are
 	 * only DISKO thread safe if and only if the work loop is
 	 * executed on a safe DISKO thread (loop is scheduled on the DISKO
-	 * Work Pool with work type WORK_ON_SAFE or WORK_ON_EDT). By definition,
+	 * Work Pool with work type EDT or SAFE). By definition,
 	 * only one safe thread should exist in addition to the safe Event
 	 * Dispatch Thread, for each DISKO application. This thread is
 	 * automatically added to the DISKO work pool. Hence, scheduling a
-	 * new work loop on the work pool with WORK_ON_SAFE will fail if one
+	 * new work loop on the work pool with SAFE will fail if one
 	 * already exists. If a work loop is implemented onto any other
 	 * thread, the following must be kept in mind about scheduled work: </p>
 	 *
@@ -106,26 +124,28 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	 * should be scheduled on the DISKO work pool directly! The DISKO Work
 	 * Pool has a safe thread running already. </p>
 	 */
-	public AbstractWorkLoop(long dutyCycle, int timeout) throws Exception {
+	public AbstractWorkLoop(long requestedDutyCycle, double requestedUtilization) throws Exception {
 		// forward
-		this(ThreadType.WORK_ON_UNSAFE, dutyCycle, timeout);
+		this(WorkerType.UNSAFE, requestedDutyCycle, requestedUtilization);
 	}
 
 	/**
 	 * This implements a work loop (deamon) that will be executed on
-	 * the indicated thread type if scheduled on the WorkPool. The target
-	 * duty cycle is in milliseconds, same for the work cycle timeout.
-	 * The message is used to for logging. This constructor is for
-	 * internal use only!</p>
+	 * the indicated thread type if scheduled on the WorkPool. The requested
+	 * duty cycle is in milliseconds, duty cycle utilization is
+	 * a factor greater than zero and less than one. The message is 
+	 * used to for logging. </p>
+	 * 
+	 * <i>This constructor is for internal use only!</i></p>
 	 *
 	 * <b>IMPORTANT</b>: Work executed on deamon work loops are
 	 * only DISKO thread safe if and only if the work loop is
 	 * executed on a safe DISKO thread (loop is scheduled on the DISKO
-	 * Work Pool with work type WORK_ON_SAFE or WORK_ON_EDT). By definition,
+	 * Work Pool with work type EDT or SAFE). By definition,
 	 * only one safe thread should exist in addition to the safe Event
 	 * Dispatch Thread, for each DISKO application. This thread is
 	 * automatically added to the DISKO work pool. Hence, scheduling a
-	 * new work loop on the work pool with WORK_ON_SAFE will fail if one
+	 * new work loop on the work pool with SAFE will fail if one
 	 * already exists. If a work loop is implemented onto any other
 	 * thread, the following must be kept in mind about scheduled work: </p>
 	 *
@@ -143,12 +163,22 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	 * directly! The DISKO Work Pool has a safe thread running already. </p>
 	 *
 	 */
-	protected AbstractWorkLoop(ThreadType thread, long dutyCycle, int timeout) {
+	protected AbstractWorkLoop(WorkerType workOn, long requestedDutyCycle, double requestedUtilization) {
 
 		// prepare
-		m_thread = thread;
-		m_dutyCycle = dutyCycle;
-		m_timeOut = Math.min(timeout,m_dutyCycle/2);
+		m_workOn = workOn;
+		m_requestedDutyCycle = requestedDutyCycle;
+		m_logger = Logger.getLogger(getClass()); 
+		if(requestedUtilization<=0 || requestedUtilization>=1)
+		{
+			m_requestedUtilization = 0.1;
+			// notify
+			m_logger.debug("Requested utilization invalid ("+requestedUtilization+"). Used default instead (10%)");
+		}
+		else
+		{
+			m_requestedUtilization = requestedUtilization;
+		}
 
 	}
 
@@ -161,8 +191,7 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 			try {
 				m_pool = WorkPool.getInstance();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				m_logger.error("Failed to get work pool",e);
 			}
 		}
 		return m_pool;
@@ -183,7 +212,16 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 
   	public final long schedule(IWork work) {
   		// is null?
-  		if(work==null) throw new NullPointerException("Work can not be null");
+  		if(work==null)
+  		{
+  			throw new NullPointerException("Work can not be null");
+  		}
+  		// is invalid worker type?
+  		if(work.getWorkOnType()!=getWorkOnType())
+  		{
+  			throw new IllegalArgumentException("Work can not be executed on worker (work requested " 
+  					+ work.getWorkOnType() + " work loop, but worker is " + getWorkOnType());  			
+  		}
   		// create id
   		long id = getWorkPool().createID();
   		// set id
@@ -227,19 +265,27 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	 * insignificant and the timeout property is equal or greater than the cycle time. This
 	 * would however, result in a inefficient time schedule and a low system responsiveness.</p>
 	 *
-	 * This Work Pool will only allow MAX(timeout) = dutyCycle/2.</p>
+	 * This Work Pool will only allow timeout <= dutyCycle / 2 to reduce the probabilti.</p>
 	 */
 	public abstract int doWork();
 
 	/**
-	 * Unique work id Allocated by WorkPool
+	 * Get unique work id allocated manually or by WorkPool.
+	 * 
+	 * @return Returns unique work id.
 	 */
 	public final long getID() {
 		return m_id;
 	}
 
 	/**
-	 * Unique work id Allocated by WorkPool
+	 * Set unique work id. The id is only possible to 
+	 * change once. </p>
+	 * 
+	 * Setting this id to anything else than zero, should disable
+	 * internal work time logging in the {@code doWork()} method. 
+	 * 
+	 * @return Returns {@code true} if id was set. 
 	 */
 	public final boolean setID(long id) {
 		if(id==0 || m_id==0) {
@@ -254,10 +300,11 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	}
 
 	/**
-     * The thread type to execute work on
+     * Get the worker type to execute work loop on
+     * @return Returns worker type to execute work on. 
      */
-    public final ThreadType getThreadType() {
-        return m_thread;
+    public final WorkerType getWorkOnType() {
+        return m_workOn;
     }
 
 	public final boolean resume() {
@@ -290,19 +337,58 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 		if(isState(LoopState.EXECUTING)) setState(LoopState.IDLE);
 	}
 
-	/**
-	 * The value return indicates the requested duty cycle (time between
-	 * two calls to <code>doWork()</code>) for the work cycle.<p>
-	 * If work is scheduled on WorkPool, the work cycle can be
-	 * executed, suspended, resumed and stopped automatically.
-	 */
 	public final long getDutyCycle() {
-		return m_dutyCycle;
+		return m_pool!=null?m_pool.getDutyCycle(m_id) : getRequestedDutyCycle();
+	}
+	
+	public final long getMinimumAllowedDutyCycle() {
+		return m_pool!=null?m_pool.getMinimumAllowedDutyCycle():getRequestedDutyCycle();
 	}
 
-	/**
-	 * Returns average work time
-	 */
+	public final long getRequestedDutyCycle() {
+		return m_requestedDutyCycle;
+	}
+
+	@Override
+	public long getAverageDutyCycleDelay() {
+		long sum = 0;
+		// get count
+		int count = m_startupDelayLog.size();
+		// can calculate?
+		if(count>0) {
+			synchronized(m_startupDelayLog) {
+				// loop over all
+				for(long it : m_startupDelayLog) {
+					sum += it;
+				}
+			}
+			// calculate average
+			return sum/count;
+		}
+		return 0;
+	}
+
+	@Override
+	public long getMaximumDutyCycleDelay() {
+		long max = 0;
+		synchronized(m_startupDelayLog) {
+			// loop over all
+			for(long it : m_startupDelayLog) {
+				max = Math.max(max,it);
+			}
+		}
+		// finished
+		return max;
+	}
+
+	public final long getWorkTime() {
+		return (long)(getDutyCycle()*getUtilization());
+	}
+
+	public final long getRequestedWorkTime() {
+		return (long)(m_requestedDutyCycle*m_requestedUtilization);
+	}
+	
 	public final long getAverageWorkTime() {
 		long sum = 0;
 		// get count
@@ -324,7 +410,7 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	/**
 	 * Returns maximum work time
 	 */
-	public final long getMaxWorkTime() {
+	public final long getMaximumWorkTime() {
 		long max = 0;
 		synchronized(m_workTimeLog) {
 			// loop over all
@@ -336,10 +422,22 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 		return max;
 	}
 
-	/**
-	 * Returns work time utilization as the ratio of average work time on duty cycle
-	 */
 	public final double getUtilization() {
+		double u = getRequestedUtilization();
+		double max = m_pool!=null?m_pool.getMaximumAllowedUtilization() : u;
+		return Math.min(u, max);
+	}
+	
+	public double getMaximumAllowedUtilization() {
+		return m_pool!=null ? m_pool.getMaximumAllowedUtilization() : getRequestedUtilization();
+	}
+	
+	
+	public final double getRequestedUtilization() {
+		return m_requestedUtilization;
+	}
+	
+	public final double getAverageUtilization() {
 		// can calculate?
 		if(getDutyCycle()>0)
 			return ((double)getAverageWorkTime())/((double)getDutyCycle());
@@ -347,8 +445,16 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 			return -1;
 	}
 
+	public final double getMaximumUtilization() {
+		// can calculate?
+		if(getDutyCycle()>0)
+			return ((double)getMaximumWorkTime())/((double)getDutyCycle());
+		else
+			return -1;
+	}
+	
 	@Override
-	public final void logWorkTime(long delay) {
+	public final void logWorkTime(long duration) {
 		// remove a random number from log?
 		if(m_workTimeLog.size()==MAX_TIME_LOG_SIZE) {
 			// get a random index to preserve the range of logged items
@@ -356,18 +462,16 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 			// remove
 			m_workTimeLog.remove(i);
 		}
-		// add new number to log
-		m_workTimeLog.add(delay);
+		// add duration
+		m_workTimeLog.add(duration);		
 	}
-
-	public final long getTimeOut() {
-		return m_timeOut;
+	
+	@Override
+	public final void clearLogs() {
+		m_workTimeLog.clear();
+		m_startupDelayLog.clear();
 	}
-
-	public final void setTimeOut(long time) {
-		m_timeOut = Math.min(time,m_dutyCycle/2);
-	}
-
+	
     public final boolean isState(LoopState state) {
         return m_state.equals(state);
     }
@@ -383,6 +487,39 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 	/* =======================================================
 	 * Protected methods
 	 * ======================================================= */
+	
+	protected void onExit(long start) 
+	{
+		// get duty cycle
+		long dc = getDutyCycle();
+		
+		// calculate the start to start delay
+		long dl = m_sTic>0 ? System.currentTimeMillis() - m_sTic : 0;
+		
+		// calculate difference
+		long dt = dl-dc;
+		
+		// was startup delayed?
+		if(dt>LOG_DELAY_PRECISION)
+		{
+			// remove a random number from log?
+			if(m_workTimeLog.size()==MAX_TIME_LOG_SIZE) {
+				// get a random index to preserve the range of logged items
+				int i = RANDOM.nextInt(MAX_TIME_LOG_SIZE-1);
+				// remove
+				m_startupDelayLog.remove(i);
+			}
+			// add to log
+			m_startupDelayLog.add(new Long(dl-dc));
+			// log event
+			m_logger.warn("id:=" + m_id + ", dutyCycle:="+ dc + ", delay:="+dl+", difference:="+dt+", LOG_DELAY_PRECISION:="+LOG_DELAY_PRECISION);
+		}
+		
+		// save new start time
+		m_sTic = start;
+		
+	}
+	
 
 	protected boolean requestState(LoopState state) {
     	if(!m_state.equals(state)) {

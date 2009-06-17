@@ -48,7 +48,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		// initialize GUI
 		initialize();
 		// add listeners
-		wp.getMsoEventManager().addClientUpdateListener(this);
+		wp.getMsoEventManager().addLocalUpdateListener(this);
 		getInfoPanel().addFlowListener(wp);
 	}
 
@@ -199,9 +199,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	
 	private void setAddress() {
 		// Store address fields in single string, separated by ;
-		m_currentPersonnel.suspendClientUpdate();
+		m_currentPersonnel.suspendUpdate();
 		m_currentPersonnel.setAddress(getAddress());
-		m_currentPersonnel.resumeClientUpdate(true);
+		m_currentPersonnel.resumeUpdate(true);
 		m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 	}
 	
@@ -212,7 +212,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	/**
 	 * Update fields if any changes occur in the personnel object
 	 */
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		if(events.isClearAllEvent()) {
 			setPersonnel(null);
@@ -220,7 +220,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		}
 		else {
 			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
+			for(MsoEvent.Change e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
 
 				// consume loopback updates
 				if(!e.isLoopbackMode())
@@ -231,7 +231,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 							(IPersonnelIf) e.getSource() : null;
 							
 					// is object modified?
-					if (e.isChangeReferenceEvent()) {
+					if (e.isModifiedReferenceEvent()) {
 						updateFieldContents();
 					}
 					else if (e.isModifyObjectEvent()) {

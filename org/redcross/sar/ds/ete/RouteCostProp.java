@@ -5,6 +5,7 @@ package org.redcross.sar.ds.ete;
 
 import java.lang.Math;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 
@@ -29,7 +30,7 @@ public class RouteCostProp {
 	private boolean m_constant;
 	private String m_key;
 	private String m_name;
-  	private HashMap m_keys;
+  	private Map<String, Integer> m_keys;
   	private String[] m_captions;
   	private Object[] m_params;
 	
@@ -76,7 +77,7 @@ public class RouteCostProp {
 		m_constant = Boolean.valueOf(getProp(m_key + ".CONSTANT")).booleanValue();
 		
 		// create key-to-index map
-		m_keys = new HashMap(m_count);
+		m_keys = new HashMap<String, Integer>(m_count);
 		
 		// allocate memory
 		m_captions = new String[m_count];

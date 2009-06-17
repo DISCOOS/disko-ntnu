@@ -260,9 +260,9 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
 	/**
 	 * Updates unit list based on MSO communicator events
 	 *
-	 * @see org.redcross.sar.mso.event.IMsoUpdateListenerIf#handleMsoUpdateEvent(org.redcross.sar.mso.event.MsoEvent.Update)
+	 * @see org.redcross.sar.mso.event.IMsoUpdateListenerIf#handleMsoChangeEvent(org.redcross.sar.mso.event.MsoEvent.Change)
 	 */
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
         // clear all?
         if(events.isClearAllEvent())
@@ -272,7 +272,7 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
         else {
 
     		// loop over all events
-    		for(MsoEvent.Update e : events.getEvents(m_interests)) {
+    		for(MsoEvent.Change e : events.getEvents(m_interests)) {
 
     			// consume loopback updates
     			if(!e.isLoopbackMode()) {

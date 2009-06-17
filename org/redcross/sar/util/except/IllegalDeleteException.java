@@ -5,7 +5,12 @@ package org.redcross.sar.util.except;
  */
 public class IllegalDeleteException extends MsoException
 {
-    public IllegalDeleteException(String aMessage)
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public IllegalDeleteException(String aMessage)
     {
         super(aMessage);
     }

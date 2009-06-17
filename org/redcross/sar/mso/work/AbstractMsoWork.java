@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.work;
 
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 
 public abstract class AbstractMsoWork extends AbstractWork implements IMsoWork {
 
@@ -13,7 +14,7 @@ public abstract class AbstractMsoWork extends AbstractWork implements IMsoWork {
 			boolean suspend) throws Exception {
 
 		// forward
-		super(HIGH_PRIORITY, isSafe, isModal, ThreadType.WORK_ON_SAFE, message, millisToPopup, showProgress, suspend);
+		super(HIGH_PRIORITY, isSafe, isModal, WorkerType.SAFE, message, millisToPopup, showProgress, suspend);
 
 	}
 
@@ -22,7 +23,7 @@ public abstract class AbstractMsoWork extends AbstractWork implements IMsoWork {
 			boolean suspend) throws Exception {
 
 		// forward
-		super(priority, isSafe, isModal, ThreadType.WORK_ON_SAFE, message, millisToPopup, showProgress, suspend);
+		super(priority, isSafe, isModal, WorkerType.SAFE, message, millisToPopup, showProgress, suspend);
 
 	}
 
@@ -30,6 +31,6 @@ public abstract class AbstractMsoWork extends AbstractWork implements IMsoWork {
 	 * IWork implementation
 	 * ================================================== */
 
-	public abstract Object doWork();
+	public abstract Object doWork(IWorkLoop loop);
 
 }

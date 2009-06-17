@@ -10,6 +10,7 @@ import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitListIf;
+import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 
 public class UnitlogReportParams {
@@ -94,24 +95,24 @@ public class UnitlogReportParams {
 			System.out.println("Unitliste er tom.");
 	}
 	
-	public Map getUnitlogReportParams(IUnitListIf unitList, IUnitIf unit){		
+	public Map<?, ?> getUnitlogReportParams(IUnitListIf unitList, IUnitIf unit){		
 		extractParams(unitList, unit);
 		return unitParams;
 	}
 
 	private void makePersonelList(IUnitIf unit){
-		//Personell liste
-		Collection <IPersonnelIf> personelList = unit.getUnitPersonnelItems();
+		// initialize
+		Collection<IPersonnelIf> personelList = unit.getUnitPersonnelItems();
 		int personsCount = personelList.size();
 		String personInfo = new String();		
-		Iterator personIter = personelList.iterator();
+		Iterator<IPersonnelIf> personIter = personelList.iterator();
 		int personCount = 0;
 		int releasedCount = 0;
 		String keyPersonName = new String();
 		String keyPersonTele = new String();
 		String keyReleased = new String();
 		while (personIter.hasNext()) {			
-			IPersonnelIf person = (IPersonnelIf)personIter.next();
+			IPersonnelIf person = personIter.next();
 			personInfo = person.getFirstName() + " " + person.getLastName();
 			personell[personCount][0] = personInfo;
 			personell[personCount][1] = person.getTelephone1();
@@ -119,7 +120,7 @@ public class UnitlogReportParams {
 			keyPersonTele = KEY_PERSON_TELE_PREFIX + Integer.toString(personCount+1);
 			unitParams.put(keyPersonName, personInfo);
 			unitParams.put(keyPersonTele, person.getTelephone1());
-			if(person.getStatus() == person.getStatus().RELEASED){				
+			if(person.getStatus() == PersonnelStatus.RELEASED){				
 				if (released == null){
 					released[0] = person.getFirstName()+" "+person.getLastName();
 					keyReleased = KEY_RELEASED_PREFIX + Integer.toString(released.length+1);
@@ -154,15 +155,15 @@ public class UnitlogReportParams {
 		callSigns[0][1] = unit.getCallSign();
 		callSigns[0][0] = unit.getCommunicatorShortName();
 		int unitCount = unitList.size();
-		Collection <IUnitIf> unitCollection = unitList.getObjects();
-		Iterator unitIter = unitCollection.iterator();
+		Collection<IUnitIf> unitCollection = unitList.getObjects();
+		Iterator<IUnitIf> unitIter = unitCollection.iterator();
 		int iter2 = 1;
 		String keyCallSign = KEY_CALLSIGN_PREFIX + Integer.toString(iter2);
 		String keyUnit = KEY_UNIT_PREFIX + Integer.toString(iter2);
 		unitParams.put(keyCallSign, unit.getCallSign());
 		unitParams.put(keyUnit, unit.getShortName());
 		while (unitIter.hasNext() && iter2 < maxCallSignsInPrint){
-			IUnitIf unit2 = (IUnitIf)unitIter.next();
+			IUnitIf unit2 = unitIter.next();
 			if (!callSigns[0][0].equalsIgnoreCase(unit2.getShortName())){
 				String unitName = MsoUtils.getUnitName(unit2,false);
 				callSigns[iter2][0] = unitName;
@@ -211,10 +212,10 @@ public class UnitlogReportParams {
 	}
 
 	private void putNotNullValue(Map<String, Object> printParams){		
-		Set set = printParams.keySet();
-		Iterator iterator = set.iterator();
+		Set<String> set = printParams.keySet();
+		Iterator<String> iterator = set.iterator();
 		while(iterator.hasNext()){
-			String key = (String) iterator.next();
+			String key = iterator.next();
 			String value = (String) printParams.get(key);			
 			if (value == null){
 				//printParams.put(key, "");//

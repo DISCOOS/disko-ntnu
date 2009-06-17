@@ -1,8 +1,11 @@
 package org.redcross.sar.test;
 
 import org.apache.log4j.Logger;
+import org.redcross.sar.mso.IDispatcherIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.MsoModelImpl;
+import org.redcross.sar.mso.SaraDispatcherImpl;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.util.except.DuplicateIdException;
@@ -13,7 +16,7 @@ import org.redcross.sar.util.mso.Position;
 
 /**
  * Created by IntelliJ IDEA.
- * User: vinjar
+ * User: vinjar, kenneth
  * Date: 16.apr.2007
  * To change this template use File | Settings | File Templates.
  */
@@ -21,11 +24,57 @@ import org.redcross.sar.util.mso.Position;
 /**
  *
  */
-public class BuildTestData
+public class MsoModelTest
 {
-    private static final Logger m_logger = Logger.getLogger(BuildTestData.class);
+    private static final Logger m_logger = Logger.getLogger(MsoModelTest.class);
 
-    public static void createCmdPost(IMsoModelIf aMsoModel)
+    private IMsoModelIf m_model;
+    private IDispatcherIf m_dispatcher;
+    
+    public static void main(String args[])
+    {
+    	MsoModelTest test = new MsoModelTest();
+    	test.run();
+    }
+    
+	public MsoModelTest() {
+		
+		//initiate model driver    	
+		getMsoModel().getDispatcher().initiate();
+		
+	}
+
+	public IMsoModelIf getMsoModel()
+	{
+		if (m_model == null)
+		{
+			try {
+				m_model = new MsoModelImpl(getDispatcher());
+			} catch (Exception e) {
+				System.out.println("Failed to create MsoModelImpl instance");
+				e.printStackTrace();
+			}
+		}
+		return m_model;
+	}
+    
+	public IDispatcherIf getDispatcher() {
+		if(m_dispatcher == null) {
+	        m_dispatcher = new SaraDispatcherImpl();
+		}
+		return m_dispatcher;
+	}
+	
+	public void run() {
+		// create a new operation
+		getDispatcher().createNewOperation();
+		// print active operation
+		System.out.println("Operation: " + getDispatcher().getActiveOperationID());
+		// create a command post
+		createUnits(getMsoModel());
+	}
+    
+    public void createCmdPost(IMsoModelIf aMsoModel)
     {
         aMsoModel.setLocalUpdateMode();
         IMsoManagerIf msoManager = aMsoModel.getMsoManager();
@@ -66,7 +115,7 @@ public class BuildTestData
 		
     }
 
-    public static void createUnits(IMsoModelIf aMsoModel)
+    public void createUnits(IMsoModelIf aMsoModel)
     {
         ICmdPostIf cmdPost = aMsoModel.getMsoManager().getCmdPost();
         aMsoModel.setLocalUpdateMode();
@@ -102,7 +151,7 @@ public class BuildTestData
 		}            
     }
 
-    public static void createUnitsAndAssignments(IMsoModelIf aMsoModel)
+    public void createUnitsAndAssignments(IMsoModelIf aMsoModel)
     {
         ICmdPostIf cmdPost = aMsoModel.getMsoManager().getCmdPost();
         aMsoModel.setLocalUpdateMode();
@@ -232,7 +281,7 @@ public class BuildTestData
 		}            
     }
 
-    public static void createMessages(IMsoModelIf aMsoModel)
+    public void createMessages(IMsoModelIf aMsoModel)
     {
         ICmdPostIf cmdPost = aMsoModel.getMsoManager().getCmdPost();
         aMsoModel.setLocalUpdateMode();

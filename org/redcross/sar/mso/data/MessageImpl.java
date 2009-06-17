@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -31,10 +32,9 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     private final MsoListImpl<ICommunicatorIf> m_confirmedReceivers = new MsoListImpl<ICommunicatorIf>(ICommunicatorIf.class, this, CONFIRMED_RECEIVERS_NAME, false);
     private final TaskListImpl m_messageTasks = new TaskListImpl(this, "MessageTasks", false);
     private final MsoListImpl<ICommunicatorIf> m_unconfirmedReceivers = new MsoListImpl<ICommunicatorIf>(ICommunicatorIf.class, this, UNCONFIRMED_RECEIVERS_NAME, false);
-
     private final MessageLineListImpl m_messageLines = new MessageLineListImpl(this, "MessageLines", false);
-
-    private final MsoReferenceImpl<ICommunicatorIf> m_sender = new MsoReferenceImpl<ICommunicatorIf>(this, "Sender", 1, true);
+    
+    private final MsoRelationImpl<ICommunicatorIf> m_sender = new MsoRelationImpl<ICommunicatorIf>(this, "Sender", 1, true, null);
 
     public static String getText(String aKey)
     {
@@ -88,7 +88,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     }
 
     @Override
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void addListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ITaskIf)
         {
@@ -111,7 +111,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ITaskIf)
         {
@@ -146,7 +146,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_MESSAGE;
     }
@@ -170,9 +170,9 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_status.getValue();
     }
 
-    public IMsoModelIf.ModificationState getStatusState()
+    public IData.DataOrigin getStatusState()
     {
-        return m_status.getState();
+        return m_status.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<MessageStatus> getStatusAttribute()
@@ -192,19 +192,19 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     public void setBroadcast(boolean aBroadcast)
     {
     	// suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 		// clear receiver lists when changing broadcast state
 		m_unconfirmedReceivers.removeAll();
 		m_confirmedReceivers.removeAll();
 		// update
 		m_broadcast.setValue(aBroadcast);
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
     }
 
-    public IMsoModelIf.ModificationState getBroadcastState()
+    public IData.DataOrigin getBroadcastState()
     {
-        return m_broadcast.getState();
+        return m_broadcast.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoBooleanIf getBroadcastAttribute()
@@ -245,9 +245,9 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_number.intValue();
     }
 
-    public IMsoModelIf.ModificationState getNumberState()
+    public IData.DataOrigin getNumberState()
     {
-        return m_number.getState();
+        return m_number.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
@@ -264,9 +264,9 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_confirmedReceivers;
     }
 
-    public IMsoModelIf.ModificationState getConfirmedReceiversState(ICommunicatorIf anICommunicatorIf)
+    public IData.DataOrigin getConfirmedReceiversState(ICommunicatorIf anICommunicatorIf)
     {
-        return m_confirmedReceivers.getState(anICommunicatorIf);
+        return m_confirmedReceivers.getOrigin(anICommunicatorIf);
     }
 
     public Collection<ICommunicatorIf> getConfirmedReceiversItems()
@@ -279,9 +279,9 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_unconfirmedReceivers;
     }
 
-    public IMsoModelIf.ModificationState getUnconfirmedReceiversState(ICommunicatorIf anICommunicatorIf)
+    public IData.DataOrigin getUnconfirmedReceiversState(ICommunicatorIf anICommunicatorIf)
     {
-        return m_unconfirmedReceivers.getState(anICommunicatorIf);
+        return m_unconfirmedReceivers.getOrigin(anICommunicatorIf);
     }
 
     public Collection<ICommunicatorIf> getUnconfirmedReceiversItems()
@@ -299,9 +299,9 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         return m_messageTasks;
     }
 
-    public IMsoModelIf.ModificationState getMessageTasksState(ITaskIf anITaskIf)
+    public IData.DataOrigin getMessageTasksState(ITaskIf anITaskIf)
     {
-        return m_messageTasks.getState(anITaskIf);
+        return m_messageTasks.getOrigin(anITaskIf);
     }
 
     public Collection<ITaskIf> getMessageTasksItems()
@@ -321,9 +321,9 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     }
 
-    public IMsoModelIf.ModificationState getMessageLinesState(IMessageLineIf anIMessageLineIf)
+    public IData.DataOrigin getMessageLinesState(IMessageLineIf anIMessageLineIf)
     {
-        return m_messageLines.getState(anIMessageLineIf);
+        return m_messageLines.getOrigin(anIMessageLineIf);
     }
 
     public Collection<IMessageLineIf> getMessageLineItems()
@@ -337,20 +337,20 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public void setSender(ICommunicatorIf aCommunicator)
     {
-        m_sender.setReference(aCommunicator);
+        m_sender.set(aCommunicator);
     }
 
     public ICommunicatorIf getSender()
     {
-        return m_sender.getReference();
+        return m_sender.get();
     }
 
-    public IMsoModelIf.ModificationState getSenderState()
+    public IData.DataOrigin getSenderState()
     {
-        return m_sender.getState();
+        return m_sender.getOrigin();
     }
 
-    public IMsoReferenceIf<ICommunicatorIf> getSenderAttribute()
+    public IMsoRelationIf<ICommunicatorIf> getSenderAttribute()
     {
         return m_sender;
     }
@@ -365,7 +365,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     	boolean bFlag = false;
 
     	// suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 
 		// remove from confirmed
 		m_confirmedReceivers.remove(aReceiver);
@@ -386,7 +386,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 		}
 
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 
 		// finished
 		return bFlag;
@@ -398,7 +398,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     	boolean bFlag = false;
 
     	// suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 
 		// remove from unconfirmed
 		m_unconfirmedReceivers.remove(aReceiver);
@@ -416,7 +416,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 			// consume;
 		}
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 
 		// finished
 		return bFlag;
@@ -425,11 +425,11 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     public void removeReceiver(ICommunicatorIf communicator)
     {
         // suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 		m_unconfirmedReceivers.remove(communicator);
 		m_confirmedReceivers.remove(communicator);
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
     }
 
     public ICommunicatorIf getReceiver()
@@ -448,11 +448,11 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     public void setReceiver(ICommunicatorIf communicator)
     {
     	// suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 		setBroadcast(false);
 		m_confirmedReceivers.add(communicator);
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 
     }
 
@@ -503,7 +503,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         int deletedLineNumber = aLine.getLineNumber();
 
         // suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 
 		// try to remove line
 		if (!m_messageLines.remove(aLine)) {
@@ -519,7 +519,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 		}
 
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 
 		// finished
         return bFlag;
@@ -539,13 +539,13 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     {
         IMessageLineIf retVal;
         // suspend MSO update
-		suspendClientUpdate();
-		retVal = m_msoModel.getMsoManager().getCmdPost().getMessageLines().createMessageLine();
+		suspendUpdate();
+		retVal = m_model.getMsoManager().getCmdPost().getMessageLines().createMessageLine();
 		retVal.setLineType(aType);
 		retVal.setLineNumber(getNextLineNumber());
 		m_messageLines.add(retVal);
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 		return retVal;
     }
 

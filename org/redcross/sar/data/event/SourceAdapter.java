@@ -1,7 +1,7 @@
 package org.redcross.sar.data.event;
 
-public class SourceAdapter<I> implements ISourceListener<I> {
+public class SourceAdapter<D> implements ISourceListener<D> {
 
-	public void onSourceChanged(SourceEvent<I> e) { }
+	public void onSourceChanged(SourceEvent<D> e) { }
 
 }

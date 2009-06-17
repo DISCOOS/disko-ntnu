@@ -4,10 +4,9 @@ package org.redcross.sar.mso.data;
  *
  */
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IChangeIf;
-import org.redcross.sar.mso.IChangeIf.IChangeReferenceIf;
-import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.data.IMsoObjectIf.IObjectIdIf;
 import org.redcross.sar.util.except.TransactionException;
 
@@ -16,7 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
+public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataIf
 {
     /**
      * Get name of list
@@ -75,14 +74,14 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
      *
      * @return All references (not marked for deletion in the list)
      */
-    public Collection<IMsoReferenceIf<M>> getReferences();
+    public Collection<IMsoRelationIf<M>> getRelations();
 
     /**
      * Get first item in the list.
      *
      * @return The first reference in the list.
      */
-    public IMsoReferenceIf<M> getHeadReference();
+    public IMsoRelationIf<M> getHeadRelation();
 
     /**
      * Get an reference in the list, that reference a given object ID object.
@@ -90,7 +89,7 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
      * @param anObjectId The object ID of the referenced object
      * @return The reference, if it exists, otherwise <code>null</code>.
      */
-    public IMsoReferenceIf<M> getReference(IObjectIdIf anObjectId);
+    public IMsoRelationIf<M> getRelation(IObjectIdIf anObjectId);
     
     /**
      * Get an reference in the list, that reference a given object ID string.
@@ -98,7 +97,7 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
      * @param anObjectId The object ID of the referenced object
      * @return The reference, if it exists, otherwise <code>null</code>.
      */
-    public IMsoReferenceIf<M> getReference(String anObjectId);
+    public IMsoRelationIf<M> getRelation(String anObjectId);
 
     /**
      * Get an reference in the list, that reference a given object.
@@ -106,7 +105,7 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
      * @param anObject The referenced object
      * @return The reference, if it exists, otherwise <code>null</code>.
      */
-    public IMsoReferenceIf<M> getReference(M anObject);
+    public IMsoRelationIf<M> getRelation(M anObject);
     
     /**
      * Returns the number of objects in the list.
@@ -153,18 +152,12 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
     public boolean commit() throws TransactionException;
     
     /**
-     * Rollback changes in this list. 
-     * Generates a client update events if changes are rolled back.
+     * Rollback changes in this list.  
+     * Generates a update events if changes are rolled back.
+     * @return Returns {@code true} is changes was rolled back, 
+     * {@code false} otherwise.
      */    
-    public void rollback();
-    
-    /**
-     * Rollback changes in references to the given items in this list. 
-     * Generates a client update events if changes are rolled back.
-     * @param items - a sub-list of changes to commit. 
-     * @see See method <code>getChangedReferences()</code> for more information.
-     */    
-    public void rollback(List<IChangeReferenceIf> items);
+    public boolean rollback();
     
    /** 
     * Generate an List of selected items from the list.
@@ -192,20 +185,27 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
     public M selectSingleItem(Selector<M> aSelector);
 
     /**
-     * Check if the object exists only locally in the list (added locally only, thus not created remotely).
+     * Check if the object is changed locally (added or deleted).
      *
      * @param anObject The object to match
-     * @return <code>true</code> if the specific object exists locally only
+     * @return <code>true</code> if the specific object exists locally
      */
-    public boolean isLocal(M anObject);
+    public boolean isOriginLocal(M anObject);
     
     /**
-     * Check if the object exists only remotely in the list (created remotely, thus not added or deleted locally).
+     * Check if the object exists remotely (created).
      *
      * @param anObject The object to match
-     * @return <code>true</code> if the specific object exists remotely only
+     * @return <code>true</code> if the specific object exists remotely
      */
-    public boolean isRemote(M anObject);
+    public boolean isOriginRemote(M anObject);
+    
+    /**
+     * Check if object is added
+     * @param anObject
+     * @return
+     */
+    public boolean isAdded(IMsoObjectIf anObject);
     
     /**
      * Check if the object is deleted locally only (created remotely, deleted locally).
@@ -229,7 +229,7 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
      * @param anObject The object to match
      * @return <code>true</code> if the specific object exists. Same as <code>exists():=isRemote()||isLocal()</code>
      */
-    public boolean exists(M anObject);
+    public boolean exists(IMsoObjectIf anObject);
 
     /**
      * Check if the list contains a specific object, regardless of state (exists either locally or remotely, or deleted locally).
@@ -237,36 +237,37 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
      * @param anObject The object to match
      * @return <code>true</code> if the specific object is contained in the list. Same as <code>isRemote()||isLocal()||isDeleted()</code>
      */
-    public boolean contains(M anObject);
+    public boolean contains(IMsoObjectIf anObject);
     
     /**
-     * Get the {@link org.redcross.sar.mso.IMsoModelIf.ModificationState ModificationState} of the specified object
+     * 
+     * @param anObject - the reference to check origin of
+     * @param origin - the origin to match
+     * @return Returns <code>true</code> if the origin of the reference to the given 
+     * object match the given origin.
+     */
+    public boolean isOrigin(M anObject, IData.DataOrigin origin);
+    
+    /**
+     * Get the {@link org.redcross.sar.data.IData.DataOrigin origin} of the specified object
      *
-     * @param anObject The tested reference.
+     * @param anObject The reference.
      * @return Potential return values are </p>
      * <ol>
-     * 	<li> <code>STATE_UNDEFINED</code>: object does not exist, same <code>!exists()</code>
-     * 	<li> <code>STATE_SERVER</code>: same as <code>isRemote()</code>
-     * 	<li> <code>STATE_LOCAL</code>: same as <code>isLocal()</code>
+     * 	<li> <code>NONE</code>: object does not exist, same <code>!exists()</code>
+     * 	<li> <code>REMOTE</code>: same as <code>isOriginRemote(anObject)</code>
+     * 	<li> <code>LOCAL</code>: same as <code>isOriginLocal(anObject)</code>
      * </ol> </p>
      * 
-     * The state <code>STATE_CONFLICTING</code> is not defined for individual items in the 
-     * list. For lists, conflicts occur when the local list and the remote list on the server 
-     * differ during an remote update. However, during updates only one change at the time is
-     * received from the server. The server state of the list (existing objects at given point 
-     * in time) is thus not known and can therefore not be assumed to be synchronized. 
-     * Consequently, a STATE_CONFLICTING state is not feasible to
+     * The <code>CONFLICT</code> state is not defined for individual items in a
+     * one-to-many relation (list). For lists, conflicts can only occur if the
+     * position in the list is relevant. If the position is relevant, adding and
+     * removing an reference to a list in a given position, a conflict can occur.
+     * The position is undefined in MSO models.  Consequently, a CONFLICT state is 
+     * undefined accordingly.
      *  
      */
-    public ModificationState getState(M aObject);    
-    
-    /**
-     * Get a clone of the list.
-     *
-     * The cloned list will be a copy that refers to the same objects
-     * @return The cloned list.
-     */
-    //public IMsoListIf<M> getClone();
+    public IData.DataOrigin getOrigin(M aObject);    
     
     /**
      * Get list cardinality
@@ -289,6 +290,13 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
     public int getChangeCount();
     
     /**
+     * Get list owner
+     *
+     * @return Reference to IMsoObjectIf object.
+     */
+    public IMsoObjectIf getOwnerObject();
+    
+    /**
      * Get the list object class
      */
     public Class<M> getObjectClass();
@@ -298,13 +306,6 @@ public interface IMsoListIf<M extends IMsoObjectIf> extends IMsoDataStateIf
      * 
      * @return Returns list of changed references
      */
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences();
+    public Collection<IChangeIf.IChangeRelationIf> getChanges();
 
-    /**
-     * Get sub-list of changed references given the partial list.
-     * 
-     * @return Returns sub-list of changed references
-     */
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedReferences(Collection<IChangeIf> partial);
-    
 }

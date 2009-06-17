@@ -25,10 +25,11 @@ import org.redcross.sar.data.event.SourceEvent;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IUnitIf;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 
 public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker> {
 	
@@ -57,7 +58,7 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
   	public APRSMapper(String oprID) throws Exception {
   		
   		// forward
-  		super(oprID, 1000, 100);
+  		super(oprID, 1000, 0.1);
   		
   		// prepare
 		work = new LoopWork(500);
@@ -141,7 +142,7 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 	}
 	
 	
-  	private class EventManager implements ISourceListener<UpdateList>, IManagerListener {
+  	private class EventManager implements ISourceListener<ChangeList>, IManagerListener {
   		
   		public void onOpen(SessionEvent e) { 
   			if(e.getSource() instanceof APRSBroker) {
@@ -154,8 +155,8 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
   			}
 		}
 		
-  		public void onSourceChanged(SourceEvent<UpdateList> e) {
-  			if(e.getInformation().isClearAllEvent()) {
+  		public void onSourceChanged(SourceEvent<ChangeList> e) {
+  			if(e.getData().isClearAllEvent()) {
   				m_queue.add(new QueuedEvent(e));
   			}
 		}
@@ -181,20 +182,20 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 
     private class LoopWork extends AbstractWork {
 
-    	private int m_timeOut;
+    	private long m_requestedWorkTime;
 
-		public LoopWork(int timeOut) throws Exception {
+		public LoopWork(long requestedWorkTime) throws Exception {
 			// forward
-			super(0,true,false,ThreadType.WORK_ON_LOOP,"",0,false,false,true);
+			super(0,true,false,WorkerType.UNSAFE,"",0,false,false,true);
 			// prepare
-			m_timeOut = timeOut;
+			m_requestedWorkTime = requestedWorkTime;
 		}
 
 		/* ============================================================
 		 * IDiskoWork implementation
 		 * ============================================================ */
 
-		public Void doWork() {
+		public Void doWork(IWorkLoop loop) {
 
 			/* =============================================================
 			 * DESCRIPTION: This method is listening for events received
@@ -221,11 +222,14 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 			// get start tic
 			long tic = System.currentTimeMillis();
 
+			// calculate timeout
+			long workTime = Math.min(loop.getWorkTime(), m_requestedWorkTime);
+			
 			// handle updates in queue
-			List<QueuedEvent> changed = update(tic,m_timeOut/2);
+			List<QueuedEvent> changed = update(tic,workTime/2);
 
 			// forward
-			execute(changed,tic,m_timeOut/2);
+			execute(changed,tic,workTime/2);
 
 			// finished
 			return null;
@@ -236,7 +240,7 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 		 * Helper methods
 		 * ============================================================ */
 
-		private List<QueuedEvent> update(long tic, int timeOut) {
+		private List<QueuedEvent> update(long tic, long timeOut) {
 
 			// initialize
 			List<QueuedEvent> workSet = new ArrayList<QueuedEvent>(m_queue.size());
@@ -276,13 +280,18 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 					onEntityDetected((IBroker<?>)it.args[0],(EntityEvent)e);
 				}
 				else if(e instanceof SourceEvent) {
-					onSourceChanged((SourceEvent<UpdateList>)e);
+					onSourceChanged((SourceEvent<ChangeList>)e);
 				}
 			}
 		}
 		
-		private void onSourceChanged(SourceEvent<UpdateList> e) {
-			if(e.getInformation().isClearAllEvent()) {
+		private void onSourceChanged(SourceEvent<ChangeList> e) {
+			/* If a clear-all event has occurred, the MSO model
+			 * that this APRS mapper is mapping entities to, is
+			 * no longer valid. Hence, all entities identified so 
+			 * fare are by definition void, and therefore must be
+			 * reset to null */
+			if(e.getData().isClearAllEvent()) {
 				// loop over all identities
 				for(IBroker<?> broker : m_io.getBrokers()) {
 					for(IEntity it : broker.getKnownEntities()) {
@@ -332,9 +341,9 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 					IUnitIf unit = cmdPost.getUnitList().getObject(objID);
 					// found?
 					if(unit!=null) {
-						unit.suspendClientUpdate();
+						unit.suspendUpdate();
 						unit.logPosition(p, packet.getTime());
-						unit.resumeClientUpdate(true);
+						unit.resumeUpdate(true);
 					} else {
 						logger.warn("APRSStation " + station.getCue() + " is identified but not found in unit list");
 					}

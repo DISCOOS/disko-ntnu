@@ -11,10 +11,10 @@ import org.redcross.sar.data.event.SourceEvent;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 
 @SuppressWarnings("unchecked")
-public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,UpdateList> {
+public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,ChangeList> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -113,27 +113,25 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 	 * ISourceListenerIf implementation
 	 * ============================================================================= */
 
-	public void onSourceChanged(SourceEvent<MsoEvent.UpdateList> e) {
+	public void onSourceChanged(SourceEvent<MsoEvent.ChangeList> e) {
 
 		// get MSO update event
-		UpdateList events = e.getInformation();
+		ChangeList events = e.getData();
 
 		// clear all event?
 		if(events.isClearAllEvent()) {
 			// get first item
-			MsoEvent.Update it = events.getEvents().get(0);
+			MsoEvent.Change it = events.getEvents().get(0);
 			// notify
-			fireDataClearAll(null,it.getEventTypeMask());
+			fireDataClearAll(null,it.getMask());
 		}
 		else {
 
-			//System.out.println(this);
-
 			// loop over all events
-			for(MsoEvent.Update it : events.getEvents()) {
+			for(MsoEvent.Change it : events.getEvents()) {
 
 				// get flags
-				int mask = it.getEventTypeMask();
+				int mask = it.getMask();
 
 		        // get MSO object
 		        IMsoObjectIf msoObj = (IMsoObjectIf)it.getSource();
@@ -152,7 +150,7 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 					}
 
 					// is object modified?
-					if (!it.isDeleteObjectEvent()  && (it.isModifyObjectEvent() || it.isChangeReferenceEvent())) {
+					if (!it.isDeleteObjectEvent()  && (it.isModifyObjectEvent() || it.isModifiedReferenceEvent())) {
 
 						fireDataChanged(id,mask);
 
@@ -174,6 +172,7 @@ public class MsoBinder<T extends IMsoObjectIf> extends AbstractBinder<T,T,Update
 		        else if (isCoObject(msoObj)) {
 		        	fireCoDataUnselected(msoObj, mask);
 		        }
+		        
 			}
 		}
 	}

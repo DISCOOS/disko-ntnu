@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
+import org.redcross.sar.AppProps;
 import org.redcross.sar.Application;
 import org.redcross.sar.ds.DsPool;
 import org.redcross.sar.ds.ete.RouteCostEstimator;
@@ -29,7 +30,6 @@ import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.panel.TogglePanel;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.AbstractWork;
 import org.redcross.sar.work.IWorkLoop;
@@ -329,8 +329,8 @@ public class ETEPanel extends JPanel
 			IWorkLoop loop = m_ete.getWorkLoop();
 			// update fields
 			getAvgEstTimeAttr().setValue(loop.getAverageWorkTime() + " ms");
-			getMaxEstTimeAttr().setValue(loop.getMaxWorkTime() + " ms");
-			getUtilEstTimeAttr().setValue(Math.round(loop.getUtilization()*100) + " %");
+			getMaxEstTimeAttr().setValue(loop.getMaximumWorkTime() + " ms");
+			getUtilEstTimeAttr().setValue(Math.round(loop.getAverageUtilization()*100) + " %");
 		}
 	}
 
@@ -443,13 +443,13 @@ public class ETEPanel extends JPanel
 		 */
 		Work(int task) throws Exception {
 			// forward
-			super(NORMAL_PRIORITY,true,false,ThreadType.WORK_ON_LOOP,"Vent litt",500,true,false);
+			super(NORMAL_PRIORITY,true,false,WorkerType.UNSAFE,"Vent litt",500,true,false);
 			// prepare
 			m_task = task;
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 			try {
 				// dispatch task
 				switch(m_task) {

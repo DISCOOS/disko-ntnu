@@ -1,8 +1,10 @@
-package org.redcross.sar.util;
+package org.redcross.sar;
 
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.gui.factory.BasicDiskoFactory;
+import org.redcross.sar.util.Internationalization;
 
 /**
  * <p>
@@ -55,12 +57,12 @@ public class AppProps {
 		
 	public static boolean setText(String key, String value) {
 		// only update disko properties anonymously
-		return BasicDiskoFactory.setText(key, value, false, true, m_default, PROPERTIES_FILE);
+		return BasicDiskoFactory.setText(key, value, true, true, m_default, PROPERTIES_FILE);
 	}
 	
 	public static boolean setText(String key, String value, Object resource, String filename) {
 		// forward 
-		if(!BasicDiskoFactory.setText(key, value, false, true, resource,filename)) {
+		if(!BasicDiskoFactory.setText(key, value, true, true, resource,filename)) {
 			// did not fly, try again with disko properties
 			if(!setText(key, value)) {
 				// still not success, finally try default
@@ -69,6 +71,14 @@ public class AppProps {
 		}
 		// failure!
 		return false;
+	}
+	
+	public static void save() {
+		IDiskoRole role = Application.getInstance().getCurrentRole();
+		if(role!=null) setText("STARTUP.LAST.ROLE",role.getTitle());
+		String id = Application.getInstance().getDispatcher().getActiveOperationID();
+		if(id!=null) setText("STARTUP.LAST.OPID",id);
+		Logger.getLogger(AppProps.class).info("Properties saved");
 	}
 	
 }

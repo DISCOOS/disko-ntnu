@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Vector;
 
 import org.redcross.sar.data.IData;
+import org.redcross.sar.mso.data.IMsoDataIf.MsoDataType;
 
 /**
  * Class for holding polygon information
@@ -30,7 +31,7 @@ public class Polygon extends AbstractGeodata
 	 */
 	public Polygon(String anId, String aName)
 	{
-		super(anId,aName,GeoClassCode.CLASSCODE_POLYGON);
+		super(anId,aName);
 		m_polygon = new Vector<GeoPos>();
 	}
 
@@ -43,10 +44,20 @@ public class Polygon extends AbstractGeodata
 	 */
 	public Polygon(String anId, String aName, int aSize)
 	{
-		super(anId,aName,GeoClassCode.CLASSCODE_POLYGON);
+		super(anId,aName);
 		m_polygon = new Vector<GeoPos>(aSize);
 	}
 
+    @Override
+	public MsoDataType getDataType() {
+		return MsoDataType.POLYGON;
+	}
+
+	@Override
+	public GeoClassCode getClassCode() {
+		return GeoClassCode.CLASSCODE_POLYGON;
+	}
+	
 	/**
 	 * Add a new vertex to the polygon.
 	 *

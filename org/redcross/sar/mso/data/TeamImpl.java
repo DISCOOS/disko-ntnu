@@ -32,12 +32,12 @@ public class TeamImpl extends AbstractUnit implements ITeamIf
 
     protected UnitType getTypeBySubclass()
     {
-        return IUnitIf.UnitType.TEAM;
+        return UnitType.TEAM;
     }
 
-    public Enum getSubType()
+    public UnitType getSubType()
     {
-        return IUnitIf.UnitType.TEAM; // todo expand
+        return UnitType.TEAM; // todo expand
     }
 
     public String getSubTypeName()

@@ -8,13 +8,13 @@ import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.redcross.sar.gui.model.IDiskoTableModel;
+import org.redcross.sar.gui.model.ITableModel;
 
 public class DiskoTableCellRenderer extends DefaultTableCellRenderer {
 
 	private static final long serialVersionUID = 1L;
 
-	protected IDiskoTableModel m_model;
+	protected ITableModel m_model;
 	protected int m_rowInModel;
 	protected int m_colInModel;
 
@@ -30,6 +30,7 @@ public class DiskoTableCellRenderer extends DefaultTableCellRenderer {
 	 * TableCellRenderer implementation
 	 * ================================================== */
 
+	@Override
 	public JLabel getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int col) {
 
@@ -49,7 +50,7 @@ public class DiskoTableCellRenderer extends DefaultTableCellRenderer {
 		m_rowInModel = table.convertRowIndexToModel(row);
 		m_colInModel = table.convertColumnIndexToModel(col);
 		// get supported table model
-		m_model = table.getModel() instanceof IDiskoTableModel ? (IDiskoTableModel)table.getModel() : null;
+		m_model = table.getModel() instanceof ITableModel ? (ITableModel)table.getModel() : null;
 
 	}
 

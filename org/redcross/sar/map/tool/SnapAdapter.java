@@ -17,6 +17,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.index.IndexedGeometry;
 import org.redcross.sar.map.work.IMapWork;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.carto.IIdentify;
@@ -472,6 +473,7 @@ public class SnapAdapter {
 		return false;
 	}
 
+	@SuppressWarnings("unchecked")
 	class SnapWork extends AbstractWork implements IMapWork {
 
 		Envelope extent = null;
@@ -479,7 +481,7 @@ public class SnapAdapter {
 
 		public SnapWork(Envelope extent, List<IFeatureLayer> snapTo, boolean notify) throws Exception {
 			// forward
-			super(HIGH_PRIORITY,false,true,ThreadType.WORK_ON_LOOP,
+			super(HIGH_PRIORITY,false,true,WorkerType.SAFE,
 					"Oppdaterer snapping buffer", 100,notify,false);
 			// prepare
 			this.extent = extent;
@@ -495,7 +497,7 @@ public class SnapAdapter {
 		}
 
 		@Override
-		public Void doWork() {
+		public Void doWork(IWorkLoop loop) {
 			// update indexing
 			try {
 				indexedGeometry.update(extent, snapTo);

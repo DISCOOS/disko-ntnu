@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
+
 
 /**
  *
@@ -32,7 +33,7 @@ public interface IAircraftIf extends ITransportIf
 
     public AircraftSubType getSubType();
 
-    public IMsoModelIf.ModificationState getSubTypeState();
+    public IData.DataOrigin getSubTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<AircraftSubType> getSubTypeAttribute();
 
@@ -46,7 +47,7 @@ public interface IAircraftIf extends ITransportIf
 
     public boolean hasInfrared();
 
-    public IMsoModelIf.ModificationState getInfraredState();
+    public IData.DataOrigin getInfraredState();
 
     public IMsoAttributeIf.IMsoBooleanIf getInfraredAttribute();
 
@@ -54,7 +55,7 @@ public interface IAircraftIf extends ITransportIf
 
     public boolean hasNightvision();
 
-    public IMsoModelIf.ModificationState getNightvisionState();
+    public IData.DataOrigin getNightvisionState();
 
     public IMsoAttributeIf.IMsoBooleanIf getNightvisionAttribute();
 
@@ -62,7 +63,7 @@ public interface IAircraftIf extends ITransportIf
 
     public boolean hasPhoto();
 
-    public IMsoModelIf.ModificationState getPhotoState();
+    public IData.DataOrigin getPhotoState();
 
     public IMsoAttributeIf.IMsoBooleanIf getPhotoAttribute();
 
@@ -70,7 +71,7 @@ public interface IAircraftIf extends ITransportIf
 
     public int getRange();
 
-    public IMsoModelIf.ModificationState getRangeState();
+    public IData.DataOrigin getRangeState();
 
     public IMsoAttributeIf.IMsoIntegerIf getRangeAttribute();
 
@@ -78,7 +79,7 @@ public interface IAircraftIf extends ITransportIf
 
     public int getSeats();
 
-    public IMsoModelIf.ModificationState getSeatsState();
+    public IData.DataOrigin getSeatsState();
 
     public IMsoAttributeIf.IMsoIntegerIf getSeatsAttribute();
 
@@ -86,7 +87,7 @@ public interface IAircraftIf extends ITransportIf
 
     public boolean hasVideo();
 
-    public IMsoModelIf.ModificationState getVideoState();
+    public IData.DataOrigin getVideoState();
 
     public IMsoAttributeIf.IMsoBooleanIf getVideoAttribute();
 
@@ -94,7 +95,7 @@ public interface IAircraftIf extends ITransportIf
 
     public int getVisibility();
 
-    public IMsoModelIf.ModificationState getVisibilityState();
+    public IData.DataOrigin getVisibilityState();
 
     public IMsoAttributeIf.IMsoIntegerIf getVisibilityAttribute();
 

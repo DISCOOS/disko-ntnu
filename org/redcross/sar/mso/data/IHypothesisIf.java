@@ -2,8 +2,8 @@ package org.redcross.sar.mso.data;
 
 import java.util.Comparator;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.IMsoModelIf;
 
 /**
  *
@@ -58,7 +58,7 @@ public interface IHypothesisIf extends IMsoObjectIf, ISerialNumberedIf
 
     public String getStatusText();
 
-    public IMsoModelIf.ModificationState getStatusState();
+    public IData.DataOrigin getStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<HypothesisStatus> getStatusAttribute();
 
@@ -70,7 +70,7 @@ public interface IHypothesisIf extends IMsoObjectIf, ISerialNumberedIf
 
     public String getDescription();
 
-    public IMsoModelIf.ModificationState getDescriptionState();
+    public IData.DataOrigin getDescriptionState();
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
 
@@ -78,7 +78,7 @@ public interface IHypothesisIf extends IMsoObjectIf, ISerialNumberedIf
 
     public int getPriorityIndex();
 
-    public IMsoModelIf.ModificationState getPriorityIndexState();
+    public IData.DataOrigin getPriorityIndexState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPriorityIndexAttribute();
 }

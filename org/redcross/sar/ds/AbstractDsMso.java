@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
 import org.redcross.sar.data.IDataSource;
 import org.redcross.sar.mso.IChangeRecordIf;
@@ -16,16 +17,20 @@ import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.Change;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 import org.redcross.sar.mso.work.AbstractMsoWork;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
+import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.work.IWorkLoop.LoopState;
 
 public abstract class AbstractDsMso<M extends IMsoObjectIf, T
-		extends IDsObject> extends AbstractDs<M, T, MsoEvent.Update> {
+		extends IDsObject> extends AbstractDs<M, T, MsoEvent.Change> {
 
+	protected final Logger m_logger = Logger.getLogger(AbstractDsMso.class);
+	
 	/**
 	 * Listen for Updates of assignments, routes and units
 	 */
@@ -77,7 +82,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 	/**
 	 * Commit manager
 	 */
-	protected IMsoTransactionManagerIf m_comitter;
+	protected IMsoTransactionManagerIf m_manager;
 
 	/**
 	 * List of attribute to update
@@ -94,16 +99,16 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 	 * ============================================================ */
 
 	public AbstractDsMso(Class<T> dataClass, String oprID,
-			EnumSet<MsoClassCode> interests, int dutyCycle,
-			int timeOut, Map<MsoClassCode,List<String>> attributes) throws Exception {
+			EnumSet<MsoClassCode> interests, long requestedDutyCycle,
+			double requestedUtilization, Map<MsoClassCode,List<String>> attributes) throws Exception {
 
 		// forward
-		super(dataClass, oprID, dutyCycle, timeOut);
+		super(dataClass, oprID, requestedDutyCycle, requestedUtilization);
 
 		// prepare
 		m_interests = interests;
 		m_attributes = attributes;
-		m_work = new LoopWork(timeOut);
+		m_work = new LoopWork((int)(requestedDutyCycle*requestedUtilization));
 		
 		// schedule work on loop
 		m_workLoop.schedule(m_work);
@@ -119,11 +124,11 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 
 	public abstract boolean load();
 
-	protected abstract T msoObjectCreated(IMsoObjectIf msoObj, MsoEvent.Update e);
+	protected abstract T msoObjectCreated(IMsoObjectIf msoObj, MsoEvent.Change e);
 
-	protected abstract T msoObjectChanged(IMsoObjectIf msoObj, MsoEvent.Update e);
+	protected abstract T msoObjectChanged(IMsoObjectIf msoObj, MsoEvent.Change e);
 
-	protected abstract T msoObjectDeleted(IMsoObjectIf msoObj, MsoEvent.Update e);
+	protected abstract T msoObjectDeleted(IMsoObjectIf msoObj, MsoEvent.Change e);
 
 	protected abstract void execute(List<T> changed, long tic, long timeOut);
 
@@ -141,11 +146,11 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 
 			// prepare
 			m_model = (IMsoModelIf)source;
-			m_comitter = (IMsoTransactionManagerIf)m_model;
+			m_manager = (IMsoTransactionManagerIf)m_model;
 			m_driver = m_model.getDispatcher();
 
 			// listen for changes
-			m_model.getEventManager().addClientUpdateListener(m_msoAdapter);
+			m_model.getEventManager().addLocalUpdateListener(m_msoAdapter);
 
 			// finished
 			return true;
@@ -157,10 +162,10 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 		// allowed?
 		if(m_model!=null) {
 			// remove listener
-			m_model.getEventManager().removeClientUpdateListener(m_msoAdapter);
+			m_model.getEventManager().removeLocalUpdateListener(m_msoAdapter);
 			// initialize
 			m_model = null;
-			m_comitter = null;
+			m_manager = null;
 			m_driver = null;
 			// finished
 			return true;
@@ -185,10 +190,9 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 				// create unsafe work
 				CommitWork work = new CommitWork(changes,m_attributes);
 				// schedule work
-				m_model.schedule(work);
+				WorkPool.getInstance().schedule(work);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				m_logger.error("Failed to schedule work",e);
 			}
 		}
 	}
@@ -205,7 +209,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
     	}
 
     	@Override
-    	public void handleMsoUpdateEvent(UpdateList list) {
+    	public void handleMsoChangeEvent(ChangeList list) {
 
     		// consume?
     		if(!getID().equals(m_driver.getActiveOperationID()) || m_dsObjs.isEmpty()) return;
@@ -214,7 +218,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
     		if(!list.isClearAllEvent()) {
 
     			// loop over all events
-    			for(Update e : list.getEvents(m_interests)) {
+    			for(Change e : list.getEvents(m_interests)) {
 
     				// consume?
     				if(!e.isLoopbackMode()) {
@@ -222,7 +226,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
     					// get flags
     			        boolean deletedObject  = e.isDeleteObjectEvent();
     			        boolean modifiedObject = e.isModifyObjectEvent();
-    			        boolean modifiedReference = e.isChangeReferenceEvent();
+    			        boolean modifiedReference = e.isModifiedReferenceEvent();
 
     			        // initialize dirty flag
     			        boolean isDirty = false;
@@ -230,7 +234,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
     					// is object modified?
     					if (deletedObject || modifiedObject || modifiedReference) {
     						// forward
-    						MsoEvent.Update existing = getExisting(e);
+    						MsoEvent.Change existing = getExisting(e);
     						// add to queue?
     						if(existing==null)
     							isDirty = m_queue.add(e);
@@ -258,20 +262,20 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 
     private class LoopWork extends AbstractWork {
 
-    	private int m_timeOut;
+    	private long m_requestedWorkTime;
 
-		public LoopWork(int timeOut) throws Exception {
+		public LoopWork(long requestedWorkTime) throws Exception {
 			// forward
-			super(0,true,false,ThreadType.WORK_ON_LOOP,"",0,false,false,true);
+			super(0,true,false,WorkerType.UNSAFE,"",0,false,false,true);
 			// prepare
-			m_timeOut = timeOut;
+			m_requestedWorkTime = requestedWorkTime;
 		}
 
 		/* ============================================================
 		 * IDiskoWork implementation
 		 * ============================================================ */
 
-		public Void doWork() {
+		public Void doWork(IWorkLoop loop) {
 
 			/* =============================================================
 			 * DESCRIPTION: This method is listening for updates made in
@@ -301,15 +305,18 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 			// get start tic
 			long tic = System.currentTimeMillis();
 
+			// calculate timeout
+			long workTime = Math.min(loop.getWorkTime(), m_requestedWorkTime);
+			
 			// notify changes
 			fireArchived();
 			fireAdded();
 
 			// handle updates in queue
-			List<T> changed = update(tic,m_timeOut/2);
+			List<T> changed = update(tic,workTime/2);
 
 			// forward
-			execute(changed,tic,m_timeOut/2);
+			execute(changed,tic,workTime/2);
 
 			// finished
 			return null;
@@ -320,7 +327,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 		 * Helper methods
 		 * ============================================================ */
 
-		private List<T> update(long tic, int timeOut) {
+		private List<T> update(long tic, long timeOut) {
 
 			// initialize
 			int count = 0;
@@ -334,7 +341,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 					break;
 
 				// get next update event
-				MsoEvent.Update e = m_queue.poll();
+				MsoEvent.Change e = m_queue.poll();
 
 				// increment update counter
 				count++;
@@ -343,7 +350,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 				boolean createdObject  = e.isCreateObjectEvent();
 		        boolean deletedObject  = e.isDeleteObjectEvent();
 		        boolean modifiedObject =   e.isModifyObjectEvent()
-	        							|| e.isChangeReferenceEvent();
+	        							|| e.isModifiedReferenceEvent();
 
 		        // get MSO object
 		        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
@@ -394,7 +401,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 		}
 
 		@SuppressWarnings("unchecked")
-		public Void doWork()  {
+		public Void doWork(IWorkLoop loop)  {
 
 			/* ========================================================
 			 * IMPORTANT:  An IMsoObjectIf should only be added to
@@ -422,7 +429,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 			 * ======================================================== */
 
 			// initialize local list
-			List<IChangeRecordIf> updates = new ArrayList<IChangeRecordIf>(m_changes.size());
+			List<IChangeRecordIf> changes = new ArrayList<IChangeRecordIf>(m_changes.size());
 
 			// loop over all assignments
 			for(M it : m_changes.keySet()) {
@@ -431,7 +438,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 				Object[] values = m_changes.get(it);
 
 				// get attributes
-				List<String> attributes = m_attributes.get(it.getMsoClassCode());
+				List<String> attributes = m_attributes.get(it.getClassCode());
 
 				// has attributes?
 				if(attributes!=null) {
@@ -453,15 +460,15 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 							// add to updates?
 							if(it.isCreated()) {
 								// get update holder set
-								IChangeRecordIf holder = m_comitter.getChanges(it);
+								IChangeRecordIf rs = m_manager.getChanges(it);
 								// has updates?
-								if(holder!=null) {
+								if(rs!=null) {
 									// is modified?
-									if(!holder.isCreated() && holder.isModified()) {
+									if(!rs.isObjectCreated() && rs.isObjectModified()) {
 										// set partial update
-										holder.setFilter(name);
+										rs.setFilter(name);
 										// add to updates?
-										updates.add(holder);
+										changes.add(rs);
 									}
 								}
 							}
@@ -472,12 +479,11 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 
 			try {
 				// commit changes?
-				if(updates.size()>0) {
-					m_comitter.commit(updates);
+				if(changes.size()>0) {
+					m_manager.commit(changes);
 				}
 			} catch (TransactionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				m_logger.error("Failed to commit changes",e);
 			}
 
 			// finished

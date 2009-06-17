@@ -22,7 +22,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableStringConverter;
 
 import org.redcross.sar.gui.PopupManager;
-import org.redcross.sar.gui.model.IDiskoTableModel;
+import org.redcross.sar.gui.model.ITableModel;
 
 /**
  * @author kennetgu
@@ -344,8 +344,8 @@ public abstract class AbstractTableCell implements TableCellEditor, TableCellRen
 	
 	protected int getColumnFixedWidth(JTable table, int column) {
 		// check if width is fixed?
-		if(table.getModel() instanceof IDiskoTableModel) {
-			IDiskoTableModel model = (IDiskoTableModel)table.getModel();
+		if(table.getModel() instanceof ITableModel) {
+			ITableModel model = (ITableModel)table.getModel();
 			column = table.convertColumnIndexToModel(column);
 			if(model.isColumnWidthFixed(column)) {
 				return model.getColumnFixedWidth(column);

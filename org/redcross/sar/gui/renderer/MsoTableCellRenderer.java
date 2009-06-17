@@ -6,6 +6,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
+import org.redcross.sar.mso.data.IMsoObjectIf;
+
 public class MsoTableCellRenderer extends MsoLabelRenderer implements TableCellRenderer {
 	
 	private static final long serialVersionUID = 1L;
@@ -22,15 +24,26 @@ public class MsoTableCellRenderer extends MsoLabelRenderer implements TableCellR
 	public Component getTableCellRendererComponent(JTable table,
 			Object value, boolean isSelected, boolean cellHasFocus, int row, int col) {
 		// forward
-		JLabel label = getRenderer(value);;
+		JLabel label = getRenderer(value);
 		// update selection state
-		if (isSelected){
+		if (isSelected)
+		{
 			label.setBackground(table.getSelectionBackground());
 			label.setForeground(table.getSelectionForeground());
 		} 
-		else {
-			label.setBackground(table.getBackground());
-			label.setForeground(table.getForeground());
+		else 
+		{
+			// track data state and origin?
+			if(value instanceof IMsoObjectIf) 
+			{
+				
+			}
+			else 
+			{
+				// use default background
+				label.setBackground(table.getBackground());
+				label.setForeground(table.getForeground());
+			}
 		}
 		// forward
 		return label;

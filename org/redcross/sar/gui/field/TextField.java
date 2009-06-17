@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.redcross.sar.gui.field;
 
 import java.awt.Component;

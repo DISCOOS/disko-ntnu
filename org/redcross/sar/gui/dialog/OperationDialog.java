@@ -8,6 +8,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import org.redcross.sar.AppProps;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.factory.DiskoStringFactory;
 import org.redcross.sar.gui.panel.OperationPanel;
@@ -63,7 +64,7 @@ public class OperationDialog extends DefaultDialog {
 					// initialize flag
 					boolean auth = false;
 					// get values
-					String opId = getContentPanel().getSelectedOperation();
+					String opId = getContentPanel().getSelectedOperationID();
 					// forward
 					auth = Application.getInstance().activateOperation(opId);
 					// is not authorized?
@@ -113,10 +114,19 @@ public class OperationDialog extends DefaultDialog {
 		getContentPanel().onResize();
 	}	
 	*/
-	
+
 	public void load() {
 		// forward
 		getContentPanel().update();
+		// get active operation id
+		String id = Application.getInstance().getDispatcher().getActiveOperationID();
+		// select last operation instead?
+		if(id==null)
+		{
+			id = AppProps.getText("STARTUP.LAST.OPRID");
+		}
+		// select operation
+		getContentPanel().setSelectedOperationID(id);
 	}
 	
 	public boolean selectOperation(boolean exitAppOnCancel) {

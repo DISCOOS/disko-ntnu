@@ -1,12 +1,13 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
 
 public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
 {
-    private final MsoReferenceImpl<ITaskIf> m_checkpointTask = new MsoReferenceImpl<ITaskIf>(this, "CheckpointTask", 0, true);
+    private final MsoRelationImpl<ITaskIf> m_checkpointTask = new MsoRelationImpl<ITaskIf>(this, "CheckpointTask", 0, true, null);
 
     private final AttributeImpl.MsoBoolean m_checked = new AttributeImpl.MsoBoolean(this, "Checked");
     private final AttributeImpl.MsoString m_description = new AttributeImpl.MsoString(this, "Description");
@@ -45,7 +46,7 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_CHECKPOINT;
     }
@@ -64,9 +65,9 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
         return m_checked.booleanValue();
     }
 
-    public IMsoModelIf.ModificationState getCheckedState()
+    public IData.DataOrigin getCheckedState()
     {
-        return m_checked.getState();
+        return m_checked.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoBooleanIf getCheckedAttribute()
@@ -84,9 +85,9 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
         return m_description.getString();
     }
 
-    public IMsoModelIf.ModificationState getDescriptionState()
+    public IData.DataOrigin getDescriptionState()
     {
-        return m_description.getState();
+        return m_description.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute()
@@ -104,9 +105,9 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
         return m_name.getString();
     }
 
-    public IMsoModelIf.ModificationState getNameState()
+    public IData.DataOrigin getNameState()
     {
-        return m_name.getState();
+        return m_name.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getNameAttribute()
@@ -120,20 +121,20 @@ public class CheckpointImpl extends AbstractMsoObject implements ICheckpointIf
 
     public void setCheckpointTask(ITaskIf aTask)
     {
-        m_checkpointTask.setReference(aTask);
+        m_checkpointTask.set(aTask);
     }
 
     public ITaskIf getCheckpointTask()
     {
-        return m_checkpointTask.getReference();
+        return m_checkpointTask.get();
     }
 
-    public IMsoModelIf.ModificationState getCheckpointTaskState()
+    public IData.DataOrigin getCheckpointTaskState()
     {
-        return m_checkpointTask.getState();
+        return m_checkpointTask.getOrigin();
     }
 
-    public IMsoReferenceIf<ITaskIf> getCheckpointTaskAttribute()
+    public IMsoRelationIf<ITaskIf> getCheckpointTaskAttribute()
     {
         return m_checkpointTask;
     }

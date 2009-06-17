@@ -41,6 +41,7 @@ import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 
 import com.esri.arcgis.carto.InvalidArea;
@@ -647,17 +648,17 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
 		if(featureType==FeatureType.FEATURE_POINT) {
 			// get point flag
 			boolean supportsPoint = msoObj!=null &&
-				(MsoClassCode.CLASSCODE_POI.equals(msoObj.getMsoClassCode()) ||
-				 MsoClassCode.CLASSCODE_UNIT.equals(msoObj.getMsoClassCode()));
+				(MsoClassCode.CLASSCODE_POI.equals(msoObj.getClassCode()) ||
+				 MsoClassCode.CLASSCODE_UNIT.equals(msoObj.getClassCode()));
 			// point not supported?
 			if(msoObj!=null && !supportsPoint) msoObj=null; // invalid object reference
 		}
 		else {
 			// get line support flag
 			boolean supportsLine = msoObj!=null &&
-				(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(msoObj.getMsoClassCode()) ||
-						MsoClassCode.CLASSCODE_SEARCHAREA.equals(msoObj.getMsoClassCode()) ||
-						MsoClassCode.CLASSCODE_ROUTE.equals(msoObj.getMsoClassCode()));
+				(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(msoObj.getClassCode()) ||
+						MsoClassCode.CLASSCODE_SEARCHAREA.equals(msoObj.getClassCode()) ||
+						MsoClassCode.CLASSCODE_ROUTE.equals(msoObj.getClassCode()));
 			// point not supported?
 			if(msoObj!=null && !supportsLine) msoObj=null; // invalid object reference
 		}
@@ -774,7 +775,7 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
             // mso object exist?
 			if(msoObject!=null) {
 				// parse type
-				if (MsoClassCode.CLASSCODE_ROUTE.equals(msoObject.getMsoClassCode())) {
+				if (MsoClassCode.CLASSCODE_ROUTE.equals(msoObject.getClassCode())) {
 					// get polyline
 					geoPath = MapUtil.getEsriPolyline(((IRouteIf)msoObject).getGeodata(),map.getSpatialReference());
 				}
@@ -797,19 +798,19 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
             // get polygon?
 			if(msoObject!=null) {
 				// dispatch the mso draw data
-				if (MsoClassCode.CLASSCODE_OPERATIONAREA.equals(msoObject.getMsoClassCode())) {
+				if (MsoClassCode.CLASSCODE_OPERATIONAREA.equals(msoObject.getClassCode())) {
 					// get polygon
 					Polygon polygon = MapUtil.getEsriPolygon(((IOperationAreaIf)msoObject).getGeodata(),map.getSpatialReference());
 					// get polyline
 					geoPath = MapUtil.getPolyline(polygon);
 				}
-				else if (MsoClassCode.CLASSCODE_SEARCHAREA.equals(msoObject.getMsoClassCode())) {
+				else if (MsoClassCode.CLASSCODE_SEARCHAREA.equals(msoObject.getClassCode())) {
 					// get polygon
 					Polygon polygon = MapUtil.getEsriPolygon(((ISearchAreaIf)msoObject).getGeodata(),map.getSpatialReference());
 					// get polyline
 					geoPath = MapUtil.getPolyline(polygon);
 				}
-				else if (MsoClassCode.CLASSCODE_ROUTE.equals(msoObject.getMsoClassCode())) {
+				else if (MsoClassCode.CLASSCODE_ROUTE.equals(msoObject.getClassCode())) {
 					// get polyline
 					geoPath = MapUtil.getEsriPolyline(((IRouteIf)msoObject).getGeodata(),map.getSpatialReference());
 				}
@@ -833,13 +834,13 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
             // get polygon?
 			if(msoObject!=null) {
 				// parse data
-				if (MsoClassCode.CLASSCODE_POI.equals(msoObject.getMsoClassCode())) {
+				if (MsoClassCode.CLASSCODE_POI.equals(msoObject.getClassCode())) {
 					// cast to IPOIIf
 					IPOIIf msoPoi = (IPOIIf)msoObject;
 					// get polyline
 					p = MapUtil.getEsriPoint(msoPoi.getPosition().getGeoPos(),map.getSpatialReference());
 				}
-				else if (MsoClassCode.CLASSCODE_UNIT.equals(msoObject.getMsoClassCode())) {
+				else if (MsoClassCode.CLASSCODE_UNIT.equals(msoObject.getClassCode())) {
 					// cast to unit
 					IUnitIf msoUnit = (IUnitIf)msoObject;
 					// get polyline
@@ -1695,7 +1696,7 @@ public class BaseMsoDrawTool extends BaseMsoTool implements IDrawTool {
 		 * layers
 		 */
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 
 			// does model exists?
 			if(Application.getInstance().getMsoModel().getMsoManager().operationExists()) {

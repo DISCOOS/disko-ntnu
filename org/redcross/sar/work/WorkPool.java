@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-import org.redcross.sar.work.IWork.ThreadType;
+import org.redcross.sar.work.IWork.WorkerType;
 import org.redcross.sar.work.IWork.WorkState;
 import org.redcross.sar.work.IWorkLoop.LoopState;
 import org.redcross.sar.work.event.IWorkLoopListener;
@@ -36,7 +36,7 @@ public class WorkPool {
 	private static WorkPool m_this;
 
 	private long m_safeID = 0;
-	private long m_unsafeID = 0;
+	private long[] m_unsafeIDs = new long[]{0,0,0};
 	private long m_nextID = 0;
 
 	private boolean m_isSuspended = false;
@@ -61,8 +61,10 @@ public class WorkPool {
 		m_workers = new ConcurrentHashMap<Long,Worker>();
 		m_queue = new ConcurrentLinkedQueue<IWork>();
 		// create default work loops
-		m_safeID = add(new WorkLoop(ThreadType.WORK_ON_SAFE,100,50));
-		m_unsafeID = add(new WorkLoop(ThreadType.WORK_ON_UNSAFE,100,50));
+		m_safeID = add(new WorkLoop(WorkerType.SAFE,100,0.1));          	// fast loop, 50 % requested utilization 
+		m_unsafeIDs[0] = add(new WorkLoop(WorkerType.UNSAFE,100,0.1));  	// fast loop, 50 % requested utilization
+		m_unsafeIDs[1] = add(new WorkLoop(WorkerType.UNSAFE,500,0.1)); 		// medium loop, 10 % requested utilization
+		m_unsafeIDs[2] = add(new WorkLoop(WorkerType.UNSAFE,1000,0.05)); 	// slow loop, 5 % requested utilization
 	}
 
   	/*========================================================
@@ -114,13 +116,15 @@ public class WorkPool {
   		// allocate id
   		loop.setID(id);
   		// add loop listener
-  		loop.addWorkLoopListener(m_loopListener);
+  		loop.addWorkLoopListener(m_loopListener);  		
 		// create worker
   		Worker worker = new Worker(loop);
   		// add to workers
 		m_workers.put(id,worker);
 		// start work loop
 		worker.execute();
+  		// reset estimates 
+		clearLogs();
 	  	// schedule now
   		return id;
   	}
@@ -144,6 +148,95 @@ public class WorkPool {
   	public int getLoopCount() {
   		return m_workers.size();
   	}
+  	
+  	/**
+  	 * 
+  	 * @return Returns the minimum duty cycle allowed to be set
+  	 */
+  	public long getMinimumAllowedDutyCycle()
+  	{
+  		long m = -1;
+  		synchronized(m_workers)
+  		{
+  			IWorkLoop l = null;
+  			for(Worker it : m_workers.values())
+  			{
+  				long d = it.getLoop().getDutyCycle();
+  				if(l == null || m>d) 
+  				{
+  					m = d;
+  					l = it.getLoop();
+  				}
+  			}
+  			if(l!=null)
+  			{
+  				// calculate minimum allowed work cycle 
+  				m = m - l.getWorkTime();
+  			}
+  		}
+  		return m;
+  	}
+
+  	/**
+  	 * Get maximum allowed utilization. </p>
+  	 * 
+  	 * The work pool uses the heuristic {@code 1/LoopCount}.
+  	 * 
+  	 * @return Return maximum allowed utilization.
+  	 */
+  	
+  	public double getMaximumAllowedUtilization() {
+  		double count = getLoopCount();
+  		return count>0?1.0/count:2;
+  	}
+  	
+  	/**
+  	 * Get work pool utilization. 
+  	 * @return Returns average work pool utilization.
+  	 */
+  	public double getUtilization() 
+  	{
+  		double s = 0;
+  		double u = 0;
+  		for(Worker it : m_workers.values())
+  		{
+  			u = it.getLoop().getUtilization();
+  			s += u>0?u:0;
+  		}
+  		return s/getLoopCount(); 
+  	}
+  	
+  	/**
+  	 * Get average work pool utilization. 
+  	 * @return Returns average work pool utilization.
+  	 */
+  	public double getAverageUtilization() 
+  	{
+  		double s = 0;
+  		double u = 0;
+  		for(Worker it : m_workers.values())
+  		{
+  			u = it.getLoop().getAverageUtilization();
+  			s += u>0?u:0;
+  		}
+  		return s/getLoopCount(); 
+  	}
+  	
+  	/**
+  	 * Get maximum work pool utilization.
+  	 * @return Returns maximum work pool utilization.
+  	 */
+  	public double getMaximumUtilization()
+  	{
+  		double m = 0;
+  		double u = 0;
+  		for(Worker it : m_workers.values())
+  		{
+  			u = it.getLoop().getMaximumUtilization();
+  			m = Math.max(u, m);
+  		}
+  		return m; 
+  	}
 
   	/**
   	 * Schedule work on work pool. The work pool will schedule the work
@@ -161,8 +254,7 @@ public class WorkPool {
   		// allocate id
   		work.setID(id);
   		// execute on unsafe loop?
-  		if(work.isSafe() &&
-  				ThreadType.WORK_ON_UNSAFE.equals(work.getThreadType())) {
+  		if(work.isSafe() && WorkerType.UNSAFE.equals(work.getWorkOnType())) {
   	  		// put on work pool?
   	  		if(isSuspended()) {
   	  			// add to list
@@ -213,23 +305,13 @@ public class WorkPool {
 	public int getWorkCount() {
   		return m_queue.size();
   	}
-
+	
 	public IWork findWork(long id) {
 		synchronized(m_workers) {
 			for(Worker it : m_workers.values()) {
 				IWorkLoop loop = it.getLoop();
 				IWork work = loop.findWork(id);
 				if(work!=null) return work;
-			}
-		}
-		return null;
-	}
-
-	public IWorkLoop findLoop(long id) {
-		synchronized(m_workers) {
-			for(Worker it : m_workers.values()) {
-				IWorkLoop loop = it.getLoop();
-				if(loop.getID()==id) return loop;
 			}
 		}
 		return null;
@@ -245,7 +327,26 @@ public class WorkPool {
 		return null;
 	}
 
-  	/*========================================================
+	public IWorkLoop findLoop(long id) {
+		IWorkLoop l = null;
+		synchronized(m_workers) {
+			Worker w = m_workers.get(id);
+			l = w!=null?w.m_loop : null;
+		}
+		return l;
+	}
+	
+	public long getDutyCycle(long id)
+	{
+		long d = -1;
+		synchronized(m_workers) {
+			Worker w = m_workers.get(id);
+			d = w!=null?w.m_dutyCycle : d;
+		}
+		return d;
+	}
+
+	/*========================================================
   	 * protected pool methods (thread safe)
   	 *======================================================== */
 
@@ -260,6 +361,17 @@ public class WorkPool {
   	 * private pool methods (thread safe)
   	 *======================================================== */
 
+	private void clearLogs() 
+	{
+		synchronized (m_workers) 
+		{
+			for(Worker it : m_workers.values())
+			{
+				it.getLoop().clearLogs();
+			}
+		}
+	}
+	
 	private void validate(IWorkLoop loop, boolean any) {
   		// is null?
   		if(loop==null)
@@ -277,7 +389,7 @@ public class WorkPool {
 	  		}
 		}
   		// check valid thread type?
-  		if(!any && ThreadType.WORK_ON_SAFE.equals(loop.getThreadType())) {
+  		if(!any && WorkerType.SAFE.equals(loop.getWorkOnType())) {
   			throw new IllegalArgumentException("Only work loops on unsafe threads are allowed");
   		}
 	}
@@ -288,12 +400,12 @@ public class WorkPool {
   			throw new NullPointerException("Work can not be null");
   		/*
   		// is legal thread type?
-  		if(ThreadType.WORK_ON_LOOP.equals(work.getThreadType())) {
+  		if(ThreadType.UNSAFE.equals(work.getThreadType())) {
   			throw new IllegalArgumentException("Work not supported by WorkPool. Work should be executed on a (deamon) work loop");
   		}
   		*/
   		// execute on new thread?
-  		if(!work.isSafe() && ThreadType.WORK_ON_UNSAFE.equals(work.getThreadType())) {
+  		if(!work.isSafe() && WorkerType.UNSAFE.equals(work.getWorkOnType())) {
   			// run work on a new swing worker new thread that is not
   			// concurrent. Thus, should not contain unsafe work.
   	  		throw new IllegalArgumentException("Work on new thread must be thread safe");
@@ -326,8 +438,8 @@ public class WorkPool {
 	  		IWork work = getWork();
 	  		// execute consecutive EDT work on stack
 	  		while(work!=null &&
-	  				work.getThreadType()==
-	  				ThreadType.WORK_ON_EDT) {
+	  				work.getWorkOnType()==
+	  				WorkerType.EDT) {
 	  	  		// execute work on EDT
 	            execute(work,true);
 	  	  		// get next work in queue
@@ -335,7 +447,7 @@ public class WorkPool {
 	  		}
 	  		// execute on other thread then EDT?
 	  		if(work!=null) {
-	  			// forward on safe thread
+	  			// forward to workers
 	  			execute(work,false);
 			}
   		}
@@ -398,7 +510,7 @@ public class WorkPool {
 					if(loop.isState(LoopState.IDLE)) {
 						return loop;
 					}
-					loops.add(new Object[]{loop.getUtilization(),loop});
+					loops.add(new Object[]{loop.getAverageUtilization(),loop});
 				}
 			}
 		}
@@ -419,7 +531,7 @@ public class WorkPool {
   		// initialize
   		boolean bFlag = false;
 		// allowed?
-		if(force || id>m_unsafeID) {
+		if(force || id>m_unsafeIDs[m_unsafeIDs.length-1]) {
 			// get worker
 			Worker w = m_workers.get(id);
 			// found worker?
@@ -484,6 +596,8 @@ public class WorkPool {
 		private final static long RESUME_DELAY = 1000;		// check if resume should occur every second
 		private final static long MINIMUM_DUTY_CYCLE = 10;	// duty cycle can not be less then 10 milliseconds.
 
+		private long m_dutyCycle = MINIMUM_DUTY_CYCLE;
+		
 		private IWorkLoop m_loop;
 
 		private boolean m_isExecuting = false;
@@ -500,6 +614,11 @@ public class WorkPool {
 		public Worker(IWorkLoop loop) {
 			m_loop = loop;
 			m_loop.addWorkLoopListener(this);
+			long min = getMinimumAllowedDutyCycle();
+			// calculate duty cycle
+			m_dutyCycle = 
+				(min!=-1 ? Math.min(loop.getRequestedDutyCycle(),min) 
+						 : loop.getRequestedDutyCycle());
 		}
 
 		/* =========================================
@@ -555,7 +674,7 @@ public class WorkPool {
 				m_isExecuting = true;
 
             	// get duty cycle
-            	long duty = m_loop.getDutyCycle();
+            	long duty = m_dutyCycle;
 
             	// loop until canceled
                 while (!isCancelled()) {
@@ -581,7 +700,7 @@ public class WorkPool {
 	    					// log work time
 	    					m_loop.logWorkTime(worked);
 	    					// calculate time left before new work cycle starts, limit to minimum duty cycle.
-	    					long remainder = Math.max(MINIMUM_DUTY_CYCLE,duty - worked);
+	    					long remainder = Math.max(MINIMUM_DUTY_CYCLE,duty - worked - 100);
 	    					// sleep for reminder of time
 	    					Thread.sleep(remainder);
                     	}
@@ -592,7 +711,7 @@ public class WorkPool {
 				m_isExecuting = false;
 
 	            // return result
-	            return m_loop.getUtilization();
+	            return m_loop.getAverageUtilization();
 
             }
 			catch(Exception e) {

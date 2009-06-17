@@ -47,7 +47,7 @@ public abstract class AbstractWork implements IWork {
 
     protected boolean m_isWorkingOnEdt;
 
-    protected ThreadType m_thread;
+    protected WorkerType m_workOn;
 
     protected final EventListenerList m_listeners = new EventListenerList();
     protected final ProgressMonitor m_monitor = ProgressMonitor.getInstance();
@@ -57,39 +57,38 @@ public abstract class AbstractWork implements IWork {
      * ================================================== */
 
     public AbstractWork(int priority, boolean isSafe,
-            boolean isModal, ThreadType thread,
+            boolean isModal, WorkerType workOn,
             String message, long millisToPopup,
             boolean isProgressShown, boolean suspend) throws Exception {
 
     	// forward
-    	this(priority, isSafe, isModal, thread, message, millisToPopup, isProgressShown, suspend, false);
+    	this(priority, isSafe, isModal, workOn, message, millisToPopup, isProgressShown, suspend, false);
 
     }
 
     public AbstractWork(int priority, boolean isSafe,
-            boolean isModal, ThreadType thread,
+            boolean isModal, WorkerType workOn,
             String message, long millisToPopup,
             boolean isProgressShown, boolean suspend, boolean isLoop) throws Exception {
 
         // validate parameters
-        if(!isSafe && m_thread ==
-            ThreadType.WORK_ON_UNSAFE) {
+        if(!isSafe && m_workOn ==
+            WorkerType.UNSAFE) {
             // Only work that do not invoke Swing or MSO model methods
-            // is safe to invoke on a new thread
-            throw new IllegalArgumentException("Only thread safe work " +
-                    "can be executed on a unsafe thread");
+            // is safe to invoke on a new worker
+            throw new IllegalArgumentException("Only safe work can be executed on a unsafe worker");
         }
         // save priority
         m_priority = priority;
         // progress dialog message
         m_message = message;
         // instructs the work pool to schedule
-        // on specified thread type
-        m_thread = thread;
+        // on specified worker type
+        m_workOn = workOn;
         // instructs the work pool to do the work
         // application modal := no user input is accepted
         m_isModal = isModal || isLockRequired();
-        // set thread safe flag
+        // set worker safe flag
         m_isSafe = isSafe;
         // number of milliseconds before
         // the progress dialog is shown
@@ -165,17 +164,17 @@ public abstract class AbstractWork implements IWork {
 
     /**
      * Message to show in progress dialog. Progress dialog
-     * is only shown if work is done on the worker thread.
+     * is only shown if work is done on a worker (IWorkLoop).
      */
     public String getMessage() {
         return m_message;
     }
 
     /**
-     * The thread type to execute work on
+     * The worker type to execute work on
      */
-    public final ThreadType getThreadType() {
-        return m_thread;
+    public final WorkerType getWorkOnType() {
+        return m_workOn;
     }
 
     /**
@@ -210,7 +209,7 @@ public abstract class AbstractWork implements IWork {
 
     /**
      * Can only show progress if work is executed on
-     * another thread then the event dispatch thread (EDT)
+     * another worker then the event dispatch thread (EDT)
      */
     public final boolean canShowProgess() {
         return !(isState(WorkState.FINISHED) || isState(WorkState.CANCELED)) && !m_isWorkingOnEdt;
@@ -221,13 +220,13 @@ public abstract class AbstractWork implements IWork {
      * from <code>run()</code> just before <code>doWork()</code>.</p>
      *
      * <code>prepare()</code> is always executed on the Event Dispatch Thread (EDT).
-     * If <code>prepare()</code> is invoked on a thread other then EDT, this method will
+     * If <code>prepare()</code> is invoked on a worker other then EDT, this method will
      * block until EDT has executed the method. See
      * <code>SwingUtilities.invokeAndWait()</code> for more information about this.</p>
      *
      * <b>IMPORTANT</b>: A progress dialog will only be shown (see constructor
      * <code>AbstractWork()</code> if <code>prepare()</code> is called
-     * from a thread other then the EDT.</p>
+     * from a worker other then the EDT.</p>
      *
      * If you schedule the work on the WorkPool, WorkPool will do all for you.
      */
@@ -243,7 +242,7 @@ public abstract class AbstractWork implements IWork {
             // is user input prevention required? (keeps work pool concurrent)
             if (m_isModal) Application.getInstance().setLocked(true);
             // increment suspend counter?
-            if (m_suspend) Application.getInstance().getMsoModel().suspendClientUpdate();
+            if (m_suspend) Application.getInstance().getMsoModel().suspendUpdate();
             // forward
             afterPrepare();
         } else {
@@ -269,22 +268,11 @@ public abstract class AbstractWork implements IWork {
         }
     }
 
-    /**
-     * This method executes work safely by ensuring that
-     * unsafe work (Swing and MSO model) is executed concurrently within
-     * the Swing and MSO Model limitations.</p>
-     *
-     * This method calls the following methods: <code>prepare()</code>,
-     * <code>doWork()</code>, and <code>done()</code>.</p>
-     *
-     * <b>IMPORTANT</b>: If not invoked from the Event Dispatch Thread,
-     * <code>prepare()</code> will block until it is executed
-     * successfully. This ensures that synchronization between the safe
-     * thread and EDT is valid.</p>
-     *
-     * If you schedule the work on the WorkPool, WorkPool will do all for you.
-     */
     public final void run() {
+    	run(null);
+    }
+    
+    public final void run(IWorkLoop loop) {
 
     	// set flag
     	m_isWorkingOnEdt = SwingUtilities.isEventDispatchThread();
@@ -295,7 +283,7 @@ public abstract class AbstractWork implements IWork {
         // catch any errors
         try {
             // forward
-            set(doWork());
+            set(doWork(loop));
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -309,12 +297,12 @@ public abstract class AbstractWork implements IWork {
     /**
      * Override and implement the work in this method.
      */
-    public abstract Object doWork();
+    public abstract Object doWork(IWorkLoop loop);
 
     /**
      * This method should be called after <code>doWork()</code> is finished.
      * <code>done()</code> is always executed on the Event Dispatch Thread (EDT).
-     * If <code>done()</code> is invoked on a thread other then EDT, it will
+     * If <code>done()</code> is invoked on a worker other then EDT, it will
      * be scheduled to run on EDT and return without blocking.<p>
      * <code>doWork()</code> is called automatically by <code>run()</code>.</p>
      *
@@ -327,7 +315,7 @@ public abstract class AbstractWork implements IWork {
             beforeDone();
             // decrement resume suspend counter?
             if (m_suspend)
-                Application.getInstance().getMsoModel().resumeClientUpdate(true);
+                Application.getInstance().getMsoModel().resumeUpdate();
             // resume previous state?
             if (m_isModal) Application.getInstance().setLocked(false);
             // forward
@@ -464,8 +452,8 @@ public abstract class AbstractWork implements IWork {
      * ==================================================== */
 
     private boolean isLockRequired() {
-        return 	ThreadType.WORK_ON_SAFE.equals(m_thread) ||
-                ThreadType.WORK_ON_EDT.equals(m_thread);
+        return 	WorkerType.SAFE.equals(m_workOn) ||
+                WorkerType.EDT.equals(m_workOn);
     }
 
 

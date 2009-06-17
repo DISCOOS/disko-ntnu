@@ -44,7 +44,6 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
-import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
 import org.redcross.sar.util.mso.Polygon;
@@ -286,7 +285,7 @@ public class MsoUtils {
 			e =((IPOIIf)msoObj).getType();
 		}
 		else {
-			e = msoObj.getMsoClassCode();			
+			e = msoObj.getClassCode();			
 		}
 		
     	// finished
@@ -595,7 +594,7 @@ public class MsoUtils {
 			name = getUnitName((IUnitIf)c, false);
 		}
 		else if(c instanceof ICmdPostIf) {
-			name = DiskoEnumFactory.getText(c.getMsoClassCode());
+			name = DiskoEnumFactory.getText(c.getClassCode());
 		}
 		else {
 			name = c.getCommunicatorShortName();
@@ -704,7 +703,7 @@ public class MsoUtils {
 	public static String getRouteName(IRouteIf route, boolean include) {
 		String name = "<Unknown>";
 		if(route!=null) {
-			name = DiskoEnumFactory.getText(route.getMsoClassCode());
+			name = DiskoEnumFactory.getText(route.getClassCode());
 			// include status text?
 			if(include)
 				name += " " + (route.getAreaSequenceNumber()+1);
@@ -715,7 +714,7 @@ public class MsoUtils {
 	public static String getTrackName(ITrackIf track, boolean include) {
 		String name = "<Unknown>";
 		if(track!=null) {
-			name = DiskoEnumFactory.getText(track.getMsoClassCode());
+			name = DiskoEnumFactory.getText(track.getClassCode());
 			// include status text?
 			if(include)
 				name += " " + (track.getAreaSequenceNumber()+1);
@@ -820,7 +819,7 @@ public class MsoUtils {
 				return getPersonnelName((IPersonnelIf)msoObj, true);			
 		}
 		else if(msoObj!=null)
-			return DiskoEnumFactory.getText(msoObj.getMsoClassCode());
+			return DiskoEnumFactory.getText(msoObj.getClassCode());
 		else
 			return "<null>";
 		
@@ -889,12 +888,12 @@ public class MsoUtils {
 		// initialize
 		String s1 = null;
 		String s2 = null;
-		MsoClassCode code = m1.getMsoClassCode();
+		MsoClassCode code = m1.getClassCode();
 		// is of not of same class?
-		if(!m2.getMsoClassCode().equals(code)) {
+		if(!m2.getClassCode().equals(code)) {
 			// get names with no additional information
-			s1 = DiskoEnumFactory.getText(m1.getMsoClassCode());
-			s2 = DiskoEnumFactory.getText(m2.getMsoClassCode());
+			s1 = DiskoEnumFactory.getText(m1.getClassCode());
+			s2 = DiskoEnumFactory.getText(m2.getClassCode());
 			s1 = (s1==null) ? "" : s1;
 			s2 = (s2==null) ? "" : s2;
 			// compare mso class names
@@ -1057,6 +1056,8 @@ public class MsoUtils {
 		}
 		return p;
 	}	
+	
+	/*
 	public static Object getAttribValue(IMsoAttributeIf<?> attribute) {
 		// dispatch attribute type
 		if (attribute instanceof AttributeImpl.MsoBoolean) {
@@ -1106,6 +1107,7 @@ public class MsoUtils {
 		// failed
 		return null;
 	}
+	*/
 	
 	@SuppressWarnings("unchecked")
 	public static boolean setAttribValue(IMsoAttributeIf<?> attribute, Object value) {

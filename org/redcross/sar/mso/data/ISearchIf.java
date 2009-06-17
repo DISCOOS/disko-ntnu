@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.except.IllegalOperationException;
 
 import java.util.Calendar;
@@ -35,7 +35,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public String getInternationalSubTypeName();
 
-    public IMsoModelIf.ModificationState getSubTypeState();
+    public IData.DataOrigin getSubTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<SearchSubType> getSubTypeAttribute();
 
@@ -47,7 +47,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getPlannedAccuracy();
 
-    public IMsoModelIf.ModificationState getPlannedAccuracyState();
+    public IData.DataOrigin getPlannedAccuracyState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPlannedAccuracyAttribute();
 
@@ -55,7 +55,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getPlannedCoverage();
 
-    public IMsoModelIf.ModificationState getPlannedCoverageState();
+    public IData.DataOrigin getPlannedCoverageState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPlannedCoverageAttribute();
 
@@ -63,7 +63,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getPlannedPersonnel();
 
-    public IMsoModelIf.ModificationState getPlannedPersonnelState();
+    public IData.DataOrigin getPlannedPersonnelState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPlannedPersonnelAttribute();
 
@@ -71,7 +71,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getPlannedProgress();
 
-    public IMsoModelIf.ModificationState getPlannedProgressState();
+    public IData.DataOrigin getPlannedProgressState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPlannedProgressAttribute();
 
@@ -79,7 +79,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public String getPlannedSearchMethod();
 
-    public IMsoModelIf.ModificationState getPlannedSearchMethodState();
+    public IData.DataOrigin getPlannedSearchMethodState();
 
     public IMsoAttributeIf.IMsoStringIf getPlannedSearchMethodAttribute();
 
@@ -87,7 +87,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getReportedAccuracy();
 
-    public IMsoModelIf.ModificationState getReportedAccuracyState();
+    public IData.DataOrigin getReportedAccuracyState();
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedAccuracyAttribute();
 
@@ -95,7 +95,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getReportedCoverage();
 
-    public IMsoModelIf.ModificationState getReportedCoverageState();
+    public IData.DataOrigin getReportedCoverageState();
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedCoverageAttribute();
 
@@ -103,7 +103,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getReportedPersonnel();
 
-    public IMsoModelIf.ModificationState getReportedPersonnelState();
+    public IData.DataOrigin getReportedPersonnelState();
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedPersonnelAttribute();
 
@@ -111,7 +111,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getReportedProgress();
 
-    public IMsoModelIf.ModificationState getReportedProgressState();
+    public IData.DataOrigin getReportedProgressState();
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedProgressAttribute();
 
@@ -119,7 +119,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public int getReportedSearchMethod();
 
-    public IMsoModelIf.ModificationState getReportedSearchMethodState();
+    public IData.DataOrigin getReportedSearchMethodState();
 
     public IMsoAttributeIf.IMsoIntegerIf getReportedSearchMethodAttribute();
 
@@ -127,7 +127,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public Calendar getStart();
 
-    public IMsoModelIf.ModificationState getStartState();
+    public IData.DataOrigin getStartState();
 
     public IMsoAttributeIf.IMsoCalendarIf getStartAttribute();
 
@@ -135,7 +135,7 @@ public interface ISearchIf extends IAssignmentIf
 
     public Calendar getStop();
 
-    public IMsoModelIf.ModificationState getStopState();
+    public IData.DataOrigin getStopState();
 
     public IMsoAttributeIf.IMsoCalendarIf getStopAttribute();
 

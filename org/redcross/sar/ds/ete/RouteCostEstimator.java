@@ -17,7 +17,7 @@ import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.event.MsoEvent.Change;
 import org.redcross.sar.mso.util.MsoCompareRoute;
 import org.redcross.sar.util.mso.Route;
 import org.redcross.sar.util.mso.TimePos;
@@ -56,7 +56,7 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 		// forward
 		super(RouteCost.class, oprID, EnumSet.of(MsoClassCode.CLASSCODE_ASSIGNMENT,
 				 MsoClassCode.CLASSCODE_ROUTE, MsoClassCode.CLASSCODE_UNIT),
-				 1000,500,getAttributes());
+				 1000,0.1,getAttributes());
 
 	}
 
@@ -118,9 +118,9 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 	 * Required methods
 	 * =========================================== */
 
-	protected RouteCost msoObjectCreated(IMsoObjectIf msoObj, Update e) { return null; }
+	protected RouteCost msoObjectCreated(IMsoObjectIf msoObj, Change e) { return null; }
 
-	protected RouteCost msoObjectChanged(IMsoObjectIf msoObj, Update e) {
+	protected RouteCost msoObjectChanged(IMsoObjectIf msoObj, Change e) {
 
 		// initialize
 		RouteCost cost = null;
@@ -130,7 +130,7 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 			// cast to IAssignmentIf
 			IAssignmentIf assignment = (IAssignmentIf)msoObj;
 			// get routes?
-			if(e.isChangeReferenceEvent()) {
+			if(e.isModifiedReferenceEvent()) {
 				// forward
 				if(setEstimate(assignment)) {
 					cost = getCost(assignment);
@@ -170,7 +170,7 @@ public class RouteCostEstimator extends AbstractDsMso<IAssignmentIf,RouteCost> {
 		return cost;
 	}
 
-	protected RouteCost msoObjectDeleted(IMsoObjectIf msoObj, Update e) {
+	protected RouteCost msoObjectDeleted(IMsoObjectIf msoObj, Change e) {
 
 		// initialize
 		RouteCost cost = null;

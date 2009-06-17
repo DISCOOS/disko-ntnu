@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.IDiskoMapManager;
@@ -22,7 +23,7 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 
 import com.esri.arcgis.carto.ILayerGeneralProperties;
 import com.esri.arcgis.carto.esriViewDrawPhase;
@@ -71,7 +72,7 @@ public abstract class AbstractMsoFeatureLayer
 
 	protected final Map<Integer,Selector<IMsoObjectIf>> selectors = new HashMap<Integer,Selector<IMsoObjectIf>>();
 	
-	//private static final Logger logger = Logger.getLogger(AbstractMsoFeatureLayer.class);
+	private static Logger logger;
 
 	/* ===============================================================
 	 * Constructors
@@ -96,6 +97,9 @@ public abstract class AbstractMsoFeatureLayer
 		// event handling
 		interests = EnumSet.of(classCode);
 		interests.addAll(coClasses);
+		
+		// initialize logger?
+		if(logger==null) logger = Logger.getLogger(getClass());
 
 	}
 
@@ -112,7 +116,7 @@ public abstract class AbstractMsoFeatureLayer
 	@SuppressWarnings("unchecked")
 	public List<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject) {
 		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);
-		if(msoObject!=null && msoObject.getMsoClassCode().equals(classCode)) {
+		if(msoObject!=null && msoObject.getClassCode().equals(classCode)) {
 			objects.add((IMsoObjectIf)msoObject);
 		}
 		return objects;
@@ -140,12 +144,8 @@ public abstract class AbstractMsoFeatureLayer
 			}
 			setDirty(true);
 
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			 logger.error("Failed to load objects",e);
 		}
 
 		// finished
@@ -280,12 +280,8 @@ public abstract class AbstractMsoFeatureLayer
 					}
 				}
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to calculate dirty flag",e);
 		}
 		// is not dirty
 		return false;
@@ -510,8 +506,7 @@ public abstract class AbstractMsoFeatureLayer
 					eventStack.fire(this);
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Failed to resume notifications",e);
 			}
 		}
 	}
@@ -546,12 +541,8 @@ public abstract class AbstractMsoFeatureLayer
 			}
 			// finished!
 			return extent;
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to get extent of visible feature",e);
 		}
 		return null;
 	}
@@ -577,12 +568,8 @@ public abstract class AbstractMsoFeatureLayer
 				}
 				setDirty(isDirty || isFeatureDirty(msoFeature));
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to get visible features",e);
 		}
 	}
 
@@ -623,12 +610,8 @@ public abstract class AbstractMsoFeatureLayer
 				}
 				setDirty(isDirty || isFeatureDirty(msoFeature));
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to set visible features",e);
 		}
 	}
 
@@ -666,12 +649,8 @@ public abstract class AbstractMsoFeatureLayer
 				}
 				setDirty(isDirty || isFeatureDirty(msoFeature));
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to set visible features",e);
 		}
 	}
 
@@ -708,12 +687,8 @@ public abstract class AbstractMsoFeatureLayer
 	public IMsoFeature getFeature(int index) {
 		try {
 			return (IMsoFeature)featureClass.getFeature(index);
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to set feature",e);
 		}
 		return null;
 	}
@@ -721,12 +696,8 @@ public abstract class AbstractMsoFeatureLayer
 	public int getFeatureCount() {
 		try {
 			return featureClass.featureCount(null);
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to set feature count",e);
 		}
 		return -1;
 	}
@@ -794,7 +765,7 @@ public abstract class AbstractMsoFeatureLayer
 		return interests;
 	}
 
-	public void handleMsoUpdateEvent(UpdateList events) {
+	public void handleMsoChangeEvent(ChangeList events) {
 		processMsoUpdateEvent(events);
 	}
 
@@ -808,7 +779,7 @@ public abstract class AbstractMsoFeatureLayer
 	 * If any remove operations are executed directly, the isDirty bit is set to true.
 	 */
 	@SuppressWarnings("unchecked")
-	public Collection<IMsoFeature> processMsoUpdateEvent(UpdateList events) {
+	public Collection<IMsoFeature> processMsoUpdateEvent(ChangeList events) {
 
 		// initialize work list
 		Collection<IMsoFeature> workList = new ArrayList<IMsoFeature>();
@@ -828,13 +799,13 @@ public abstract class AbstractMsoFeatureLayer
 	        else {
 
 				// loop over all events
-				for(MsoEvent.Update e : events.getEvents(interests)) {
+				for(MsoEvent.Change e : events.getEvents(interests)) {
 
 					// consume loopback updates
 					if(!e.isLoopbackMode()) {
 
 						// get event flags
-						int mask = e.getEventTypeMask();
+						int mask = e.getMask();
 
 				        // get mso object and feature class
 				        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
@@ -843,8 +814,8 @@ public abstract class AbstractMsoFeatureLayer
 						boolean createdObject  = (mask & MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
 						boolean deletedObject  = (mask & MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
 						boolean modifiedObject = (mask & MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-						boolean addedReference = (mask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-						boolean removedReference = (mask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+						boolean addedReference = (mask & MsoEventType.ADDED_RELATION_EVENT.maskValue()) != 0;
+						boolean removedReference = (mask & MsoEventType.REMOVED_RELATION_EVENT.maskValue()) != 0;
 
 						// get list of
 						List<IMsoObjectIf> msoObjs = getGeodataMsoObjects(msoObj);
@@ -856,7 +827,7 @@ public abstract class AbstractMsoFeatureLayer
 							IMsoFeature msoFeature = getFeature(it);
 
 							// get other flags
-							boolean isFeature = it.getMsoClassCode().equals(classCode);
+							boolean isFeature = it.getClassCode().equals(classCode);
 
 							// add object?
 							if (createdObject && msoFeature == null && isFeature) {
@@ -888,12 +859,8 @@ public abstract class AbstractMsoFeatureLayer
 				}
 			}
 
-		} catch (AutomationException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to process MSO update event",e);
 		}
 		// finished
 		return workList;
@@ -936,12 +903,8 @@ public abstract class AbstractMsoFeatureLayer
 				// select feature
 				return doSelect;
 			}
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Failed to select MSO feature",e);
 		}
 		return false;
 	}

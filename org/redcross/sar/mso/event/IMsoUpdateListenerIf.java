@@ -16,9 +16,9 @@ public interface IMsoUpdateListenerIf extends java.util.EventListener
      * <p/>
      * Listener method(s) that handle MSO events.
      *
-     * @param e The {@link UpdateList events} that shall be handled.
+     * @param e The {@link ChangeList events} that shall be handled.
      */
-    public void handleMsoUpdateEvent(MsoEvent.UpdateList e);
+    public void handleMsoChangeEvent(MsoEvent.ChangeList e);
 
     /**
      * This method indicates which MSO classes that the listener are interested in. Only

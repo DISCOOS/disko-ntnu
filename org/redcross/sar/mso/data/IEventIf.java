@@ -1,9 +1,10 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Collection;
 import java.util.Comparator;
+
+import org.redcross.sar.data.IData;
 
 public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 {
@@ -64,7 +65,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public EventStatus getStatus();
 
-    public IMsoModelIf.ModificationState getStatusState();
+    public IData.DataOrigin getStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<EventStatus> getStatusAttribute();
     
@@ -76,7 +77,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public int getPriority();
 
-    public IMsoModelIf.ModificationState getPriorityState();
+    public IData.DataOrigin getPriorityState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute();
 
@@ -84,7 +85,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public int getLevel();
 
-    public IMsoModelIf.ModificationState getLevelState();
+    public IData.DataOrigin getLevelState();
 
     public IMsoAttributeIf.IMsoIntegerIf getLevelAttribute();
     
@@ -92,7 +93,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public String getName();
 
-    public IMsoModelIf.ModificationState getNameState();
+    public IData.DataOrigin getNameState();
 
     public IMsoAttributeIf.IMsoStringIf getNameAttribute();
     
@@ -100,7 +101,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public String getDescription();
 
-    public IMsoModelIf.ModificationState getDescriptionState();
+    public IData.DataOrigin getDescriptionState();
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
     
@@ -112,7 +113,7 @@ public interface IEventIf extends ITimeItemIf, ISerialNumberedIf
 
     public ITaskListIf getEventTasks();
 
-    public IMsoModelIf.ModificationState getEventTasksState(ITaskIf anITaskIf);
+    public IData.DataOrigin getEventTasksState(ITaskIf anITaskIf);
 
     public Collection<ITaskIf> getEventTasksItems();
     

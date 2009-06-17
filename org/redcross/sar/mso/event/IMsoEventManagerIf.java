@@ -1,8 +1,8 @@
 package org.redcross.sar.mso.event;
 
+import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.ITransactionIf;
 import org.redcross.sar.mso.TransactionImpl;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.except.TransactionException;
 
@@ -14,27 +14,25 @@ import org.redcross.sar.util.except.TransactionException;
 public interface IMsoEventManagerIf
 {
     /**
-     * Add a listener in the Client Update Listeners queue.
+     * Add a listener in the local update listeners queue.
      *
      * @param aListener The listener
      */
-    public void addClientUpdateListener(IMsoUpdateListenerIf aListener);
+    public void addLocalUpdateListener(IMsoUpdateListenerIf aListener);
 
     /**
-     * Remove a listener in the Client Update Listeners queue.
+     * Remove a listener in the local update listeners queue.
      *
      * @param aListener The listener
      */
-    public void removeClientUpdateListener(IMsoUpdateListenerIf aListener);
+    public void removeLocalUpdateListener(IMsoUpdateListenerIf aListener);
 
     /**
-     * Notify a client update.
+     * Notify a local update.
      *
-     * @param aSource         The source object
-     * @param anEventTypeMask Type of event (see {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType})
-     * @param isRollback 
+     * @param aChange - the change record
      */
-    public void notifyClientUpdate(IMsoObjectIf aSource, UpdateMode mode, int anEventTypeMask, boolean isLoopback, boolean isRollback);
+    public void notifyLocalUpdate(IChangeRecordIf aChange);
 
     /**
      * Notify a client clear all update.
@@ -43,26 +41,25 @@ public interface IMsoEventManagerIf
     public void notifyClearAll(IMsoObjectIf root);
 
     /**
-     * Add a listener in the Server Update Listeners} queue.
+     * Add a listener in the remote update listeners queue.
      *
      * @param aListener The listener
      */
-    public void addServerUpdateListener(IMsoUpdateListenerIf aListener);
+    public void addRemoteUpdateListener(IMsoUpdateListenerIf aListener);
 
     /**
-     * Remove a listener in the Server Update Listeners queue.
+     * Remove a listener in the remote update listeners queue.
      *
      * @param aListener The listener
      */
-    public void removeServerUpdateListener(IMsoUpdateListenerIf aListener);
+    public void removeRemoteUpdateListener(IMsoUpdateListenerIf aListener);
 
     /**
      * Notify a server update.
      *
-     * @param aSource         The source object
-     * @param anEventTypeMask Type of event (see {@link org.redcross.sar.mso.event.MsoEvent.MsoEventType})
+     * @param aChange - the change record
      */
-    public void notifyServerUpdate(IMsoObjectIf aSource, UpdateMode mode, int anEventTypeMask, boolean isLoopback, boolean isRollback);
+    public void notifyRemoteUpdate(IChangeRecordIf aChange);
 
     /**
      * Add a listener in the Commit Listeners queue.
@@ -86,11 +83,11 @@ public interface IMsoEventManagerIf
      */
     public void notifyCommit(ITransactionIf aSource) throws TransactionException;
 
-    public void addDerivedUpdateListener(IMsoDerivedUpdateListenerIf aListener);
+    public void addCoUpdateListener(IMsoCoUpdateListenerIf aListener);
 
-    public void removeDerivedUpdateListener(IMsoDerivedUpdateListenerIf aListener);
+    public void removeCoUpdateListener(IMsoCoUpdateListenerIf aListener);
 
-    public void notifyDerivedUpdate(IMsoObjectIf aSource, int anEventTypeMask);
+    public void notifyCoUpdate(IChangeRecordIf aChange);
 
     /**
      * Notify that a resume operation is begun.</p>

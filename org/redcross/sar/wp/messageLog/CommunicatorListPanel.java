@@ -85,7 +85,7 @@ public class CommunicatorListPanel extends JPanel
 		m_isSingleSelection = isSingleSelection;
 
 		// add model as MSO update listener
-		m_wp.getMsoEventManager().addClientUpdateListener(m_model);
+		m_wp.getMsoEventManager().addLocalUpdateListener(m_model);
 
 		// add list data listener
 		m_model.addListDataListener(new ListDataListener() {

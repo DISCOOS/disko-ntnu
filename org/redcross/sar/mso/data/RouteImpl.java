@@ -2,6 +2,7 @@ package org.redcross.sar.mso.data;
 
 import no.cmr.tools.Log;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
@@ -52,7 +53,7 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_ROUTE;
     }
@@ -70,9 +71,9 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
         return m_geodata.getRoute();
     }
 
-    public IMsoModelIf.ModificationState getGeodataState()
+    public IData.DataOrigin getGeodataState()
     {
-        return m_geodata.getState();
+        return m_geodata.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoRouteIf getGeodataAttribute()
@@ -90,9 +91,9 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
         return m_remarks.getString();
     }
 
-    public IMsoModelIf.ModificationState getRemarksState()
+    public IData.DataOrigin getRemarksState()
     {
-        return m_remarks.getState();
+        return m_remarks.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
@@ -148,9 +149,9 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
         return m_areaSequenceNumber.intValue();
     }
 
-    public IMsoModelIf.ModificationState getAreaSequenceNumberState()
+    public IData.DataOrigin getAreaSequenceNumberState()
     {
-        return m_areaSequenceNumber.getState();
+        return m_areaSequenceNumber.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()

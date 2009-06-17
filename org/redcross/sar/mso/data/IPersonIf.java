@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.mso.Position;
 
 import java.util.Calendar;
@@ -23,7 +23,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public Calendar getBirthdate();
 
-    public IMsoModelIf.ModificationState getBirthdateState();
+    public IData.DataOrigin getBirthdateState();
 
     public IMsoAttributeIf.IMsoCalendarIf getBirthdateAttribute();
 
@@ -31,7 +31,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public String getFirstName();
 
-    public IMsoModelIf.ModificationState getFirstnameState();
+    public IData.DataOrigin getFirstnameState();
 
     public IMsoAttributeIf.IMsoStringIf getFirstnameAttribute();
 
@@ -39,7 +39,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public String getID();
 
-    public IMsoModelIf.ModificationState getIDState();
+    public IData.DataOrigin getIDState();
 
     public IMsoAttributeIf.IMsoStringIf getIDAttribute();
 
@@ -47,7 +47,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public String getLastName();
 
-    public IMsoModelIf.ModificationState getLastnameState();
+    public IData.DataOrigin getLastnameState();
 
     public IMsoAttributeIf.IMsoStringIf getLastnameAttribute();
 
@@ -55,7 +55,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public int getPhoto();
 
-    public IMsoModelIf.ModificationState getPhotoState();
+    public IData.DataOrigin getPhotoState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPhotoAttribute();
 
@@ -63,7 +63,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public Position getResidence();
 
-    public IMsoModelIf.ModificationState getResidenceState();
+    public IData.DataOrigin getResidenceState();
 
     public IMsoAttributeIf.IMsoPositionIf getResidenceAttribute();
 
@@ -71,7 +71,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public String getAddress();
 
-    public IMsoModelIf.ModificationState getAddressState();
+    public IData.DataOrigin getAddressState();
 
     public IMsoAttributeIf.IMsoStringIf getAddressAttribute();
 
@@ -79,7 +79,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public String getTelephone1();
 
-    public IMsoModelIf.ModificationState getTelephone1State();
+    public IData.DataOrigin getTelephone1State();
 
     public IMsoAttributeIf.IMsoStringIf getTelephone1Attribute();
 
@@ -87,7 +87,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public String getTelephone2();
 
-    public IMsoModelIf.ModificationState getTelephone2State();
+    public IData.DataOrigin getTelephone2State();
 
     public IMsoAttributeIf.IMsoStringIf getTelephone2Attribute();
 
@@ -95,7 +95,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public String getTelephone3();
 
-    public IMsoModelIf.ModificationState getTelephone3State();
+    public IData.DataOrigin getTelephone3State();
 
     public IMsoAttributeIf.IMsoStringIf getTelephone3Attribute();
 
@@ -108,7 +108,7 @@ public interface IPersonIf extends IMsoObjectIf
 
     public String getGenderText();
 
-    public IMsoModelIf.ModificationState getGenderState();
+    public IData.DataOrigin getGenderState();
 
     public IMsoAttributeIf.IMsoEnumIf<PersonGender> getGenderAttribute();
 

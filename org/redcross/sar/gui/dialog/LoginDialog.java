@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 
+import org.redcross.sar.AppProps;
 import org.redcross.sar.Application;
 import org.redcross.sar.IApplication;
 import org.redcross.sar.IDiskoRole;
@@ -191,6 +192,11 @@ public class LoginDialog extends DefaultDialog {
 			model.addElement(rolleNames[i]);
 		}
 		getRoles().fill(model);
+		String title = AppProps.getText("STARTUP.LAST.ROLE");
+		if(title!=null) 
+		{
+			getRoles().setValue(AppProps.getText("STARTUP.LAST.ROLE"));
+		}
 	}
 
 	public boolean showLogin(boolean exitAppOnCancel) {

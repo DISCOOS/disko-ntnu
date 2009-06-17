@@ -1,8 +1,8 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.data.IMsoAttributeIf.IMsoEnumIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf.IMsoIntegerIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf.IMsoStringIf;
@@ -73,7 +73,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 
 
     @Override
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void addListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ITaskIf)
         {
@@ -82,7 +82,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
     }
 
     @Override
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ITaskIf)
         {
@@ -102,7 +102,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_EVENT;
     }
@@ -128,8 +128,8 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 		return m_status;
 	}
 
-	public ModificationState getStatusState() {
-		return m_status.getState();
+	public IData.DataOrigin getStatusState() {
+		return m_status.getOrigin();
 	}
 
 
@@ -147,9 +147,9 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
         return m_number.intValue();
     }
 
-    public IMsoModelIf.ModificationState getNumberState()
+    public IData.DataOrigin getNumberState()
     {
-        return m_number.getState();
+        return m_number.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
@@ -165,8 +165,8 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 		return m_name;
 	}
 
-	public ModificationState getNameState() {
-		return m_name.getState();
+	public IData.DataOrigin getNameState() {
+		return m_name.getOrigin();
 	}
 
 	public void setName(String text) {
@@ -181,8 +181,8 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 		return m_description;
 	}
 
-	public ModificationState getDescriptionState() {
-		return m_description.getState();
+	public IData.DataOrigin getDescriptionState() {
+		return m_description.getOrigin();
 	}
 
 	public void setDescription(String text) {
@@ -197,8 +197,8 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 		return m_level;
 	}
 
-	public ModificationState getLevelState() {
-		return m_level.getState();
+	public IData.DataOrigin getLevelState() {
+		return m_level.getOrigin();
 	}
 
 	public void setLevel(int level) {
@@ -213,8 +213,8 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 		return m_priority;
 	}
 
-	public ModificationState getPriorityState() {
-		return m_priority.getState();
+	public IData.DataOrigin getPriorityState() {
+		return m_priority.getOrigin();
 	}
 
 	public void setPriority(int priority) {
@@ -241,9 +241,9 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
         return m_eventTasks;
     }
 
-    public IMsoModelIf.ModificationState getEventTasksState(ITaskIf anITaskIf)
+    public IData.DataOrigin getEventTasksState(ITaskIf anITaskIf)
     {
-        return m_eventTasks.getState(anITaskIf);
+        return m_eventTasks.getOrigin(anITaskIf);
     }
 
     public Collection<ITaskIf> getEventTasksItems()

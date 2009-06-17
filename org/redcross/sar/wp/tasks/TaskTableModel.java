@@ -96,7 +96,7 @@ public class TaskTableModel extends AbstractMsoTableModel<ITaskIf>
 	}		
 	
 	@Override
-	protected Object[] update(ITaskIf id, ITaskIf obj, Object[] data) {
+	protected IRow update(ITaskIf id, ITaskIf obj, IRow data) {
 		// get column count
 		int count = getColumnCount();		
 		// loop over all columns
@@ -105,25 +105,25 @@ public class TaskTableModel extends AbstractMsoTableModel<ITaskIf>
 			switch(i)
 			{
 			case 0:
-				data[i] = id.getNumber();
+				data.setValue(i,id.getNumber());
 				break;
 			case 1:
-				data[i] = id.getPriority();
+				data.setValue(i,id.getPriority());
 				break;
 			case 2:
-				data[i] = id.getTaskText();
+				data.setValue(i,id.getTaskText());
 				break;
 			case 3:
-				data[i] = id.getResponsibleRole();
+				data.setValue(i,id.getResponsibleRole());
 				break;
 			case 4:
-				data[i] = id.getDueTime();
+				data.setValue(i,id.getDueTime());
 				break;
 			case 5:
-				data[i] = id.getStatus();
+				data.setValue(i,id.getStatus());
 				break;
 			default:
-				data[i] = null;
+				data.setValue(i,null);
 				break;
 			}		
 		}

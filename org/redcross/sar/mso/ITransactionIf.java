@@ -22,22 +22,22 @@ public interface ITransactionIf
 	public TransactionType getType();
 	
     /**
-     * Get a list of committable objects.
+     * Get a list of change records.
      * @return The list
      */
-    public List<IChangeIf.IChangeObjectIf> getObjects();
+    public List<IChangeRecordIf> getChanges();
 
     /**
-     * Get a list of committable one-to-one references.
+     * Get a list of changed object (one-to-one) references.
      * @return The list
      */
-    public List<IChangeIf.IChangeReferenceIf> getObjectReferences();
+    public List<IChangeIf.IChangeRelationIf> getObjectRelations();
 
     /**
-     * Get a list of committable one-to-many references.
+     * Get a list of changed list (one-to-many) references.
      * @return The list
      */
-    public List<IChangeIf.IChangeReferenceIf> getListReferences();
+    public List<IChangeIf.IChangeRelationIf> getListRelations();
         
 
 }

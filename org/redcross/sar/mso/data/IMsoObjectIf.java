@@ -2,11 +2,11 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IChangeIf;
+import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.util.except.InvalidReferenceException;
+import org.redcross.sar.util.except.InvalidRelationException;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.except.UnknownAttributeException;
 
@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Interface for MSO objects
  */
-public interface IMsoObjectIf extends IData, IMsoDataStateIf
+public interface IMsoObjectIf extends IMsoDataIf
 {
     /**
      * Get Object ID
@@ -29,6 +29,14 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      */
     public String getObjectId();
 
+    /**
+     * Get the setup status.
+     * 
+     * @return Returns {@code true} if object is 
+     * properly initialized in the model, {@code false} otherwise.
+     */
+    public boolean isSetup();
+    
     /**
      * Get Object creation time
      *
@@ -54,14 +62,14 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      *
      * @return <code>true</code> if all data are in LOCAL mode. 
      */
-    public boolean isLocalState();
+    public boolean isOriginLocal();
     
     /**
      * Test for remote update mode
      *
      * @return <code>true</code> if all data are in REMOTE mode. 
      */
-    public boolean isRemoteState();
+    public boolean isOriginRemote();
     
     /**
      * Test for loopback update mode
@@ -72,11 +80,11 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
     public boolean isLoopbackMode();
     
     /**
-     * Test for mixed update mode
+     * Check for mixed update mode
      *
-     * @return <code>true</code> if data has more than one update mode 
+     * @return <code>true</code> if data objects has different origins
      */
-    public boolean isMixedState();    
+    public boolean isOriginMixed();    
     
     /**
      * Get change status
@@ -98,7 +106,7 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      * 
      * The following changes are tracked:
      * 1. All attribute changes (LOCAL and SERVER mode change)<br>
-     * 2. All reference changes (object and list, LOCAL and SERVER mode change)</p>
+     * 2. All relation changes (object and list, LOCAL and SERVER mode change)</p>
      * 
      * This property enables IMsoClientUpdateListeners to track incremental 
      * changes without the need for local buffering of object states 
@@ -118,8 +126,29 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      * Get classcode enumerator for the object.
      * @return The {@link IMsoManagerIf.MsoClassCode} of the object.
      */
-    public IMsoManagerIf.MsoClassCode getMsoClassCode();
+    public MsoClassCode getClassCode();
 
+    /**
+     * Check if this object is a root object (is not owned by another object)
+     * 
+     * @return Returns <code>true</code> if this is a root object.
+     */
+    public boolean isRootObject();
+    
+    /**
+     * Get object owner
+     *
+     * @return Relation to IMsoObjectIf object.
+     */
+    public IMsoObjectIf getOwnerObject();
+    
+    /**
+     * Get the main list of which this object belongs.
+     * 
+     * @return Returns the main list of which this object belongs.
+     */    
+    public IMsoListIf<? super IMsoObjectIf> getMainList();
+    
     /**
      * Set value to an attribute with a given name
      *
@@ -140,22 +169,19 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      * 
      * Perform commit on the object. Generates a client update event.
      *
-     * @return True if something has been done.
+     * @return Returns {@code true} is a commit was performed, 
+     * {@code false} otherwise.
+     *  
      * @throws TransactionException
      */
     public boolean commit() throws TransactionException;
     
     /**
      * Rollback changes in this object. Generates a client update event.
+     * @return Returns {@code true} is a commit was performed, 
+     * {@code false} otherwise 
      */    
-    public void rollback();
-    
-    /**
-     * Rollback changes in supplied objects owned by this object. 
-     * Generates a client update event it a rollback occurs
-     * @param objects - the objects to rollback changes in
-     */    
-    public void rollback(List<IChangeIf> objects);
+    public boolean rollback();
     
     /**
      * Delete this object from the data structures
@@ -163,7 +189,7 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      * that is own is deleted (deep deletion). Otherwise, the method  
      * performs a deletion on this object only and notifies any object 
      * holders accordingly. It do not delete owned objects in lists, or 
-     * references from this object to other owned objects explicitly. 
+     * relations from this object to other owned objects explicitly. 
      * <b>IMPORTANT!</b> The result of an shallow deletion is a potential 
      * memory leak, because owned objects may still point to this 
      * object (see method <code>getOwningObjects()</code> for more 
@@ -193,7 +219,7 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      *
      * @return List of <code>IMsoObjectHolderIf</code> that prevents deletion
      */
-    public List<IMsoObjectHolderIf<IMsoObjectIf>> getUndeleteableReferenceHolders();
+    public List<IMsoObjectHolderIf> getUndeleteableObjectHolders();
 
     /**
      * Get a copy of map of the attributes for the object
@@ -208,130 +234,136 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
     public IMsoAttributeIf<?> getAttribute(String aAttributeName) throws UnknownAttributeException;
     
     /**
+     * Get a attribute from index
+     * @return The IAttributeIf object
+     */    
+    public IMsoAttributeIf<?> getAttribute(int anIndex) throws UnknownAttributeException;
+    
+    /**
      * Get list of all objects owning this objects.
      * 
      * @return Returns a list of objects owning this object.
      */
-    public Set<IMsoObjectHolderIf<?>> getOwningObjects();
+    public Set<IMsoObjectHolderIf> getOwningObjects();
     
     /**
-     * Check if a given IMsoObject is referenced to by this IMsoObject
+     * Check if a given IMsoObject is related to by this IMsoObject
      * 
-     * @param msoObj - the referenced object to look for
-     * @return Returns <code>true</code> if reference to given object is found 
+     * @param msoObj - the related object to look for
+     * @return Returns <code>true</code> if relation to given object is found 
      */
     public boolean contains(IMsoObjectIf msoObj);
     
     /**
-     * Get the object holder for the given IMsoObject. If the reference to
-     * the given object is a one-to-one reference between this object
-     * and the given object, a IMsoReferenceIf instance is returned. If the found 
-     * reference is a one-to-many reference, a IMsoListIf instances is returned. 
+     * Get the object holder for the given IMsoObject. If the relation to
+     * the given object is a one-to-one relation between this object
+     * and the given object, a IMsoRelationIf instance is returned. If the found 
+     * relation is a one-to-many relation, a IMsoListIf instances is returned. 
      * Regardless of this, the owning object is always this object, not the
-     * IMsoReferenceIf or IMsoListIf instances (they only hold the object reference
+     * IMsoRelationIf or IMsoListIf instances (they only hold the object relation
      * between objects).
      * 
-     * @param msoObj - the referenced object to look for 
-     * @return Returns the object holding the reference between this and the given object. 
+     * @param msoObj - the related object to look for 
+     * @return Returns the object holding the relation between this and the given object. 
      */
-    public IMsoObjectHolderIf<?> getObjectHolder(IMsoObjectIf msoObj);
+    public IMsoObjectHolderIf getObjectHolder(IMsoObjectIf msoObj);
     
     /**
-     * Get the holder of the reference between this and the given object
+     * Get the holder of the relation between this and the given object
      * 
-     * @param msoObj - the referenced object to look for 
-     * @return Returns the holder of the reference between this and the given object. 
-     * Note that if more than one reference exists to the given object, the first one 
+     * @param msoObj - the related object to look for 
+     * @return Returns the holder of the relation between this and the given object. 
+     * Note that if more than one relation exists to the given object, the first one 
      * found is returned (starting with one-to-one references).
      */
-    public IMsoReferenceIf<?> getReference(IMsoObjectIf msoObj);
+    public IMsoRelationIf<?> getRelation(IMsoObjectIf msoObj);
     
     /**
      * Set or reset a relation between this and another 
      * IMsoObjectIf (one-to-one relation) 
      * @param anObject - the object set a relation to, or relation to set to <code>null</code>  
-     * @param aReferenceName - the name of the relation
-     * @throws InvalidReferenceException is thrown if the reference does not 
+     * @param aRelationName - the name of the relation
+     * @throws InvalidRelationException is thrown if the relation does not 
      * exist, or if the relation is required (cardinality is greater than <code>0</code>)
      */
-    public void setObjectReference(IMsoObjectIf anObject, String aReferenceName) throws InvalidReferenceException;
+    public void setObjectRelation(IMsoObjectIf anObject, String aRelationName) throws InvalidRelationException;
 
     /**
-     * Get a map of the objects referenced by this object (all one-to-one and one-to-many relations). 
-     * The map key is the object (one-to-one) or list (one-to-many) reference name and the value is the 
-     * referenced object(s).
+     * Get a map of the objects related by this object (all one-to-one and one-to-many relations). 
+     * The map key is the object (one-to-one) or list (one-to-many) relation name and the value is the 
+     * related object(s).
      * 
-     * @return Returns a map of the objects referenced by this object. 
+     * @return Returns a map of the objects related by this object. 
      */
     public Map<String, List<IMsoObjectIf>> getObjects();
     
     /**
-     * Get a copy of the object reference map (all one-to-one relations from 
-     * this object to other IMsoObjectIf objects). The map key is the reference
-     * name and the value is the associated IMsoReferenceIf object.
+     * Get a copy of the object relation map (all one-to-one relations from 
+     * this object to other IMsoObjectIf objects). The map key is the relation
+     * name and the value is the associated IMsoRelationIf object.
      * 
-     * @return Returns a copy of the object reference map. 
+     * @return Returns a copy of the object relation map. 
      */
-    public Map<String, IMsoReferenceIf<?>> getObjectReferences();
+    public Map<String, IMsoRelationIf<?>> getObjectRelations();
     
     /**
-     * Add a reference to an one-to-many relation in this IMsoObjectIf object.
+     * Add a relation to an one-to-many relation in this IMsoObjectIf object.
      * 
-     * @param anObject The object to add a reference to
-     * @param aReferenceListName The reference list
-     * @throws InvalidReferenceException is thrown if the list reference does not 
+     * @param anObject The object to add a relation to
+     * @param aRelationListName The relation list
+     * @throws InvalidRelationException is thrown if the list relation does not 
      * exist, if the list object class and IMsoObjectIf object class does not 
      * match, if the list size is less or equal to the cardinality, 
-     * or if an reference to the IMsoObjectIf object already exists, or the object is 
+     * or if an relation to the IMsoObjectIf object already exists, or the object is 
      * null or not properly initialized 
      */
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException;
+    public void addListRelation(IMsoObjectIf anObject, String aRelationListName) throws InvalidRelationException;
 
     /**
-     * Remove a reference from a on-to-many relation in this IMsoObjectIf object.
+     * Remove a relation from a on-to-many relation in this IMsoObjectIf object.
      * 
-     * @param anObject The object to remove a reference from
-     * @param aReferenceListName The reference list
-     * @throws InvalidReferenceException is thrown if the reference does not 
+     * @param anObject The object to remove a relation from
+     * @param aRelationListName The relation list
+     * @throws InvalidRelationException is thrown if the relation does not 
      * exist, if the list object class and IMsoObjectIf object class does not 
      * match, if the list size is less or equal to the cardinality, or if 
-     * an reference to IMsoObjectIf object does not exist, or is not deleteable 
+     * an relation to IMsoObjectIf object does not exist, or is not deleteable 
      */
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException;
+    public void removeListRelation(IMsoObjectIf anObject, String aRelationListName) throws InvalidRelationException;
     
     /**
-     * Get a copy of the map of the reference lists for the object (one-to-many relations)
+     * Get a copy of the map of the relation lists for the object (one-to-many relations)
      * @return The lists containing references
      */
-    public Map<String,IMsoListIf<IMsoObjectIf>> getListReferences();
+    public Map<String,IMsoListIf<?>> getListRelations();
 
     /**
-     * Get a copy of the map the reference lists that contains objects of a given class
+     * Get a copy of the map the relation lists that contains objects of a given class
      *
      * @param Class c - The item class
      * @param boolean isEqual - It <code>true</code>, only lists with item classes that are equal to passed
      * class is returned. Else, match all items that are assignable onto passed item class.
      *
-     * @return The reference lists that match passed arguments.
+     * @return The relation lists that match passed arguments.
      */
-    public Map<String,IMsoListIf<IMsoObjectIf>> getListReferences(Class<?> c, boolean isEqual);
+    public Map<String,IMsoListIf<?>> getListRelations(Class<?> c, boolean isEqual);
 
     /**
-     * Get a copy of the map of reference lists that contains objects of a given MSO class class
+     * Get a copy of the map of relation lists that contains objects of a given MSO class class
      *
      * @param MsoClassCode c - The MSO class code to match
      *
-     * @return The reference lists that match passed arguments. This method will
+     * @return The relation lists that match passed arguments. This method will
      * only return lists with one or more items in it.
      */
-    public Map<String,IMsoListIf<IMsoObjectIf>> getListReferences(MsoClassCode c);
+    public Map<String,IMsoListIf<?>> getListRelations(MsoClassCode c);
     
     /**
-     * Check if client updates are suspended.
+     * Check if updates are suspended.
      *  
      * @return Returns <code>true</code> if client updates are suspended.
      */
-    public boolean isClientUpdateSuspended();
+    public boolean isUpdateSuspended();
     
     /**
      * Suspend update notifications to listeners.
@@ -340,21 +372,31 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
      * will greatly improve the event handling process when a large number of
      * updates is pending.
      */
-    public void suspendClientUpdate();
+    public void suspendUpdate();
 
     /**
      * Resume pending update notification to listeners. <p/>
      *
+     * Use this method to group all update notifications into one single event. 
+     * This will greatly improve the event handling process when a large number of
+     * updates is pending. The method has memory function, which ensures 
+     * that the same number invocations of {@code suspendUpdate()} and 
+     * {@code resumeUpdate()} is required to return to the same state. 
+     * For example, if updates are suspended by calling {@code suspendUpdate()}
+     * four times, resuming updates requires {@code resumeUpdate()} to be called
+     * four times. This make it possible to enable and disable updates in a
+     * object hierarchy.
+     * 
      * @param boolean all - if <code>true</code>, resume is also forwarded to all
-     * referenced objects. Else, only changes associated with object are resumed 
-     * (changed attributes, references from and to this object).
+     * objects related by the object. Else, only changes associated 
+     * with object are resumed (changed attributes, references from and to this object).
      * 
      * @return Returns <code>true</code> if suspended updates were resumed. 
-     * If no suspended client updates were resumed and notified to clients, or
-     * if client updates are suspended for all objects, this method returns 
-     * <code>false</code>.
+     * If no suspended updates were resumed and notified to listeners, or
+     * if updates are suspended at the model level (see {@link IMsoModelIf}), 
+     * this method returns <code>false</code>.
      */
-    public boolean resumeClientUpdate(boolean all);
+    public boolean resumeUpdate(boolean all);
 
     /**
      * Validates object states (cardinality of attributes and relations)
@@ -615,50 +657,29 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
 
     /**
      * Get all local changes in object
-     * @return Returns a object containing all local changes
+     * @return Returns a object containing a record of all local changes
      */
-    public IChangeObjectIf getChange();
+    public IChangeRecordIf getChanges();
     
     /**
      * Get list of changed attributes.
      * @return Return list of attributes changed locally
      */    
-    public Collection<IChangeIf.IChangeAttributeIf> getChangedAttributes();
-    
-    /**
-     * Get sub-list of changed attributes given the partial list.
-     * 
-     * @return Return sub-list of attributes changed locally
-     */    
-    public Collection<IChangeIf.IChangeAttributeIf> getChangedAttributes(Collection<IChangeIf> partial);
+    public Collection<IChangeIf.IChangeAttributeIf> getAttributeChanges();
     
     /**
      * Get the list of changed object (one-to-one) references.
      *  
      * @return Returns a list of changed object references
      */
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedObjectReferences();
+    public Collection<IChangeIf.IChangeRelationIf> getObjectRelationChanges();
 
-    /**
-     * Get a sub-list of changed object (one-to-one) references given the partial list.
-     *  
-     * @return Returns a sub-list of changed object references
-     */
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedObjectReferences(Collection<IChangeIf> partial);
-    
     /**
      * Get the list of changed list (one-to-many) references.
      *  
      * @return Returns a list of changed list references
      */
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedListReferences();
-
-    /**
-     * Get the sub-list of changed list (one-to-many) references given the partial list.
-     *  
-     * @return Returns a sub-list of changed list references
-     */
-    public Collection<IChangeIf.IChangeReferenceIf> getChangedListReferences(Collection<IChangeIf> partial);
+    public Collection<IChangeIf.IChangeRelationIf> getListRelationChanges();
 
     /**
      * Interface for unique identification of IMsoObjectIf instances
@@ -676,6 +697,6 @@ public interface IMsoObjectIf extends IData, IMsoDataStateIf
 
     public IMsoModelIf getModel();
 
-    public int compareTo(IData data);
+    public int compareTo(IData anObject);
 
 }

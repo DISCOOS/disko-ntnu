@@ -34,12 +34,12 @@ public class VehicleImpl extends AbstractTransportUnit implements IVehicleIf
 
     protected UnitType getTypeBySubclass()
     {
-        return IUnitIf.UnitType.VEHICLE;
+        return UnitType.VEHICLE;
     }
 
-    public Enum getSubType()
+    public UnitType getSubType()
     {
-        return IUnitIf.UnitType.VEHICLE; // todo expand
+        return UnitType.VEHICLE; // todo expand
     }
 
     public String getSubTypeName()

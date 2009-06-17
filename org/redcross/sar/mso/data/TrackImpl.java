@@ -1,6 +1,8 @@
 package org.redcross.sar.mso.data;
 
 import no.cmr.tools.Log;
+
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
@@ -54,7 +56,7 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_TRACK;
     }
@@ -73,9 +75,9 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
         return m_geodata.getTrack();
     }
 
-    public IMsoModelIf.ModificationState getGeodataState()
+    public IData.DataOrigin getGeodataState()
     {
-        return m_geodata.getState();
+        return m_geodata.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoTrackIf getGeodataAttribute()
@@ -93,9 +95,9 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
         return m_remarks.getString();
     }
 
-    public IMsoModelIf.ModificationState getRemarksState()
+    public IData.DataOrigin getRemarksState()
     {
-        return m_remarks.getState();
+        return m_remarks.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
@@ -114,9 +116,9 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
         return m_areaSequenceNumber.intValue();
     }
 
-    public IMsoModelIf.ModificationState getAreaSequenceNumberState()
+    public IData.DataOrigin getAreaSequenceNumberState()
     {
-        return m_areaSequenceNumber.getState();
+        return m_areaSequenceNumber.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()

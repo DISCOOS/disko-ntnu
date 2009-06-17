@@ -1,8 +1,8 @@
 
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
 import java.util.Comparator;
@@ -97,7 +97,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public Calendar getArrived();
 
-    public IMsoModelIf.ModificationState getArrivedState();
+    public IData.DataOrigin getArrivedState();
 
     public IMsoAttributeIf.IMsoCalendarIf getArrivedAttribute();
 
@@ -105,7 +105,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public Calendar getCallOut();
 
-    public IMsoModelIf.ModificationState getCallOutState();
+    public IData.DataOrigin getCallOutState();
 
     public IMsoAttributeIf.IMsoCalendarIf getCallOutAttribute();
 
@@ -113,7 +113,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public String getDataSourceID();
 
-    public IMsoModelIf.ModificationState getDataSourceIDState();
+    public IData.DataOrigin getDataSourceIDState();
 
     public IMsoAttributeIf.IMsoStringIf getDataSourceIDAttribute();
 
@@ -121,7 +121,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public String getDataSourceName();
 
-    public IMsoModelIf.ModificationState getDataSourceNameState();
+    public IData.DataOrigin getDataSourceNameState();
 
     public IMsoAttributeIf.IMsoStringIf getDataSourceNameAttribute();
 
@@ -129,7 +129,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public Calendar getEstimatedArrival();
 
-    public IMsoModelIf.ModificationState getEstimatedArrivalState();
+    public IData.DataOrigin getEstimatedArrivalState();
 
     public IMsoAttributeIf.IMsoCalendarIf getEstimatedArrivalAttribute();
 
@@ -137,7 +137,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public Calendar getReleased();
 
-    public IMsoModelIf.ModificationState getReleasedState();
+    public IData.DataOrigin getReleasedState();
 
     public IMsoAttributeIf.IMsoCalendarIf getReleasedAttribute();
 
@@ -145,7 +145,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
@@ -157,7 +157,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public String getStatusText();
 
-    public IMsoModelIf.ModificationState getStatusState();
+    public IData.DataOrigin getStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<PersonnelStatus> getStatusAttribute();
 
@@ -167,7 +167,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public PersonnelType getType();
 
-    public IMsoModelIf.ModificationState getTypeState();
+    public IData.DataOrigin getTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<PersonnelType> getTypeAttribute();
 
@@ -183,7 +183,7 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
 
     public String getImportStatusText();
 
-    public IMsoModelIf.ModificationState getImportStatusState();
+    public IData.DataOrigin getImportStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<PersonnelImportStatus> getImportStatusAttribute();
 
@@ -220,9 +220,9 @@ public interface IPersonnelIf extends IPersonIf, IAssociationIf
      */
     public IPersonnelIf getNextOccurrence();
 
-    public IMsoModelIf.ModificationState getNextOccurrenceState();
+    public IData.DataOrigin getNextOccurrenceState();
 
-    public IMsoReferenceIf<IPersonnelIf> getNextOccurrenceAttribute();
+    public IMsoRelationIf<IPersonnelIf> getNextOccurrenceAttribute();
 
     /**
      * Get a list of the next occurrences of this personnel. 

@@ -43,45 +43,7 @@ import org.redcross.sar.util.Utils;
  */
 public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends EventObject>
 			extends AbstractService implements IDs<T> {
-
-	public enum DsClassCode {
-		CLASSCODE_CUE,
-		CLASSCODE_DECISION
-	}
 	
-	/* ============================================================
-	 * Declaration of local lists
-	 * ============================================================
-	 *
-	 * This solves the problem of concurrent modification of lists
-	 * in MSO model. MSO is not thread safe, and MSO is updated
-	 * from more then one thread. As long as all work i done on
-	 * DiskoWorkPool, concurrency is ensured. DiskoWorkPool manages,
-	 * both unsafe (locks application and shows progress) and safe
-	 * work. Estimation is potentially a time consuming process and
-	 * has real-time requirements. Hence, the user should not be aware
-	 * of this task running. Thus, estimation must be done on a safe
-	 * thread, managed by DiskoWorkPool, because this does not
-	 * lock the application.
-	 *
-	 * Beware though, safe work may still be unsafe. It is the
-	 * programmer that is in charge of implementing work that is
-	 * thread safe, which is indicated to the DiskoWorkPool when
-	 * scheduled. This property is exploited here.
-	 *
-	 * The algorithm is not thread safe according to the DiskoWorkPool
-	 * rules. Only work that does not invoke methods on Swing and MSO
-	 * model is thread safe by definition. This algorithm access MSO
-	 * model during estimation. MSO objects may still be changed or
-	 * deleted concurrently with access to these objects during
-	 * estimation. These changes however, will be detected later and
-	 * fixed through the Update Event Queue. It's really not a
-	 * problem for either the system nor the algorithm, because MSO
-	 * object are not written to, only read from, thus not really
-	 * violating the system.
-	 *
-	 * ============================================================ */
-
 	/**
 	 * Local list of objects
 	 */
@@ -136,10 +98,10 @@ public abstract class AbstractDs<S extends IData, T extends IDsObject, U extends
 	 * ============================================================ */
 
 	public AbstractDs(Class<T> dataClass, String oprID,
-			int dutyCycle, int timeOut) throws Exception {
+			long requestedDutyCycle, double requestedUtilization) throws Exception {
 
 		// forward
-		super(oprID, dutyCycle, timeOut);
+		super(oprID, requestedDutyCycle, requestedUtilization);
 
 		// prepare
 		m_dataClass = dataClass;

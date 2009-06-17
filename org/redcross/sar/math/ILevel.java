@@ -6,7 +6,8 @@ public interface ILevel<I,D extends Number> {
 
 	public String getName();
 	public String getUnit();
-
+	public Class<D> getDataClass();
+	
 	public IInput<I, D> getInput();
 	public void setInput(IInput<I, D> input);
 

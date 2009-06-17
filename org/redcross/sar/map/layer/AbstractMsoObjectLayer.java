@@ -18,7 +18,7 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 
 public abstract class AbstractMsoObjectLayer<I,E> 
 	extends AbstractMapLayer<I,E,IMsoObjectIf,IMsoObjectIf> 
@@ -69,7 +69,7 @@ public abstract class AbstractMsoObjectLayer<I,E>
 	@SuppressWarnings("unchecked")
 	public List<IMsoObjectIf> getGeodataObjects(IMsoObjectIf msoObject) {
 		List<IMsoObjectIf> objects = new ArrayList<IMsoObjectIf>(1);
-		if(msoObject!=null && msoObject.getMsoClassCode().equals(classCode)) {
+		if(msoObject!=null && msoObject.getClassCode().equals(classCode)) {
 			objects.add((IMsoObjectIf)msoObject);
 		}
 		return objects;
@@ -104,7 +104,7 @@ public abstract class AbstractMsoObjectLayer<I,E>
 		return interests;
 	}
 
-	public void handleMsoUpdateEvent(UpdateList events) {
+	public void handleMsoChangeEvent(ChangeList events) {
 		processMsoUpdateEvent(events);
 	}
 
@@ -118,7 +118,7 @@ public abstract class AbstractMsoObjectLayer<I,E>
 	 * If any remove operations are executed directly, the isDirty bit is set to true.
 	 */
 	@SuppressWarnings("unchecked")
-	public List<IMapElement<E,IMsoObjectIf,IMsoObjectIf>> processMsoUpdateEvent(UpdateList events) {
+	public List<IMapElement<E,IMsoObjectIf,IMsoObjectIf>> processMsoUpdateEvent(ChangeList events) {
 
 		// initialize work list
 		List<IMapElement<E,IMsoObjectIf,IMsoObjectIf>> workList = new ArrayList<IMapElement<E,IMsoObjectIf,IMsoObjectIf>>();
@@ -129,13 +129,13 @@ public abstract class AbstractMsoObjectLayer<I,E>
         } else {
 
 			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(interests)) {
+			for(MsoEvent.Change e : events.getEvents(interests)) {
 
 				// consume loopback updates
 				if(!e.isLoopbackMode()) {
 
 					// get event flags
-					int mask = e.getEventTypeMask();
+					int mask = e.getMask();
 
 			        // get mso object and element class
 			        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
@@ -144,8 +144,8 @@ public abstract class AbstractMsoObjectLayer<I,E>
 					boolean createdObject  = (mask & MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
 					boolean deletedObject  = (mask & MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
 					boolean modifiedObject = (mask & MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-					boolean addedReference = (mask & MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-					boolean removedReference = (mask & MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+					boolean addedReference = (mask & MsoEventType.ADDED_RELATION_EVENT.maskValue()) != 0;
+					boolean removedReference = (mask & MsoEventType.REMOVED_RELATION_EVENT.maskValue()) != 0;
 
 					// get list of
 					List<IMsoObjectIf> msoObjs = getGeodataObjects(msoObj);
@@ -157,7 +157,7 @@ public abstract class AbstractMsoObjectLayer<I,E>
 						IMsoObjectElement<E> element = getElement(it);
 
 						// get other flags
-						boolean isElement = it.getMsoClassCode().equals(classCode);
+						boolean isElement = it.getClassCode().equals(classCode);
 
 						// add object?
 						if (createdObject && element == null && isElement) {

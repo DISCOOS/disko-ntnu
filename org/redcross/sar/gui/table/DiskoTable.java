@@ -27,7 +27,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
 
 import org.redcross.sar.gui.model.DiskoTableColumnModel;
-import org.redcross.sar.gui.model.IDiskoTableModel;
+import org.redcross.sar.gui.model.ITableModel;
 import org.redcross.sar.gui.renderer.DiskoTableCellRenderer;
 import org.redcross.sar.util.Utils;
 
@@ -361,9 +361,9 @@ public class DiskoTable extends JTable {
 		TableColumnModel columns = getColumnModel();
 		// set flags
 		boolean setMax = false;
-		boolean isDTM = (data instanceof IDiskoTableModel);
+		boolean isDTM = (data instanceof ITableModel);
 		// cast to IDiskoTableModel?
-		IDiskoTableModel model = isDTM?(IDiskoTableModel)data:null;
+		ITableModel model = isDTM?(ITableModel)data:null;
 		// get column count
 		int iCount = columns.getColumnCount();
 		// get row count

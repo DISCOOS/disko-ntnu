@@ -66,7 +66,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
     	// initialize GUI
         initialize();
         // add listeners
-        wp.getMsoEventManager().addClientUpdateListener(this);
+        wp.getMsoEventManager().addLocalUpdateListener(this);
     }
 
     private void initialize()
@@ -249,7 +249,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
     /**
      * Update field contents if MSO object changes
      */
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		if(events.isClearAllEvent()) {
 			setPersonnel(null);
@@ -258,7 +258,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
 		else
 		{
 			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL))
+			for(MsoEvent.Change e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL))
 			{
 				// consume loopback updates
 				if(!e.isLoopbackMode())
@@ -269,7 +269,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
 							(IPersonnelIf) e.getSource() : null;
 							
 					// is object modified?
-					if (e.isChangeReferenceEvent()) {
+					if (e.isModifiedReferenceEvent()) {
 						updateFieldContents();
 					}
 					else if (e.isModifyObjectEvent()) {

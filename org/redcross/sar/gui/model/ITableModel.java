@@ -2,7 +2,9 @@ package org.redcross.sar.gui.model;
 
 import javax.swing.table.TableModel;
 
-public interface IDiskoTableModel extends TableModel {
+import org.redcross.sar.data.IData.DataOrigin;
+
+public interface ITableModel extends TableModel {
 
 	public String getHeaderTooltipText(int column);
 	public void setHeaderTooltipText(int column, String text);
@@ -19,5 +21,13 @@ public interface IDiskoTableModel extends TableModel {
 	public boolean isColumnWidthFixed(int column);	
 	public int getColumnFixedWidth(int column);
 	public void setColumnFixedWidth(int column, int fixedwidth);
+	
+	public IState getState(int row);
+	
+	public interface IState {
+		public DataOrigin getOrigin();
+		public boolean isLoopbackMode();
+		public boolean isRollbackMode();
+	}
 	
 }

@@ -17,7 +17,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 
-import org.redcross.sar.gui.model.IDiskoTableModel;
+import org.redcross.sar.gui.model.ITableModel;
 import org.redcross.sar.gui.panel.HeaderPanel;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
@@ -68,8 +68,8 @@ public class DefaultHeaderRenderer implements ITableHeaderRenderer {
 
 	public int getWidth(Graphics g, JTable table, int row, int col) {
 		// check if width is fixed?
-		if(table.getModel() instanceof IDiskoTableModel) {
-			IDiskoTableModel model = (IDiskoTableModel)table.getModel();
+		if(table.getModel() instanceof ITableModel) {
+			ITableModel model = (ITableModel)table.getModel();
 			col = table.convertColumnIndexToModel(col);
 			if(model.isColumnWidthFixed(col)) {
 				return model.getColumnFixedWidth(col);
@@ -154,8 +154,8 @@ public class DefaultHeaderRenderer implements ITableHeaderRenderer {
 		}
 		if(table!=null) {
 			setBorder(col,table.getColumnCount());
-			if(table.getModel() instanceof IDiskoTableModel) {
-				IDiskoTableModel model = (IDiskoTableModel)table.getModel();
+			if(table.getModel() instanceof ITableModel) {
+				ITableModel model = (ITableModel)table.getModel();
 				col = table.convertColumnIndexToModel(col);
 				setEditor(model.getHeaderEditor(col));
 				setEditorVisible(model.isHeaderEditable(col));

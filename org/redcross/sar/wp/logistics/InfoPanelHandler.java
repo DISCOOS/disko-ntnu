@@ -89,7 +89,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         initAssignmentListPanel();
         showPanel(EMPTY_PANEL_NAME);
 
-        aWpModule.getMsoEventManager().addClientUpdateListener(this);
+        aWpModule.getMsoEventManager().addLocalUpdateListener(this);
         aWpModule.addTickEventListener(this);
     }
 
@@ -101,10 +101,10 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
 		return myInterests;
 	}
 
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		// loop over all events
-		for(MsoEvent.Update e : events.getEvents(myInterests))
+		for(MsoEvent.Change e : events.getEvents(myInterests))
 		{
 			// consume loopback updates
 			if(!e.isLoopbackMode())

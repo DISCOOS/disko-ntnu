@@ -1,9 +1,10 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.data.IData;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.util.AssignmentUtilities;
 import org.redcross.sar.util.Internationalization;
@@ -34,9 +35,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     private final EquipmentListImpl m_assignmentEquipment = new EquipmentListImpl(this, "AssignmentEquipment", false);
     private final POIListImpl m_assignmentFindings = new POIListImpl(this, "AssignmentFindings", false);
 
-    private final MsoReferenceImpl<IBriefingIf> m_assignmentBriefing = new MsoReferenceImpl<IBriefingIf>(this, "AssignmentBriefing", 0, true);
-    private final MsoReferenceImpl<IAreaIf> m_plannedArea = new MsoReferenceImpl<IAreaIf>(this, "PlannedArea", 0, true);
-    private final MsoReferenceImpl<IAreaIf> m_reportedArea = new MsoReferenceImpl<IAreaIf>(this, "ReportedArea", 0, true);
+    private final MsoRelationImpl<IBriefingIf> m_assignmentBriefing = new MsoRelationImpl<IBriefingIf>(this, "AssignmentBriefing", 0, true, null);
+    private final MsoRelationImpl<IAreaIf> m_plannedArea = new MsoRelationImpl<IAreaIf>(this, "PlannedArea", 0, true, null);
+    private final MsoRelationImpl<IAreaIf> m_reportedArea = new MsoRelationImpl<IAreaIf>(this, "ReportedArea", 0, true, null);
 
     private final static TypeMessageLineSelector messageLineTypeSelector = new TypeMessageLineSelector();
 
@@ -84,7 +85,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         addObject(m_reportedArea);
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void addListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IPOIIf)
         {
@@ -96,7 +97,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IPOIIf)
         {
@@ -118,12 +119,13 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
      * Resets correct subclass in case of incorrect changes by application or others.
      * Renumber duplicate numbers
      */
-    public void registerModifiedData(Object source, UpdateMode aMode, boolean updateServer, boolean isLoopback, boolean isRollback)
+    public void registerModifiedData(IChangeIf aChange, boolean notifyServer)
     {
         if (getType() != getTypeBySubclass())
         {
             setType(getTypeBySubclass());
         }
+        /*
         if (getPlannedArea() != null)
         {
             ((AreaImpl) getPlannedArea()).registerModifiedData(
@@ -134,7 +136,8 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
             ((AreaImpl) getReportedArea()).registerModifiedData(
             		getReportedArea(),aMode,updateServer,isLoopback,isRollback);
         }
-        super.registerModifiedData(this,aMode,updateServer,isLoopback,isRollback);
+        */
+        super.registerModifiedData(aChange,notifyServer);
     }
 
     public static AssignmentImpl implementationOf(IAssignmentIf anInterface) throws MsoCastException
@@ -149,7 +152,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_ASSIGNMENT;
     }
@@ -187,9 +190,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_status.getValue();
     }
 
-    public IMsoModelIf.ModificationState getStatusState()
+    public IData.DataOrigin getStatusState()
     {
-        return m_status.getState();
+        return m_status.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<AssignmentStatus> getStatusAttribute()
@@ -222,9 +225,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_priority.getValue();
     }
 
-    public IMsoModelIf.ModificationState getPriorityState()
+    public IData.DataOrigin getPriorityState()
     {
-        return m_priority.getState();
+        return m_priority.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<AssignmentPriority> getPriorityAttribute()
@@ -248,9 +251,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_type.getValue();
     }
 
-    public IMsoModelIf.ModificationState getTypeState()
+    public IData.DataOrigin getTypeState()
     {
-        return m_type.getState();
+        return m_type.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<AssignmentType> getTypeAttribute()
@@ -277,9 +280,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_remarks.getString();
     }
 
-    public IMsoModelIf.ModificationState getRemarksState()
+    public IData.DataOrigin getRemarksState()
     {
-        return m_remarks.getState();
+        return m_remarks.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
@@ -297,9 +300,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_prioritySequence.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPrioritySequenceState()
+    public IData.DataOrigin getPrioritySequenceState()
     {
-        return m_prioritySequence.getState();
+        return m_prioritySequence.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPrioritySequenceAttribute()
@@ -318,9 +321,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_number.intValue();
     }
 
-    public IMsoModelIf.ModificationState getNumberState()
+    public IData.DataOrigin getNumberState()
     {
-        return m_number.getState();
+        return m_number.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
@@ -338,9 +341,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_timeEstimatedFinished.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getTimeEstimatedFinishedState()
+    public IData.DataOrigin getTimeEstimatedFinishedState()
     {
-        return m_timeEstimatedFinished.getState();
+        return m_timeEstimatedFinished.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute()
@@ -362,9 +365,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_assignmentEquipment;
     }
 
-    public IMsoModelIf.ModificationState getAssignmentEquipmentState(IEquipmentIf anIEquipmentIf)
+    public IData.DataOrigin getAssignmentEquipmentState(IEquipmentIf anIEquipmentIf)
     {
-        return m_assignmentEquipment.getState(anIEquipmentIf);
+        return m_assignmentEquipment.getOrigin(anIEquipmentIf);
     }
 
     public Collection<IEquipmentIf> getAssignmentEquipmentItems()
@@ -382,9 +385,9 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         return m_assignmentFindings;
     }
 
-    public IMsoModelIf.ModificationState getAssignmentFindingsState(IPOIIf anIPOIIf)
+    public IData.DataOrigin getAssignmentFindingsState(IPOIIf anIPOIIf)
     {
-        return m_assignmentFindings.getState(anIPOIIf);
+        return m_assignmentFindings.getOrigin(anIPOIIf);
     }
 
     public Collection<IPOIIf> getAssignmentFindingsItems()
@@ -414,20 +417,20 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public void setAssignmentBriefing(IBriefingIf aBriefing)
     {
-        m_assignmentBriefing.setReference(aBriefing);
+        m_assignmentBriefing.set(aBriefing);
     }
 
     public IBriefingIf getAssignmentBriefing()
     {
-        return m_assignmentBriefing.getReference();
+        return m_assignmentBriefing.get();
     }
 
-    public IMsoModelIf.ModificationState getAssignmentBriefingState()
+    public IData.DataOrigin getAssignmentBriefingState()
     {
-        return m_assignmentBriefing.getState();
+        return m_assignmentBriefing.getOrigin();
     }
 
-    public IMsoReferenceIf<IBriefingIf> getAssignmentBriefingAttribute()
+    public IMsoRelationIf<IBriefingIf> getAssignmentBriefingAttribute()
     {
         return m_assignmentBriefing;
     }
@@ -435,20 +438,20 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     public void setPlannedArea(IAreaIf anArea) throws IllegalOperationException
     {
         anArea.verifyAssignable(this);
-        m_plannedArea.setReference(anArea);
+        m_plannedArea.set(anArea);
     }
 
     public IAreaIf getPlannedArea()
     {
-        return m_plannedArea.getReference();
+        return m_plannedArea.get();
     }
 
-    public IMsoModelIf.ModificationState getPlannedAreaState()
+    public IData.DataOrigin getPlannedAreaState()
     {
-        return m_plannedArea.getState();
+        return m_plannedArea.getOrigin();
     }
 
-    public IMsoReferenceIf<IAreaIf> getPlannedAreaAttribute()
+    public IMsoRelationIf<IAreaIf> getPlannedAreaAttribute()
     {
         return m_plannedArea;
     }
@@ -456,20 +459,20 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     public void setReportedArea(IAreaIf anArea) throws IllegalOperationException
     {
         anArea.verifyAssignable(this);
-        m_reportedArea.setReference(anArea);
+        m_reportedArea.set(anArea);
     }
 
     public IAreaIf getReportedArea()
     {
-        return m_reportedArea.getReference();
+        return m_reportedArea.get();
     }
 
-    public IMsoModelIf.ModificationState getReportedAreaState()
+    public IData.DataOrigin getReportedAreaState()
     {
-        return m_reportedArea.getState();
+        return m_reportedArea.getOrigin();
     }
 
-    public IMsoReferenceIf<IAreaIf> getReportedAreaAttribute()
+    public IMsoRelationIf<IAreaIf> getReportedAreaAttribute()
     {
         return m_reportedArea;
     }
@@ -534,7 +537,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
     public IMessageLineIf getLatestStatusChangeMessageLine(MessageLineType aType)
     {
         messageLineTypeSelector.setSelectionCriteria(this, aType);
-        List<IMessageLineIf> retVal = m_msoModel.getMsoManager()
+        List<IMessageLineIf> retVal = m_model.getMsoManager()
         	.getCmdPost().getMessageLines().selectItems(
         			messageLineTypeSelector, IMessageLineIf.MESSAGE_LINE_TIME_COMPARATOR);
         return (retVal.size() == 0) ? null : retVal.get(0);
@@ -617,7 +620,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         boolean changeOwner = aUnit != owner;
 
         // suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 
 		// remove this from owner?
 		if (changeOwner && owner != null) {
@@ -647,7 +650,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 			}
 		}
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 
     }
 

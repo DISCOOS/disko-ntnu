@@ -4,8 +4,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.IMsoModelIf;
 
 public interface ICalloutIf extends IAssociationIf
 {
@@ -44,7 +44,7 @@ public interface ICalloutIf extends IAssociationIf
 
 	public String getTitle();
 
-	public IMsoModelIf.ModificationState getTitleState();
+	public IData.DataOrigin getTitleState();
 
     public IMsoAttributeIf.IMsoStringIf getTitleAttribute();
 
@@ -53,7 +53,7 @@ public interface ICalloutIf extends IAssociationIf
 
 	public Calendar getCreated();
 
-	public IMsoModelIf.ModificationState getCreatedState();
+	public IData.DataOrigin getCreatedState();
 
     public IMsoAttributeIf.IMsoCalendarIf getCreatedAttribute();
 
@@ -62,7 +62,7 @@ public interface ICalloutIf extends IAssociationIf
 
 	public String getOrganization();
 
-	public IMsoModelIf.ModificationState getOrganizationState();
+	public IData.DataOrigin getOrganizationState();
 
     public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute();
 

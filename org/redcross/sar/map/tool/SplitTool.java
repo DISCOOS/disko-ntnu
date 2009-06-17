@@ -21,6 +21,7 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 
 import java.awt.*;
@@ -162,7 +163,7 @@ public class SplitTool extends BaseMsoTool {
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 
 			try {
 				// get maximum deviation from point

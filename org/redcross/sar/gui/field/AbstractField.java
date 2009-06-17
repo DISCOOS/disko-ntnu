@@ -38,14 +38,14 @@ import javax.swing.undo.UndoableEdit;
 
 import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
+import org.redcross.sar.data.IData.DataOrigin;
+import org.redcross.sar.data.IData.DataState;
 import org.redcross.sar.gui.event.FieldModelEvent;
 import org.redcross.sar.gui.event.IFieldListener;
 import org.redcross.sar.gui.event.FieldEvent;
 import org.redcross.sar.gui.event.IFieldModelListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
-import org.redcross.sar.gui.field.IFieldModel.DataOrigin;
-import org.redcross.sar.gui.field.IFieldModel.DataState;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
@@ -55,6 +55,7 @@ import org.redcross.sar.mso.data.AttributeImpl.MsoTrack;
 import org.redcross.sar.undo.FieldEdit;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.work.event.IFlowListener;
 import org.redcross.sar.work.event.FlowEvent;
@@ -73,7 +74,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 
 	private static final long serialVersionUID = 1L;	
 	
-	private static final int SERVER_STATE_DURATION = 4000;
+	private static final int REMOTE_STATE_RESET = 5000;
 
 	protected static final int MINIMUM_COMPONENT_WIDTH = 50;
 	protected static final int DEFAULT_CAPTION_WIDTH = 80;
@@ -107,7 +108,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	
 	private boolean m_isDirty = false;
 	private boolean m_isTrackingFocus = false;
-	private boolean m_isValueAdjusting = false;
+	private boolean m_isEditValueAdjusting = false;
 	
 	private Color m_vBg;					// remote data origin view background 
 	private Color m_eBg;					// remote data origin edit background 
@@ -115,7 +116,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	private Color m_cBg = Color.RED;		// conflict data origin change background
 	private Color m_sBg = Color.GREEN;		// change in remote data background
 	
-	private DataOrigin m_origin = DataOrigin.ORIGIN_NOSOURCE;
+	private DataOrigin m_origin = DataOrigin.NONE;
 	
 	private final EventListenerList m_listeners = new EventListenerList();
 
@@ -153,14 +154,16 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		@Override
 		public void onFieldModelChanged(FieldModelEvent e) {
 			// update field value?
-			if(!isValueAdjusting() && e.isValueChanged()) {
+			if(!isEditValueAdjusting() && e.isValueChanged()) {
 				// consume edit events
-				setValueAdjusting(true);
+				setEditValueAdjusting(true);
 				// update edit values
 				setNewEditValue(m_model.getValue());
 				setOldEditValue(getEditValue());
 				// resume handling of edit events
-				setValueAdjusting(false);
+				setEditValueAdjusting(false);
+				// reset flag
+				m_isDirty = false;
 			}
 			// update background?
 			if(e.isOriginChanged() || e.isStateChanged()) {
@@ -307,28 +310,44 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	}
 	
 	/**
-	 * Extending class should call this method when edit value is changed
+	 * Call this method when edit value 
+	 * is changed in the edit control. 
 	 */
 	protected void onEditValueChanged() {
-		if(!isValueAdjusting()) {
+		if(!isEditValueAdjusting()) {
 			// consume edit events
-			setValueAdjusting(true);
-			// update field value
-			setValue(getEditValue());
+			setEditValueAdjusting(true);
+			/* update field value. This will cause a 
+			 * FlowEvent to be fired. */
+			setEditValue(getEditValue());
 			// resume handling of edit events 
-			setValueAdjusting(false);
+			setEditValueAdjusting(false);
 		}
 	}
 	
-	protected boolean isValueAdjusting() {
-		return m_isValueAdjusting;
+	/**
+	 * Get the edit value adjusting flag. This flag indicate that
+	 * a change in edit value has occurred, and that  event 
+	 * handling is in progress.
+	 *  
+	 * @return Returns {@code true} if edit value is adjusting. 
+	 */
+	protected boolean isEditValueAdjusting() {
+		return m_isEditValueAdjusting;
 	}
 	
-	protected void setValueAdjusting(boolean isAdjusting) {
-		m_isValueAdjusting = isAdjusting;
+	/**
+	 * Set the edit value adjusting flag. This flag indicate that
+	 * a change in edit value has occurred, and that event handling
+	 * is in progress. Use this method to indicate that
+	 * the edit value has changed, and that any change events should
+	 * be handled accordingly.
+	 */
+	protected void setEditValueAdjusting(boolean isAdjusting) {
+		m_isEditValueAdjusting = isAdjusting;
 	}
 	
-	protected boolean isValueChanged(O oldValue, Object newValue) {
+	protected static boolean isValueChanged(Object oldValue, Object newValue) {
 		return !isEqual(oldValue, newValue);
 	}
 	
@@ -337,14 +356,14 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		DataOrigin origin = m_model.getOrigin();
 		// get flags
 		boolean bFlag = 
-			m_model.isState(DataState.STATE_LOOPBACK) ||
-			m_model.isState(DataState.STATE_ROLLBACK);
+			m_model.isState(DataState.LOOPBACK) ||
+			m_model.isState(DataState.ROLLBACK);
 		// set background
 		switch(origin) {
-		case ORIGIN_LOCAL: 
+		case LOCAL: 
 			getComponent().setBackground(m_lBg);
 			break;
-		case ORIGIN_REMOTE:
+		case REMOTE:
 			// any change?
 			if(!(m_origin.equals(origin) || bFlag)) {
 				// set server change indication
@@ -353,16 +372,16 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 				 * This adds the reset to default background
 				 * using the static UpdateWork instance 
 				 * m_updateWork. This method ensures that
-				 * every change of attribute state to SERVER 
-				 * is shown the duration SERVER_UPDATE_DURATION 
+				 * every change of attribute state to REMOTE 
+				 * is shown the duration REMOTE_UPDATE_RESET 
 				 * using the color m_sBg. 
 				 * ========================================== */
-				setUpdateState(this);
+				setUpdateWork(this);
 			} else if(m_updateWork==null || !m_updateWork.contains(this)) {
 				getComponent().setBackground(isEditable()?m_eBg:m_vBg);
 			}
 			break;
-		case ORIGIN_CONFLICT:
+		case CONFLICT:
 			getComponent().setBackground(m_cBg);
 			break;
 		default:
@@ -521,17 +540,11 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		return m_isDirty;
 	}
 	
-	/*
-	public boolean isDirty() {
-		// compare editor value with model value
-		if(!isValueChanged(getEditValue(),getValue())) {
-			return m_model.isChanged();
-		}
-		return m_isDirty;
-	}
-	*/
-	
 	public void setDirty(boolean isDirty) {
+		if(m_isDirty)
+		{
+			parse();
+		}
 		m_isDirty = isDirty;
 	}
 
@@ -738,7 +751,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		// add model listener
 		m_model.addFieldModelListener(m_modelListener);
 		// initialize states
-		m_origin = DataOrigin.ORIGIN_NOSOURCE; //= m_model.getOrigin();
+		m_origin = DataOrigin.NONE; 
 		// notify field of change
 		m_model.reset();
 		// notify listeners of model set
@@ -761,9 +774,9 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		return attr;
 	}
 	
-	public IMsoAttributeIf<O> clearMsoAttribute(Object setValue) {
+	public IMsoAttributeIf<O> clearMsoAttribute(Object newEditValue) {
 		IMsoAttributeIf<O> attr = clearMsoAttribute();
-		setValue(setValue);
+		setEditValue(newEditValue);
 		return attr;		
 	}
 	
@@ -907,16 +920,47 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	
 	public abstract O getEditValue();
 	
-	public final boolean setValue(Object value) {
+	public final boolean setEditValue(Object value) {
+		/* get old edit value (the value stored last
+		 * time the edit value was changed) */
 		O oldValue = getOldEditValue();
-		// if value is adjusting, calling setNewEditValue is not need.
-		if(isValueAdjusting() || setNewEditValue(value)) {
+		/* if edit value is already adjusting, 
+		 * calling setNewEditValue is not need since 
+		 * the edit value already is changed. */
+		if(isEditValueAdjusting() || setNewEditValue(value)) {
 			// notify change?
 			if(isValueChanged(oldValue, value)) {
 				fireOnWorkChange(new FieldEdit(this,oldValue,value));
 			}
 			// replace old edit value with current 
 			setOldEditValue(getEditValue());
+			// success
+			return true;
+		}
+		// failure
+		return false;		
+	}
+	
+	public final boolean setEditValue(Object value, boolean notify) {
+		setChangeable(notify);
+		boolean bFlag = setEditValue(value);
+		setChangeable(!notify);
+		return bFlag;
+	}
+	
+	public final boolean setValue(Object value) {
+		// get old value 
+		O oldValue = getValue();
+		// set current edit value 
+		setEditValue(value);			
+		// get new edit value
+		O newValue = getEditValue();
+		// update model?
+		if(isValueChanged(oldValue, newValue)) {
+			// set model value
+			m_model.setLocalValue(newValue);
+			// reset dirty flag
+			m_isDirty = false;
 			// success
 			return true;
 		}
@@ -1036,7 +1080,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
         return pane;
 	}
 	
-	private static final void setUpdateState(AbstractField field) {
+	private static final void setUpdateWork(AbstractField field) {
 		// mark?
 		if(m_updateWork == null) {
 			try {
@@ -1050,30 +1094,31 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		}
 	}
 	
-	private static final void resetUpdateState() {
+	private static final void resetUpdateWork() {
 		// clear mark
 		m_updateWork = null;
 	}
+	
 	/*==================================================================
 	 * inner classes
 	 *================================================================== */
 	
 	private static class UpdateWork extends AbstractWork {
 
-		private ConcurrentLinkedQueue<ServerUpdate> 
-			m_fields = new ConcurrentLinkedQueue<ServerUpdate>();
+		private ConcurrentLinkedQueue<RemoteUpdate> 
+			m_fields = new ConcurrentLinkedQueue<RemoteUpdate>();
 		
 		public UpdateWork(AbstractField field) throws Exception {
 			// forward
 			super(NORMAL_PRIORITY, true, false, 
-					ThreadType.WORK_ON_UNSAFE, "",0
+					WorkerType.UNSAFE, "",0
 					,false,false,false);
 			add(field);
 		}
 		
 		public void add(AbstractField field) {
 			// prepare
-			m_fields.add(new ServerUpdate(field));			
+			m_fields.add(new RemoteUpdate(field));			
 		}
 		
 		public boolean contains(AbstractField field) {
@@ -1081,14 +1126,14 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		}
 
 		@Override
-		public Object doWork() {
-			ServerUpdate it;
+		public Object doWork(IWorkLoop loop) {
+			RemoteUpdate it;
 			final List<AbstractField> update = new Vector<AbstractField>(m_fields.size());
-			List<ServerUpdate> reschedule = new Vector<ServerUpdate>(m_fields.size()); 
+			List<RemoteUpdate> reschedule = new Vector<RemoteUpdate>(m_fields.size()); 
 			// loop over all
 			while((it=m_fields.poll())!=null) {
 				// update?
-				if(System.currentTimeMillis()-it.getTimeMillis()>SERVER_STATE_DURATION) {
+				if(System.currentTimeMillis()-it.getTimeMillis()>REMOTE_STATE_RESET) {
 					update.add(it.getField());
 				} else {
 					reschedule.add(it);
@@ -1110,18 +1155,18 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 			if(m_isLoop) {
 				m_fields.addAll(reschedule);
 			} else {
-				resetUpdateState();
+				resetUpdateWork();
 			}
 			// success
 			return true;
 		}
 		
-		private static class ServerUpdate {
+		private static class RemoteUpdate {
 			
 			private AbstractField m_field;
 			private long m_tic = System.currentTimeMillis();
 			
-			public ServerUpdate(AbstractField field) {
+			public RemoteUpdate(AbstractField field) {
 				m_field = field;
 			}
 			

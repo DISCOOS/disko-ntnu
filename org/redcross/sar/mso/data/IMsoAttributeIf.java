@@ -1,7 +1,7 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
-import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.mso.*;
 
@@ -14,9 +14,10 @@ import java.util.Vector;
 /**
  * Base interface for MSO Attributes
  */
-public interface IMsoAttributeIf<T> extends IMsoDataStateIf
+public interface IMsoAttributeIf<T> extends IMsoDataIf
 {
-    /**
+	
+	/**
      * Get name of attribute
      *
      * @return The name
@@ -65,22 +66,27 @@ public interface IMsoAttributeIf<T> extends IMsoDataStateIf
      */
     public int getIndexNo();
 
-	/**
-	 * Get modification state. </p>
-	 * 
-	 * @return ModificationState
-	 */
-    public ModificationState getState();
+    /**
+     * Get current data origin 
+     * @return Returns current data origin.
+     */    
+    public IData.DataOrigin getOrigin();
 
     /**
-     * Check modification state</p>
-     * 
-     * @param state
-     * @return boolean
+     * Check for given data origin 
+     * @param origin - the origin to match
+     * @return Returns <code>true</code> if origins match.
      */
-    public boolean isState(ModificationState state);
+    public boolean isOrigin(IData.DataOrigin origin);
     
-
+	/**
+     * Check if data is in more than one origin.</p>
+     * 
+	 * @returns Since attributes only have on data object, mixed origin states are not
+	 * possible. This method returns therefore always <code>false</code>.
+	 */
+    public boolean isOriginMixed();
+    
     /**
      * Get attribute value
      * 
@@ -195,7 +201,15 @@ public interface IMsoAttributeIf<T> extends IMsoDataStateIf
      *
      * @return @return Reference to IMsoObjectIf object.
      */
-    public IMsoObjectIf getOwner();
+    public IMsoObjectIf getOwnerObject();
+    
+    /**
+     * Compare attribute indices, used for sorting.
+     *
+     * @param anObject Object to compare
+     * @return As {@link Comparable#compareTo(Object)}
+     */
+    public int compareTo(IData anObject);
 
     /**
      * Interface for {@link Boolean} attributes.

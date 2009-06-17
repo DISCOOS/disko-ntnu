@@ -12,7 +12,7 @@ public class Simulator  {
 
 	public Simulator() throws Exception {
 		// prepare
-		m_workLoop = new WorkLoop(5000,1000);
+		m_workLoop = new WorkLoop(5000,0.2);
 		m_workPool = WorkPool.getInstance();
 	}
 

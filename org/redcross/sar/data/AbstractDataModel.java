@@ -10,6 +10,8 @@ import java.util.Vector;
 
 import javax.swing.event.EventListenerList;
 
+import org.redcross.sar.data.IData.DataOrigin;
+import org.redcross.sar.data.IData.DataState;
 import org.redcross.sar.data.event.BinderAdapter;
 import org.redcross.sar.data.event.BinderEvent;
 import org.redcross.sar.data.event.DataEvent;
@@ -31,7 +33,7 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 
 	protected final List<S> ids = new ArrayList<S>();
 	protected final List<T> objects = new ArrayList<T>();
-	protected final Map<S,Object[]> rows = new HashMap<S,Object[]>();
+	protected final Map<S,IRow> rows = new HashMap<S,IRow>();
 
 	protected final EventListenerList listeners = new EventListenerList();
 	protected final List<IDataBinder<S,? extends IData,?>> binders = new ArrayList<IDataBinder<S,? extends IData,?>>(1);
@@ -240,7 +242,7 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 
 	public Object[] getData(int row) {
 		if(row>-1 && row<rows.size()) {
-			return rows.get(ids.get(row));
+			return rows.get(ids.get(row)).getData();
 		}
 		return null;
 	}
@@ -248,27 +250,58 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 	public int getRowCount() {
 		return rows.size();
 	}
-
-	public Object getValueAt(int iRow, int iCol) {
-    	if(!(iRow>=0 && iRow<objects.size())) return null;
-    	S id = ids.get(iRow);
+	
+	public IRow getRow(int index) {
+    	if(!(index>=0 && index<objects.size())) return null;
+    	S id = ids.get(index);
 		if(id==null) return null;
-		Object[] row = rows.get(id);
+		return rows.get(id);		
+	}
+
+	public ICell getCell(int iRow, int iCol) {
+		IRow row = getRow(iRow);
 		if(row==null) return null;
-		if(!(iCol>=0 && iCol<row.length)) return null;
-		return row[iCol];
+		if(!(iCol>=0 && iCol<size)) return null;
+		return row.getCell(iCol);
+	}
+	
+	public Object getValueAt(int iRow, int iCol) {
+		ICell cell = getCell(iRow, iCol);
+		if(cell==null) return null;
+		return cell.getValue();
 	}
 
 	public void setValueAt(Object value, int iRow, int iCol) {
-    	if(!(iRow>=0 && iRow<objects.size())) return;
-    	S id = ids.get(iRow);
-		if(id==null) return;
-		Object[] row = rows.get(id);
-		if(row==null) return;
-		if(!(iCol>=0 && iCol<row.length)) return;
-		row[iCol] = value;
+		ICell cell = getCell(iRow, iCol);
+		if(cell==null) return;
+		cell.setValue(value);
 		fireDataChanged(new int[]{iRow},DataEvent.UPDATED_EVENT);
 	}
+	
+	public DataOrigin getOriginAt(int iRow, int iCol) {
+		ICell cell = getCell(iRow, iCol);
+		if(cell==null) return null;
+		return cell.getDataOrigin();
+	}
+	
+	public void setOriginAt(DataOrigin origin, int iRow, int iCol) {
+		ICell cell = getCell(iRow, iCol);
+		if(cell==null) return;
+		cell.setDataOrigin(origin);
+	}
+	
+	public DataState getStateAt(int iRow, int iCol) {
+		ICell cell = getCell(iRow, iCol);
+		if(cell==null) return null;
+		return cell.getDataState();
+	}
+	
+	public void setStateAt(DataState state, int iRow, int iCol) {
+		ICell cell = getCell(iRow, iCol);
+		if(cell==null) return;
+		cell.setDataState(state);
+	}
+	
 
 	public void addDataListener(IDataListener listener) {
 		listeners.add(IDataListener.class, listener);
@@ -297,16 +330,16 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 	 * @param T obj - The added data object
 	 * @param int size - number of values in object
 	 */
-	protected abstract Object[] create(S id, T obj, int size);
+	protected abstract IRow create(S id, T obj, int size);
 
 	/**
 	 * Is fired when IDataModel.update(S id, T obj) is called.
 	 *
 	 * @param S id - The updated row id
 	 * @param T obj - The updated data object
-	 * @param int size - array of values to update
+	 * @param IRow data - the row data
 	 */
-	protected abstract Object[] update(S id, T obj, Object[] data);
+	protected abstract IRow update(S id, T obj, IRow data);
 
 	/**
 	 * Is fired when IDataModel.remove(S id) and onDataClearAll() is called internally.
@@ -381,7 +414,7 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 
 	protected int update(S id, T obj, boolean doAdd, boolean notify) {
 		// get current data
-		Object[] data = rows.get(id);
+		IRow data = rows.get(id);
 		if(data!=null) {
 			// forward
 			data = update(id,obj,data);
@@ -425,7 +458,26 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
 		if(notify) fireDataChanged(idx,DataEvent.CLEAR_EVENT);
 	}
 
-
+	/**
+	 * Create a Row instance of given size.
+	 * 
+	 * @param size - the size of the row (number of cells)
+	 * @return A Row instance of given size.
+	 */
+	public static IRow createRow(int size) {
+		return new Row(size);
+	}
+	
+	/**
+	 * Create a Row instance with given data.
+	 * 
+	 * @param data - the row data (cell values)
+	 * @return A Row instance with given data.
+	 */
+	public static IRow createRow(Object[] data) {
+		return new Row(data);
+	}
+	
 	/* =============================================================================
 	 * Anonymous classes
 	 * ============================================================================= */
@@ -799,6 +851,126 @@ public abstract class AbstractDataModel<S,T extends IData> implements IDataModel
     	}
 
 	};
+	
+	/* =============================================================================
+	 * Inner classes
+	 * ============================================================================= */
+	
+	private final static class Row implements IRow {
+		
+		protected DataState state; 
+		protected DataOrigin origin; 
+		protected Cell[] cells;
+		
+		protected Row(int size) {
+			this(size,DataOrigin.NONE,DataState.NONE);
+		}
+		
+		protected Row(int size, DataOrigin origin, DataState state) {
+			cells = new Cell[size];
+			for(int i=0;i<size;i++){
+				cells[i] = new Cell();
+			}			
+			this.origin = origin;
+			this.state = state;
+		}
+		
+		protected Row(Object[] data) {
+			cells = new Cell[data.length];
+			for(int i=0;i<data.length;i++){
+				cells[i] = new Cell();
+				cells[i].value = data[i];
+			}
+		}
+		
+		public DataOrigin getDataOrigin() {
+			return origin;
+		}
+
+		public void setDataOrigin(DataOrigin origin) {
+			this.origin = origin;
+		}
+		
+		public DataState getDataState() {
+			return state;
+		}
+		
+		public void setDataState(DataState state) {
+			this.state = state;
+		}
+		
+		public Object getValue(int index) {
+			return cells[index].value;
+		}
+		
+		public void setValue(int index, Object value) {
+			cells[index].value = value;
+		}
+		
+		public ICell[] getCells() {
+			return cells;
+		}
+		
+		public Object[] getData() {
+			Object[] data = new Object[cells.length];
+			for(int i=0;i<cells.length;i++) {
+				data[i]=cells[i].value;
+			}
+			return data;
+		}
+		
+		public void setData(Object[] values) {
+			for(int i=0;i<cells.length;i++) {
+				setValue(i,values[i]);
+			}
+		}
+		
+		public ICell getCell(int index) {
+			return cells[index];
+		}
+		
+	};
+	
+	private final static class Cell implements ICell {
+		
+		protected Object value;
+		protected DataState state;
+		protected DataOrigin origin;
+		
+		protected Cell() {
+			this(null,DataOrigin.NONE,DataState.NONE);
+		}
+		protected Cell(Object value, DataOrigin origin, DataState state) {
+			this.value = value;
+			this.origin = origin;
+			this.state = state;
+		}
+		
+		public DataOrigin getDataOrigin() {
+			return origin;
+		}
+
+		public void setDataOrigin(DataOrigin origin) {
+			this.origin = origin;
+		}
+		
+		public DataState getDataState() {
+			return state;
+		}
+		
+		public void setDataState(DataState state) {
+			this.state = state;
+		}
+		
+		public Object getValue() {
+			return value;
+		}
+		
+		public void setValue(Object value) {
+			this.value = value;
+		}
+		
+	}
 
 }
 

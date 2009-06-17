@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.mso.Polygon;
 
 public interface ISearchAreaIf extends IMsoObjectIf
@@ -26,7 +26,7 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public String getStatusText();
 
-    public IMsoModelIf.ModificationState getStatusState();
+    public IData.DataOrigin getStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<SearchAreaStatus> getStatusAttribute();
 
@@ -38,7 +38,7 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public Polygon getGeodata();
 
-    public IMsoModelIf.ModificationState getGeodataState();
+    public IData.DataOrigin getGeodataState();
 
     public IMsoAttributeIf.IMsoPolygonIf getGeodataAttribute();
 
@@ -46,7 +46,7 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public int getPriority();
 
-    public IMsoModelIf.ModificationState getPriorityState();
+    public IData.DataOrigin getPriorityState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute();
 
@@ -54,7 +54,7 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
@@ -66,8 +66,8 @@ public interface ISearchAreaIf extends IMsoObjectIf
 
     public IHypothesisIf getSearchAreaHypothesis();
 
-    public IMsoModelIf.ModificationState getSearchAreaHypothesisState();
+    public IData.DataOrigin getSearchAreaHypothesisState();
 
-    public IMsoReferenceIf<IHypothesisIf> getSearchAreaHypothesisAttribute();
+    public IMsoRelationIf<IHypothesisIf> getSearchAreaHypothesisAttribute();
 
 }

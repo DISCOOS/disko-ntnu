@@ -1,8 +1,9 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Collection;
+
+import org.redcross.sar.data.IData;
 
 /**
  *
@@ -23,7 +24,7 @@ public interface ISystemIf extends IMsoObjectIf
 
     public IDataSourceListIf getDataSourceList();
 
-    public IMsoModelIf.ModificationState getDataSourceListState(IDataSourceIf anIDataSourceIf);
+    public IData.DataOrigin getDataSourceListState(IDataSourceIf anIDataSourceIf);
 
     public Collection<IDataSourceIf> getDataSourceListItems();
 

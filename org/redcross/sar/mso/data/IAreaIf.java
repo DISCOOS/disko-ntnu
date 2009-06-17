@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.IGeodataIf;
 
@@ -17,7 +17,7 @@ public interface IAreaIf extends IMsoObjectIf
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
@@ -29,7 +29,7 @@ public interface IAreaIf extends IMsoObjectIf
 
     public IPOIListIf getAreaPOIs();
 
-    public IMsoModelIf.ModificationState getAreaPOIsState(IPOIIf anIPOIIf);
+    public IData.DataOrigin getAreaPOIsState(IPOIIf anIPOIIf);
 
     public Collection<IPOIIf> getAreaPOIsItems();
 
@@ -41,7 +41,7 @@ public interface IAreaIf extends IMsoObjectIf
 
     public IMsoListIf<IMsoObjectIf> getAreaGeodata();
 
-    public IMsoModelIf.ModificationState getAreaGeodataState(IMsoObjectIf anMsoObjectIf);
+    public IData.DataOrigin getAreaGeodataState(IMsoObjectIf anMsoObjectIf);
 
     public Collection<IMsoObjectIf> getAreaGeodataItems();
 

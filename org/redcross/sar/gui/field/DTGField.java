@@ -178,10 +178,9 @@ public class DTGField extends AbstractField<Calendar,JFormattedTextField,JTextFi
 		return true;
 	}
 	
-	@Override
-	protected boolean isValueChanged(Calendar oldValue, Object newValue) {
+	protected static boolean isValueChanged(Object oldValue, Object newValue) {
 		if(newValue instanceof Calendar) {
-			return !DTG.isEqualDTG(oldValue,(Calendar)newValue);
+			return !DTG.isEqualDTG((Calendar)oldValue,(Calendar)newValue);
 		}
 		return false;
 	}

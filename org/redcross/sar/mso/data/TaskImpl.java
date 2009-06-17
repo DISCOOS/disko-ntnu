@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoManagerImpl;
@@ -26,8 +27,8 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
     private final AttributeImpl.MsoEnum<TaskType> m_type = new AttributeImpl.MsoEnum<TaskType>(this, "Type", 1, TaskType.TRANSPORT);
     private final AttributeImpl.MsoEnum<IMsoManagerIf.MsoClassCode> m_sourceClass = new AttributeImpl.MsoEnum<IMsoManagerIf.MsoClassCode>(this, "SourceClass", 1, IMsoManagerIf.MsoClassCode.CLASSCODE_AREA);
 
-    private final MsoReferenceImpl<IEventIf> m_createdEvent = new MsoReferenceImpl<IEventIf>(this, "CreatedEvent", 0, true);
-    private final MsoReferenceImpl<IMsoObjectIf> m_dependentObject = new MsoReferenceImpl<IMsoObjectIf>(this, "DependentObject", 0, true);
+    private final MsoRelationImpl<IEventIf> m_createdEvent = new MsoRelationImpl<IEventIf>(this, "CreatedEvent", 0, true, null);
+    private final MsoRelationImpl<IMsoObjectIf> m_dependentObject = new MsoRelationImpl<IMsoObjectIf>(this, "DependentObject", 0, true, null);
 
     public static String getText(String aKey)
     {
@@ -94,7 +95,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_TASK;
     }
@@ -109,9 +110,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_description.getString();
     }
 
-    public IMsoModelIf.ModificationState getDescriptionState()
+    public IData.DataOrigin getDescriptionState()
     {
-        return m_description.getState();
+        return m_description.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute()
@@ -129,9 +130,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_number.intValue();
     }
 
-    public IMsoModelIf.ModificationState getNumberState()
+    public IData.DataOrigin getNumberState()
     {
-        return m_number.getState();
+        return m_number.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
@@ -149,9 +150,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_creatingWorkProcess.getString();
     }
 
-    public IMsoModelIf.ModificationState getCreatingWorkProcessState()
+    public IData.DataOrigin getCreatingWorkProcessState()
     {
-        return m_creatingWorkProcess.getState();
+        return m_creatingWorkProcess.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getCreatingWorkProcessAttribute()
@@ -178,9 +179,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_type.getValue();
     }
 
-    public IMsoModelIf.ModificationState getTypeState()
+    public IData.DataOrigin getTypeState()
     {
-        return m_type.getState();
+        return m_type.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<TaskType> getTypeAttribute()
@@ -208,9 +209,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_progress.intValue();
     }
 
-    public IMsoModelIf.ModificationState getProgressState()
+    public IData.DataOrigin getProgressState()
     {
-        return m_progress.getState();
+        return m_progress.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getProgressAttribute()
@@ -228,9 +229,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_responsibleRole.getString();
     }
 
-    public IMsoModelIf.ModificationState getResponsibleRoleState()
+    public IData.DataOrigin getResponsibleRoleState()
     {
-        return m_responsibleRole.getState();
+        return m_responsibleRole.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getResponsibleRoleAttribute()
@@ -248,9 +249,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_taskText.getString();
     }
 
-    public IMsoModelIf.ModificationState getTaskTextState()
+    public IData.DataOrigin getTaskTextState()
     {
-        return m_taskText.getState();
+        return m_taskText.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTaskTextAttribute()
@@ -268,9 +269,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_alert.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getAlertState()
+    public IData.DataOrigin getAlertState()
     {
-        return m_alert.getState();
+        return m_alert.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getAlertAttribute()
@@ -288,9 +289,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_created.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getCreatedState()
+    public IData.DataOrigin getCreatedState()
     {
-        return m_created.getState();
+        return m_created.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getCreatedAttribute()
@@ -313,9 +314,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_priority.getValue();
     }
 
-    public IMsoModelIf.ModificationState getPriorityState()
+    public IData.DataOrigin getPriorityState()
     {
-        return m_priority.getState();
+        return m_priority.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<TaskPriority> getPriorityAttribute()
@@ -353,9 +354,9 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         return m_status.getInternationalName();
     }
 
-    public IMsoModelIf.ModificationState getStatusState()
+    public IData.DataOrigin getStatusState()
     {
-        return m_status.getState();
+        return m_status.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<TaskStatus> getStatusAttribute()
@@ -380,12 +381,12 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public String getSourceClassText()
     {
-        return MsoManagerImpl.getClasscodeText(m_sourceClass.getValue());
+        return MsoManagerImpl.getClassCodeText(m_sourceClass.getValue());
     }
 
-    public IMsoModelIf.ModificationState getSourceClassState()
+    public IData.DataOrigin getSourceClassState()
     {
-        return m_sourceClass.getState();
+        return m_sourceClass.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<IMsoManagerIf.MsoClassCode> getSourceClassAttribute()
@@ -399,40 +400,40 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public void setCreatedEvent(IEventIf aEvent)
     {
-        m_createdEvent.setReference(aEvent);
+        m_createdEvent.set(aEvent);
     }
 
     public IEventIf getCreatedEvent()
     {
-        return m_createdEvent.getReference();
+        return m_createdEvent.get();
     }
 
-    public IMsoModelIf.ModificationState getCreatedEventState()
+    public IData.DataOrigin getCreatedEventState()
     {
-        return m_createdEvent.getState();
+        return m_createdEvent.getOrigin();
     }
 
-    public IMsoReferenceIf<IEventIf> getCreatedEventAttribute()
+    public IMsoRelationIf<IEventIf> getCreatedEventAttribute()
     {
         return m_createdEvent;
     }
 
     public void setDependentObject(IMsoObjectIf anAbstractMsoObject)
     {
-        m_dependentObject.setReference(anAbstractMsoObject);
+        m_dependentObject.set(anAbstractMsoObject);
     }
 
     public IMsoObjectIf getDependentObject()
     {
-        return m_dependentObject.getReference();
+        return m_dependentObject.get();
     }
 
-    public IMsoModelIf.ModificationState getDependentObjectState()
+    public IData.DataOrigin getDependentObjectState()
     {
-        return m_dependentObject.getState();
+        return m_dependentObject.getOrigin();
     }
 
-    public IMsoReferenceIf<IMsoObjectIf> getDependentObjectAttribute()
+    public IMsoRelationIf<IMsoObjectIf> getDependentObjectAttribute()
     {
         return m_dependentObject;
     }
@@ -455,7 +456,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
         setTimeStamp(aCalendar);
     }
 
-    public IMsoModelIf.ModificationState getDueTimeState()
+    public IData.DataOrigin getDueTimeState()
     {
         return getTimeStampState();
     }

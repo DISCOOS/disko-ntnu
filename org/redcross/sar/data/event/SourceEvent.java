@@ -8,23 +8,23 @@ import org.redcross.sar.data.IDataSource;
  * 
  * @author Administrator
  *
- * @param <I> - the class or interface that implements the source event information
+ * @param <D> - the class or interface that implements the source event data
  */
-public class SourceEvent<I> extends EventObject {
+public class SourceEvent<D> extends EventObject {
 
 	private static final long serialVersionUID = 1L;
 
-	private I info;
+	private D data;
 
 	/* ===========================================================
 	 * Constructors
 	 * =========================================================== */
 
-	public SourceEvent(IDataSource<I> source, I info) {
+	public SourceEvent(IDataSource<D> source, D data) {
 		// forward
 		super(source);
 		// prepare
-		this.info = info;
+		this.data = data;
 	}
 
 	/* ===========================================================
@@ -33,12 +33,12 @@ public class SourceEvent<I> extends EventObject {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public IDataSource<I> getSource() {
-		return (IDataSource<I>)super.getSource();
+	public IDataSource<D> getSource() {
+		return (IDataSource<D>)super.getSource();
 	}
 
-	public I getInformation() {
-		return info;
+	public D getData() {
+		return data;
 	}
-
+	
 }

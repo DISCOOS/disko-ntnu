@@ -1,6 +1,5 @@
 package org.redcross.sar.map;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -8,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.data.event.SourceEvent;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.layer.IMapLayer;
@@ -15,16 +15,16 @@ import org.redcross.sar.map.layer.IMsoFeatureLayer;
 import org.redcross.sar.map.work.IMapWork;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 import org.redcross.sar.work.AbstractWork;
-
-import com.esri.arcgis.interop.AutomationException;
+import org.redcross.sar.work.IWorkLoop;
 
 @SuppressWarnings("unchecked")
 public class MsoFeatureBinder 
-	extends AbstractMapDataBinder<IMsoObjectIf, IMsoObjectIf, MsoEvent.UpdateList, IMsoFeatureLayer> {
+	extends AbstractMapDataBinder<IMsoObjectIf, IMsoObjectIf, MsoEvent.ChangeList, IMsoFeatureLayer> {
 
 	private static final long serialVersionUID = 1L;
+	private static final Logger m_logger = Logger.getLogger(MsoFeatureBinder.class);
 
 	private Progressor m_progressor;
 
@@ -43,9 +43,10 @@ public class MsoFeatureBinder
 	 * IMapDataBinder implementation
 	 * ============================================================================= */
 
-	public void onSourceChanged(SourceEvent<UpdateList> e) {
+	public void onSourceChanged(SourceEvent<ChangeList> e) {
+		
 		// get update list
-		UpdateList list = e.getInformation();
+		ChangeList list = e.getData();
 		
 		// initialize work list
 		Map<IMsoFeatureLayer, Collection<IMapData>> workList
@@ -56,16 +57,16 @@ public class MsoFeatureBinder
 			// forward
 			Collection<IMapData> items = new ArrayList<IMapData>();
 			Collection<IMsoFeature> features = it.processMsoUpdateEvent(list);
-			// cast
-			for(IMapData data : features) {
-				items.add(data);
-			}
 			// has been changed?
 			if(features.size()>0) {
+				// collect work items
+				for(IMapData data : features) {
+					items.add(data);
+				}
+				// add work items to work list
 				workList.put(it,items);
 			}
 		}
-
 		// forward
 		schedule(workList);
 	}	
@@ -85,8 +86,7 @@ public class MsoFeatureBinder
 		try {
 			return new FeatureWork(work);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			m_logger.error("Failed to create FeatureWork instance",e);
 		}
 		return null;
 	}
@@ -101,7 +101,7 @@ public class MsoFeatureBinder
 
 		public FeatureWork(Map<IMsoFeatureLayer, Collection<IMapData>> data) throws Exception {
 			// forward
-			super(m_isActive?HIGH_PRIORITY:NORMAL_PRIORITY,true,false,ThreadType.WORK_ON_LOOP,"",0,false,false);
+			super(m_isActive?HIGH_PRIORITY:NORMAL_PRIORITY,true,false,WorkerType.UNSAFE,"",0,false,false);
 			// prepare
 			m_data = data;
 		}
@@ -177,7 +177,7 @@ public class MsoFeatureBinder
 		}
 
 		@Override
-		public Void doWork() {
+		public Void doWork(IWorkLoop loop) {
 
 			// initialize dirty layer list
 			List<IMapLayer> dirtyList = new Vector<IMapLayer>(m_data.size());
@@ -201,12 +201,8 @@ public class MsoFeatureBinder
 					if(layer.isDirty(true)) {
 						dirtyList.add(layer);
 					}
-				} catch (AutomationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (Exception e) {
+					m_logger.error("Failed to execute feature work ",e);
 				}
 			}
 

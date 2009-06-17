@@ -49,7 +49,7 @@ public class SubjectImpl extends AbstractPerson implements ISubjectIf
 //        return super.toString() + " " + m_description.getAttrValue();
 //    }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_SUBJECT;
     }

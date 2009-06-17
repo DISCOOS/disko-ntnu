@@ -1,7 +1,7 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.mso.Position;
 
 import java.util.Collection;
@@ -85,7 +85,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public POIType getType();
 
-    public IMsoModelIf.ModificationState getTypeState();
+    public IData.DataOrigin getTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<POIType> getTypeAttribute();
 
@@ -99,7 +99,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public String getName();
 
-    public IMsoModelIf.ModificationState getNameState();
+    public IData.DataOrigin getNameState();
 
     public IMsoAttributeIf.IMsoStringIf getNameAttribute();
 
@@ -107,7 +107,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public Position getPosition();
 
-    public IMsoModelIf.ModificationState getPositionState();
+    public IData.DataOrigin getPositionState();
 
     public IMsoAttributeIf.IMsoPositionIf getPositionAttribute();
 
@@ -115,7 +115,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
@@ -123,7 +123,7 @@ public interface IPOIIf extends IMsoObjectIf
 
     public int getAreaSequenceNumber();
 
-    public IMsoModelIf.ModificationState getAreaSequenceNumberState();
+    public IData.DataOrigin getAreaSequenceNumberState();
 
     public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
 

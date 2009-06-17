@@ -6,7 +6,6 @@ import java.lang.instrument.IllegalClassFormatException;
 import javax.swing.JButton;
 
 import org.apache.log4j.Logger;
-import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
@@ -50,7 +49,7 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
 
    private JButton getTidsplanButton()
     {
-        IApplication app = getDiskoRole().getApplication();
+        //IApplication app = getDiskoRole().getApplication();
         if (m_tidsplanButton == null)
         {
             try
@@ -72,7 +71,7 @@ public class DiskoWpPlanImpl extends AbstractDiskoWpModule implements IDiskoWpPl
 
     private JButton getGrovplanButton()
     {
-        IApplication app = getDiskoRole().getApplication();
+        //IApplication app = getDiskoRole().getApplication();
         if (m_grovplanButton == null)
         {
             try

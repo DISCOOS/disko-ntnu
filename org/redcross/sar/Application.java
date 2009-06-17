@@ -27,10 +27,10 @@ import org.redcross.sar.mso.MsoModelImpl;
 import org.redcross.sar.mso.SaraDispatcherImpl;
 import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.undo.EditManager;
-import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.ProgressMonitor;
 import org.redcross.sar.work.WorkPool;
 
@@ -171,8 +171,8 @@ public class Application implements IApplication
 				Utils.setApp(Application.this);
 				// initialize ArcGIS
 				initializeArcGISLicenses();
-				// initialize GUI
-				initialize();
+				// initialize core (GUI, models, services)
+				initializeCore();
 			}			
 		});
 	}
@@ -229,7 +229,7 @@ public class Application implements IApplication
   	 * *Initializing code
   	 *======================================================== */
 	
-	private void initialize()
+	private void initializeCore()
 	{
 		// initialize logging
 		Log.init("DISKO");
@@ -728,6 +728,8 @@ public class Application implements IApplication
 
 	public void shutdown()
 	{
+		// save properties
+		AppProps.save();
 		// cleanup
 		if(getArcGisSystem()!=null) {
 			try {
@@ -888,7 +890,7 @@ public class Application implements IApplication
 		 */
 		InitiateModelDriver(long millisToWait, boolean choose, boolean prompt) throws Exception {
 			// forward
-			super(REALTIME_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Henter aksjonsliste",0,true,true);
+			super(REALTIME_PRIORITY,false,true,WorkerType.SAFE,"Henter aksjonsliste",0,true,true);
 			// prepare objects
 			m_msoModel = getMsoModel();
 			m_choose = choose;
@@ -904,7 +906,7 @@ public class Application implements IApplication
 		 * error state and the system must be shut down.
 		 */
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 			long tic = System.currentTimeMillis();
 			long schedule = tic;
 
@@ -994,7 +996,7 @@ public class Application implements IApplication
 		 */
 		SetActiveOperation(String opId) throws Exception {
 			// forward
-			super(REALTIME_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Kobler til aksjon " + IDHelper.formatOperationID(opId),0,true,true);
+			super(REALTIME_PRIORITY,false,true,WorkerType.SAFE,"Kobler til aksjon " + IDHelper.formatOperationID(opId),0,true,true);
 			// save
 			m_opID = opId;
 			// set loading bit
@@ -1013,7 +1015,7 @@ public class Application implements IApplication
 		 * Sets the active operation in a worker thread.
 		 */
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 
 			// catch any exceptions
 			try  {
@@ -1106,7 +1108,7 @@ public class Application implements IApplication
 		SetActiveRoleWorker(Hashtable<String, IDiskoRole> roles,
 				IDiskoRole current, String loginRole) throws Exception {
 			// forward
-			super(REALTIME_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Aktiverer rolle",0,true,true);
+			super(REALTIME_PRIORITY,false,true,WorkerType.SAFE,"Aktiverer rolle",0,true,true);
 			// prepare
 			this.roles = roles;
 			this.currentRole = current;
@@ -1121,7 +1123,7 @@ public class Application implements IApplication
 		 * Loads specific role into the application. This is a lengthy operation
 		 */
 		@Override
-		public Boolean doWork()
+		public Boolean doWork(IWorkLoop loop)
 		{
 			// initiate list?
 			if(roles==null)

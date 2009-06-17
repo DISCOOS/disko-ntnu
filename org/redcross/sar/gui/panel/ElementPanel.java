@@ -634,7 +634,7 @@ public class ElementPanel extends DefaultPanel {
 						getPartList().setEnabled(true);
 					}
 					// update button state
-					getPartButtonsPanel().setEditableFromType(msoObject.getMsoClassCode());
+					getPartButtonsPanel().setEditableFromType(msoObject.getClassCode());
 				}
 			}
 		}
@@ -690,7 +690,7 @@ public class ElementPanel extends DefaultPanel {
 	private JList getList(IMsoObjectIf msoObject, boolean exists) {
 		if(msoObject!=null) {
 			// get class code
-			MsoClassCode code = msoObject.getMsoClassCode();
+			MsoClassCode code = msoObject.getClassCode();
 			// dispatch class code
 			if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code) ||
 					MsoClassCode.CLASSCODE_SEARCHAREA.equals(code) ||
@@ -792,7 +792,7 @@ public class ElementPanel extends DefaultPanel {
 		// initialize
 		List<IMsoObjectIf> list = null;
 		// get class code
-		MsoClassCode code = msoObject.getMsoClassCode();
+		MsoClassCode code = msoObject.getClassCode();
 		// dispatch class code
 		if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code) ||
 				MsoClassCode.CLASSCODE_SEARCHAREA.equals(code) ||

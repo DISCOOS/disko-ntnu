@@ -24,10 +24,10 @@ import org.redcross.sar.data.event.SourceEvent;
  *
  * @author kennetgu
  *
- * @param <I> - The Source Event Data type. See {@link ISourceListener}.
+ * @param <D> - The Source Event Data type. See {@link ISourceListener}.
  */
 
-public abstract class AbstractDataSource<I> implements IDataSource<I> {
+public abstract class AbstractDataSource<D> implements IDataSource<D> {
 
     private final EventListenerList m_sourceListeners = new EventListenerList();
 
@@ -51,12 +51,12 @@ public abstract class AbstractDataSource<I> implements IDataSource<I> {
     	return null;
     }    
 
-    public void addSourceListener(ISourceListener<I> listener) {
+    public void addSourceListener(ISourceListener<D> listener) {
 		m_sourceListeners.add(ISourceListener.class,listener);
 
 	}
 
-	public void removeSourceListener(ISourceListener<I> listener) {
+	public void removeSourceListener(ISourceListener<D> listener) {
 		m_sourceListeners.remove(ISourceListener.class,listener);
 	}
 
@@ -65,7 +65,7 @@ public abstract class AbstractDataSource<I> implements IDataSource<I> {
      * ================================================================================= */
 
 	@SuppressWarnings("unchecked")
-	public void fireSourceChanged(SourceEvent<I> e) {
+	public void fireSourceChanged(SourceEvent<D> e) {
 		// notify listeners
 		ISourceListener[] listeners = m_sourceListeners.getListeners(ISourceListener.class);
 		// loop over all listeners

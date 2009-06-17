@@ -140,23 +140,24 @@ public class MapFilterPanel extends ToggableTabPane {
 	
 	private class Filter implements Selector<IMsoObjectIf> {
 
-		private int state = 0;
+		//private int state = 0;
 		private MsoClassCode code = null;
 		private Object compare = null;
 		
 		public Filter(MsoClassCode code, Object compare, int state) {
-			this.state = state;
+			//this.state = state;
 			this.code = code;
 			this.compare = compare;			
 		}
 		
+		@SuppressWarnings("unchecked")
 		public boolean select(IMsoObjectIf anObject) {
 			// assume selected
 			boolean bSelect = true;
 			// is filtered?
-			if(code.equals(anObject.getMsoClassCode())) {
+			if(code.equals(anObject.getClassCode())) {
 				// dispatch filter type
-				if(MsoClassCode.CLASSCODE_AREA.equals(anObject.getMsoClassCode())) {
+				if(MsoClassCode.CLASSCODE_AREA.equals(anObject.getClassCode())) {
 					// cast to area
 					IAreaIf area = (IAreaIf)anObject;
 					// get area
@@ -166,7 +167,7 @@ public class MapFilterPanel extends ToggableTabPane {
 					// get filter operation
 					bSelect = set.contains(status);
 				}				
-				else if(MsoClassCode.CLASSCODE_ROUTE.equals(anObject.getMsoClassCode())) {
+				else if(MsoClassCode.CLASSCODE_ROUTE.equals(anObject.getClassCode())) {
 					// cast to route
 					IRouteIf route = (IRouteIf)anObject;
 					// get area
@@ -181,7 +182,7 @@ public class MapFilterPanel extends ToggableTabPane {
 						bSelect = set.contains(status);
 					}
 				}
-				else if(MsoClassCode.CLASSCODE_POI.equals(anObject.getMsoClassCode())) {
+				else if(MsoClassCode.CLASSCODE_POI.equals(anObject.getClassCode())) {
 					// cast to pui
 					IPOIIf poi = (IPOIIf)anObject;
 					// get area
@@ -195,11 +196,6 @@ public class MapFilterPanel extends ToggableTabPane {
 						// get filter operation
 						bSelect = set.contains(status);
 					}
-					/*
-					else {
-						bSelect = false;
-					}
-					*/
 				}
 			}
 			// finished

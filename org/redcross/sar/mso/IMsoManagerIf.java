@@ -15,7 +15,7 @@ public interface IMsoManagerIf
     public static final String bundleName = "org.redcross.sar.mso.properties.MsoManager";
 
     /**
-     * ClassCodes .
+     * Class code identifying DS object types.
      */
     public enum MsoClassCode
     {

@@ -77,7 +77,7 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
 	 * Update algorithm in MsoTableModel is overridden
 	 */
 	@Override
-	protected Object[] update(IMessageIf id, IMessageIf obj, Object[] data) {
+	protected IRow update(IMessageIf id, IMessageIf obj, IRow data) {
 
 		// get row index
 		int i = findRowFromId(id);
@@ -95,11 +95,11 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
 	        switch (j)
 	        {
             case 0:
-            	data[j] = message;
+            	data.setValue(j,message);
                 break;
 
             case 1:
-            	data[j] = DTG.CalToDTG(message.getTimeStamp());
+            	data.setValue(j,DTG.CalToDTG(message.getTimeStamp()));
                 break;
 
             case 2:
@@ -109,7 +109,7 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
                 {
                 	sender = (ICommunicatorIf) m_wp.getCmdPost();
                 }
-                data[j] = sender;
+                data.setValue(j,sender);
                 break;
 
             case 3:
@@ -118,7 +118,7 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
                 {
     				int unconfirmed = message.getUnconfirmedReceivers().size();
     				int count = unconfirmed + message.getConfirmedReceivers().size();
-                    data[j] = new Integer[]{count-unconfirmed,count};
+    				data.setValue(j,new Integer[]{count-unconfirmed,count});
                 } else
                 {
                     ICommunicatorIf receiver = message.getReceiver();
@@ -126,7 +126,7 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
                     {
                         receiver = (ICommunicatorIf) m_wp.getCmdPost();
                     }
-                    data[j] = receiver;
+                    data.setValue(j,receiver);
                 }
                 break;
 
@@ -144,7 +144,7 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
             	{
                      stringBuilder.append(line.toString() + "LINEEND");
                 }
-                data[j] = stringBuilder.toString().split("LINEEND");
+            	data.setValue(j,stringBuilder.toString().split("LINEEND"));
                 break;
 
             case 5:
@@ -183,30 +183,25 @@ public class MessageTableModel extends AbstractMsoTableModel<IMessageIf>
 
                     taskBuilder.append("\n");
                 }
-                data[j] = taskBuilder.toString().split("\\n");
+                data.setValue(j,taskBuilder.toString().split("\\n"));
                 break;
 
             case 6:
-            	data[j] = message.getStatus();
+            	data.setValue(j,message.getStatus());
                 break;
 
             case 7:
-            	data[j] = message;
+            	data.setValue(j,message);
             	break;
 
             default:
-            	data[j] = null;
+            	data.setValue(j,null);
             	break;
 	        }
 		}
 		// finished
 		return data;
 	}
-
-	public int getRowCount() {
-		return super.getRowCount();
-	}
-
 
 	/* ================================================================
 	 *  DiskoTableModel implementation

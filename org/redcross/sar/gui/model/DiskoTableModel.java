@@ -6,7 +6,9 @@ import java.util.List;
 import javax.swing.SwingConstants;
 import javax.swing.table.AbstractTableModel;
 
-public abstract class DiskoTableModel extends AbstractTableModel implements IDiskoTableModel {
+import org.redcross.sar.data.IData.DataOrigin;
+
+public abstract class DiskoTableModel extends AbstractTableModel implements ITableModel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -145,6 +147,31 @@ public abstract class DiskoTableModel extends AbstractTableModel implements IDis
 	
 	public void setColumnFixedWidth(int column, int fixedwidth) {
 		fixedwidths.set(column,fixedwidth);
+	}
+	
+	public IState getState(int row)
+	{
+		return new IState() {
+
+			@Override
+			public DataOrigin getOrigin() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public boolean isLoopbackMode() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isRollbackMode() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+		};
 	}
 	
 	/* =============================================================================

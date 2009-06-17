@@ -5,7 +5,7 @@ import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.DuplicateIdException;
@@ -26,31 +26,31 @@ public class MsoManagerImpl implements IMsoManagerIf
 {
 	private final Logger m_logger = Logger.getLogger(MsoManagerImpl.class);
 	
-	private IMsoModelIf m_msoModel;
+	private IMsoModelIf m_model;
 	private OperationImpl m_operation;
         
     protected MsoManagerImpl(IMsoModelIf theMsoModel, IMsoEventManagerIf anEventManager)
     {
-        m_msoModel = theMsoModel;
+        m_model = theMsoModel;
 
-    	anEventManager.addServerUpdateListener(new IMsoUpdateListenerIf()
+    	anEventManager.addRemoteUpdateListener(new IMsoUpdateListenerIf()
         {
 			public EnumSet<MsoClassCode> getInterests()
 			{
 				return EnumSet.allOf(MsoClassCode.class);
 			}
 
-			public void handleMsoUpdateEvent(UpdateList events)
+			public void handleMsoChangeEvent(ChangeList events)
             {
-				for(MsoEvent.Update e : events.getEvents())
+				for(MsoEvent.Change e : events.getEvents())
 				{
-	                eventLogg("ServerUpdateListener", e);
+	                loggEvent("ServerUpdateListener", e);
 				}
             }
 
 		});
 
-        anEventManager.addClientUpdateListener(new IMsoUpdateListenerIf()
+        anEventManager.addLocalUpdateListener(new IMsoUpdateListenerIf()
         {
 
 			public EnumSet<MsoClassCode> getInterests()
@@ -58,11 +58,11 @@ public class MsoManagerImpl implements IMsoManagerIf
 				return EnumSet.allOf(MsoClassCode.class);
 			}
 
-			public void handleMsoUpdateEvent(UpdateList events)
+			public void handleMsoChangeEvent(ChangeList events)
             {
-				for(MsoEvent.Update e : events.getEvents())
+				for(MsoEvent.Change e : events.getEvents())
 				{
-	                eventLogg("ClientUpdateListener", e);
+	                loggEvent("ClientUpdateListener", e);
 				}
             }
 
@@ -70,20 +70,20 @@ public class MsoManagerImpl implements IMsoManagerIf
     }
 
 
-    public static String getClasscodeText(MsoClassCode aClassCode)
+    public static String getClassCodeText(MsoClassCode aClassCode)
     {
         return Internationalization.translate(aClassCode);
     }
 
-    private void eventLogg(String aText, MsoEvent.Update e)
+    private void loggEvent(String aText, MsoEvent.Change e)
     {
         Object o = e.getSource();
         MsoClassCode classCode = MsoClassCode.CLASSCODE_NOCLASS;
         if (o instanceof IMsoObjectIf)
         {
-            classCode = ((IMsoObjectIf) o).getMsoClassCode();
+            classCode = ((IMsoObjectIf) o).getClassCode();
         }
-        m_logger.info(getClasscodeText(classCode)+ ": " + aText);
+        m_logger.info(aText + ": " + getClassCodeText(classCode));
         
     }
 
@@ -93,7 +93,7 @@ public class MsoManagerImpl implements IMsoManagerIf
         {
             throw new DuplicateIdException("An operation already exists");
         }
-        IMsoObjectIf.IObjectIdIf operationId = m_msoModel.getDispatcher().makeObjectId();
+        IMsoObjectIf.IObjectIdIf operationId = m_model.getDispatcher().makeObjectId();
         return createOperation(aNumberPrefix, aNumber, operationId);
     }
 
@@ -103,7 +103,7 @@ public class MsoManagerImpl implements IMsoManagerIf
         {
             throw new DuplicateIdException("An operation already exists");
         }
-        m_operation = new OperationImpl(m_msoModel,operationId, aNumberPrefix, aNumber);
+        m_operation = new OperationImpl(m_model,operationId, aNumberPrefix, aNumber);
         m_operation.setup(true);
         return m_operation;
     }
@@ -215,7 +215,7 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     	if(operationExists()) {
     		// forward
-    		m_msoModel.suspendClientUpdate();
+    		m_model.suspendUpdate();
     		// remove operation
     		try {
 
@@ -237,7 +237,7 @@ public class MsoManagerImpl implements IMsoManagerIf
 	            return false;
 			}
     		// forward
-    		m_msoModel.resumeClientUpdate(true);
+    		m_model.resumeUpdate();
     		// finished
     		return true;
     	}
@@ -245,10 +245,10 @@ public class MsoManagerImpl implements IMsoManagerIf
     	return false;
     }
 
-    public void resumeClientUpdate(boolean all)
+    public void resumeUpdate()
     {
     	if(operationExists())
-    		getExistingOperation().resumeClientUpdate(all);
+    		getExistingOperation().resumeUpdate(true);
     }
 
     protected void rollback() throws TransactionException

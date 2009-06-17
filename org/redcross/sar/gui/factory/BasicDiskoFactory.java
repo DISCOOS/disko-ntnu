@@ -62,7 +62,7 @@ public class BasicDiskoFactory {
 	}
 	
 	
-	public static String getKey(Enum e, String suffix) {
+	public static String getKey(Enum<?> e, String suffix) {
 		return (e!=null ? getKey(e.getClass().getSimpleName()+"."+e.toString(),suffix) : null);
 	}
 	

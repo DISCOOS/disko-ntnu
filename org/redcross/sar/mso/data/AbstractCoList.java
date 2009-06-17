@@ -8,38 +8,37 @@ import java.util.List;
 
 import org.redcross.sar.Application;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.event.IMsoDerivedUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoCoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
 /**
  * This abstract class is a template that enables implementation
- * of parallel book holding of items (a list) by 
+ * of parallel book holding of items (a derived or "co-list") by 
  * listening to create, delete and modify events using the
- * interface IMsoDerivedUpdateListenerIf. 
- * 
+ * interface IMsoCoUpdateListenerIf. 
  * 
  * @author vinjar, kenneth
  *
  * @param <M> - the item type
  * 
- * @see IMsoDerivedUpdateListenerIf for more information about 
- * derived update events.
+ * @see IMsoCoUpdateListenerIf for more information about 
+ * derived (co) update events.
  */
-public abstract class AbstractDerivedList<M extends IMsoObjectIf> implements IMsoDerivedListIf<M>, IMsoDerivedUpdateListenerIf
+public abstract class AbstractCoList<M extends IMsoObjectIf> implements IMsoCoListIf<M>, IMsoCoUpdateListenerIf
 {
     protected final HashMap<String, M> m_items;
     
     protected int m_changeCount;
 
-    public AbstractDerivedList()
+    public AbstractCoList()
     {
         this(50);
     }
 
-    public AbstractDerivedList(int aSize)
+    public AbstractCoList(int aSize)
     {
         m_items = new LinkedHashMap<String, M>(aSize);
-        Application.getInstance().getMsoModel().getEventManager().addDerivedUpdateListener(this);
+        Application.getInstance().getMsoModel().getEventManager().addCoUpdateListener(this);
     }
 
     public Collection<M> getItems()
@@ -67,14 +66,14 @@ public abstract class AbstractDerivedList<M extends IMsoObjectIf> implements IMs
                 | MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue();
 
 
-    public void handleMsoDerivedUpdateEvent(MsoEvent.DerivedUpdate e)
+    public void handleMsoCoUpdateEvent(MsoEvent.CoChange e)
     {
         if (!hasInterestIn(e.getSource()))
         {
             return;
         }
 
-        if ((e.getEventTypeMask() & mask) != 0)
+        if ((e.getMask() & mask) != 0)
         {
             if (e.isCreateObjectEvent())
             {

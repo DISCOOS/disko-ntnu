@@ -36,7 +36,7 @@ public class SketchImpl extends AbstractMsoObject implements ISketchIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_SKETCH;
     }

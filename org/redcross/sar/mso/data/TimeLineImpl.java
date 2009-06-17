@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TimeLineImpl extends AbstractDerivedList<ITimeItemIf> implements ITimeLineIf
+public class TimeLineImpl extends AbstractCoList<ITimeItemIf> implements ITimeLineIf
 {
     final List<ITimeItemIf> m_timeItems = new ArrayList<ITimeItemIf>();
 

@@ -6,6 +6,7 @@ import org.redcross.sar.map.command.IMapCommand.MapCommandType;
 import org.redcross.sar.map.tool.IMapTool.MapToolType;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 
@@ -203,7 +204,7 @@ public class DiskoWpMessageLogImpl extends AbstractDiskoWpModule implements IDis
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 			try {
 				// dispatch task
 				switch(m_task) {

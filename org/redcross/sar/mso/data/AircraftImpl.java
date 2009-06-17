@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoModelIf;
 
 /**
@@ -76,9 +77,9 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_subType.getValue();
     }
 
-    public IMsoModelIf.ModificationState getSubTypeState()
+    public IData.DataOrigin getSubTypeState()
     {
-        return m_subType.getState();
+        return m_subType.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<AircraftSubType> getSubTypeAttribute()
@@ -105,9 +106,9 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_infrared.booleanValue();
     }
 
-    public IMsoModelIf.ModificationState getInfraredState()
+    public IData.DataOrigin getInfraredState()
     {
-        return m_infrared.getState();
+        return m_infrared.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoBooleanIf getInfraredAttribute()
@@ -125,9 +126,9 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_nightvision.booleanValue();
     }
 
-    public IMsoModelIf.ModificationState getNightvisionState()
+    public IData.DataOrigin getNightvisionState()
     {
-        return m_nightvision.getState();
+        return m_nightvision.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoBooleanIf getNightvisionAttribute()
@@ -145,9 +146,9 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_photo.booleanValue();
     }
 
-    public IMsoModelIf.ModificationState getPhotoState()
+    public IData.DataOrigin getPhotoState()
     {
-        return m_photo.getState();
+        return m_photo.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoBooleanIf getPhotoAttribute()
@@ -165,9 +166,9 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_range.intValue();
     }
 
-    public IMsoModelIf.ModificationState getRangeState()
+    public IData.DataOrigin getRangeState()
     {
-        return m_range.getState();
+        return m_range.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getRangeAttribute()
@@ -185,9 +186,9 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_seats.intValue();
     }
 
-    public IMsoModelIf.ModificationState getSeatsState()
+    public IData.DataOrigin getSeatsState()
     {
-        return m_seats.getState();
+        return m_seats.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getSeatsAttribute()
@@ -205,9 +206,9 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_video.booleanValue();
     }
 
-    public IMsoModelIf.ModificationState getVideoState()
+    public IData.DataOrigin getVideoState()
     {
-        return m_video.getState();
+        return m_video.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoBooleanIf getVideoAttribute()
@@ -225,9 +226,9 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
         return m_visibility.intValue();
     }
 
-    public IMsoModelIf.ModificationState getVisibilityState()
+    public IData.DataOrigin getVisibilityState()
     {
-        return m_visibility.getState();
+        return m_visibility.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getVisibilityAttribute()

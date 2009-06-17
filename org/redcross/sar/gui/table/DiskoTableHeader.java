@@ -35,7 +35,7 @@ import javax.swing.table.TableModel;
 import org.redcross.sar.gui.PopupManager;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
-import org.redcross.sar.gui.model.IDiskoTableModel;
+import org.redcross.sar.gui.model.ITableModel;
 import org.redcross.sar.gui.renderer.DefaultHeaderRenderer;
 import org.redcross.sar.gui.renderer.ITableHeaderRenderer;
 import org.redcross.sar.util.Utils;
@@ -153,8 +153,8 @@ public class DiskoTableHeader extends JTableHeader {
 
 				// get alignment
 				int alignment = SwingConstants.LEFT;
-				if(table.getModel() instanceof IDiskoTableModel) {
-					IDiskoTableModel model = (IDiskoTableModel)table.getModel();
+				if(table.getModel() instanceof ITableModel) {
+					ITableModel model = (ITableModel)table.getModel();
 					alignment = model.getColumnAlignment(column);
 				}
 
@@ -254,35 +254,35 @@ public class DiskoTableHeader extends JTableHeader {
 
 	public String getToolTipText(int column) {
 		TableModel model = getTable().getModel();
-		if(column!=-1 && model instanceof IDiskoTableModel) {
+		if(column!=-1 && model instanceof ITableModel) {
 			column = getTable().convertColumnIndexToModel(column);
-			return ((IDiskoTableModel)model).getHeaderTooltipText(column);
+			return ((ITableModel)model).getHeaderTooltipText(column);
 		}
 		return "";
 	}
 
 	public void setToolTipText(int column, String text) {
 		TableModel model = getTable().getModel();
-		if(model instanceof IDiskoTableModel) {
+		if(model instanceof ITableModel) {
 			column = getTable().convertColumnIndexToModel(column);
-			((IDiskoTableModel)model).setHeaderTooltipText(column,text);
+			((ITableModel)model).setHeaderTooltipText(column,text);
 		}
 	}
 
 	public boolean isEditable(int column) {
 		TableModel model = getTable().getModel();
-		if(column!=-1 && model instanceof IDiskoTableModel) {
+		if(column!=-1 && model instanceof ITableModel) {
 			column = getTable().convertColumnIndexToModel(column);
-			return ((IDiskoTableModel)model).isHeaderEditable(column);
+			return ((ITableModel)model).isHeaderEditable(column);
 		}
 		return false;
 	}
 
 	public void setEditable(int column, boolean isEditable) {
 		TableModel model = getTable().getModel();
-		if(model instanceof IDiskoTableModel) {
+		if(model instanceof ITableModel) {
 			column = getTable().convertColumnIndexToModel(column);
-			((IDiskoTableModel)model).setHeaderEditable(column,isEditable);
+			((ITableModel)model).setHeaderEditable(column,isEditable);
 		}
 	}
 

@@ -125,7 +125,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		drawMode = DrawMode.MODE_UNDEFINED;
 
 		// add listeners
-		msoModel.getEventManager().addClientUpdateListener(this);
+		msoModel.getEventManager().addLocalUpdateListener(this);
 
 		// add global key event listeners
 		app.getKeyEventDispatcher().addKeyListener(
@@ -991,7 +991,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		return editable;
 	}
 
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
         // clear all?
         if(events.isClearAllEvent()) {
@@ -1001,7 +1001,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
         else {
 
 			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(editable)) {
+			for(MsoEvent.Change e : events.getEvents(editable)) {
 
 		        // get mso object
 		        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
@@ -1010,14 +1010,14 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 				if(!e.isLoopbackMode()) {
 
 					// get mask
-					int mask = e.getEventTypeMask();
+					int mask = e.getMask();
 
 					// get flags
 			        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
 			        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
 			        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-			        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-			        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+			        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_RELATION_EVENT.maskValue()) != 0;
+			        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_RELATION_EVENT.maskValue()) != 0;
 
 			        // add object?
 					if (createdObject) {
@@ -1175,7 +1175,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 	}
 
 	public void setup(IMsoObjectIf msoObj, boolean setTool) {
-		setup(msoObj==null ? element : msoObj.getMsoClassCode(),msoObj,setTool);
+		setup(msoObj==null ? element : msoObj.getClassCode(),msoObj,setTool);
 	}
 
 	public void setup(
@@ -1241,7 +1241,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 			} else if (element instanceof SearchSubType) {
 				// set class code
 				code = (msoObj instanceof IRouteIf || msoObj instanceof IPOIIf)
-					 ? msoObj.getMsoClassCode() : MsoClassCode.CLASSCODE_ROUTE;
+					 ? msoObj.getClassCode() : MsoClassCode.CLASSCODE_ROUTE;
 				// constrain
 				msoObject = constrainToCode(code,msoObj);
 				msoOwner = constrainToCode(MsoClassCode.CLASSCODE_AREA,
@@ -1320,7 +1320,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		try {
 			// reset current section?
 			if (msoObj != null) {
-				if (!code.equals(msoObj.getMsoClassCode())) {
+				if (!code.equals(msoObj.getClassCode())) {
 					// clear any selections
 					if (map.isSelected(msoObj) > 0)
 						map.setSelected(msoObj, false);
@@ -2100,7 +2100,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 			// autoselect first element in owner?
 			if(autoselect && this.msoObject==null && this.msoOwner!=null) {
 				// get first route
-				if(MsoClassCode.CLASSCODE_AREA.equals(this.msoOwner.getMsoClassCode())) {
+				if(MsoClassCode.CLASSCODE_AREA.equals(this.msoOwner.getClassCode())) {
 					// cast to IAreaIf
 					IAreaIf area = (IAreaIf)this.msoOwner;
 					// get areas

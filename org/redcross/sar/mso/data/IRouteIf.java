@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.Route;
 
@@ -13,7 +13,7 @@ public interface IRouteIf extends IMsoObjectIf
 
     public Route getGeodata();
 
-    public IMsoModelIf.ModificationState getGeodataState();
+    public IData.DataOrigin getGeodataState();
 
     public IMsoAttributeIf.IMsoRouteIf getGeodataAttribute();
 
@@ -21,7 +21,7 @@ public interface IRouteIf extends IMsoObjectIf
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
@@ -29,7 +29,7 @@ public interface IRouteIf extends IMsoObjectIf
 
     public int getAreaSequenceNumber();
 
-    public IMsoModelIf.ModificationState getAreaSequenceNumberState();
+    public IData.DataOrigin getAreaSequenceNumberState();
 
     public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
     

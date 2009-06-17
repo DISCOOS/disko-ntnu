@@ -322,7 +322,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		setChangeable(false);
 
 		// suspend update events
-		m_wp.getMsoModel().suspendClientUpdate();
+		m_wp.getMsoModel().suspendUpdate();
 
 		// get panel
 		POIPanel panel = getPOIPanel();
@@ -367,7 +367,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		panel.setChangeable(true);
 
 		// resume update
-		m_wp.getMsoModel().resumeClientUpdate(true);
+		m_wp.getMsoModel().resumeUpdate();
 
 		// resume changes
 		setChangeable(true);
@@ -410,7 +410,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 			task.setPriority(priority);
 			task.setResponsibleRole(null);
 			task.setType(type);
-			task.setSourceClass(message.getMsoClassCode());
+			task.setSourceClass(message.getClassCode());
 			task.setCreatingWorkProcess(getName());
 			task.setDescription(MsoUtils.getMessageText(message));
 			task.setDependentObject(message.getSender());

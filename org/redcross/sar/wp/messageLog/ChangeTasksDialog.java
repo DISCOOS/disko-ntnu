@@ -92,7 +92,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		super(wp.getApplication().getFrame());
 
 		m_wp = wp;
-		wp.getMsoEventManager().addClientUpdateListener(this);
+		wp.getMsoEventManager().addLocalUpdateListener(this);
 
 		m_buttonMap = new HashMap<JToggleButton, JButton>();
 		m_buttonTypeMap = new HashMap<JToggleButton, TaskSubType>();
@@ -270,7 +270,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		// Source
 		if(message != null)
 		{
-			task.setSourceClass(message.getMsoClassCode());
+			task.setSourceClass(message.getClassCode());
 		}
 
 		// Progress
@@ -473,7 +473,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 	 * Update finding button to correct type if finding type has been changed
 	 * @param e
 	 */
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		if(events.isClearAllEvent()) {
 			m_findingButton.setText("");

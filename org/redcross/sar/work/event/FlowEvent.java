@@ -105,7 +105,7 @@ public class FlowEvent extends EventObject {
 			IField<?> field = (IField<?>)source;
 			IMsoAttributeIf<?> attr = field.getMsoAttribute();
 			if(attr!=null) {
-				list.add(attr.getOwner());
+				list.add(attr.getOwnerObject());
 			}
 		}
 		return list;
@@ -179,9 +179,11 @@ public class FlowEvent extends EventObject {
 	
 	private void addChangeSource(IMsoAttributeIf<?> msoAttr, Map<IMsoModelIf,List<IChangeRecordIf>> changes) {
 		if(msoAttr.isChanged()) {
-			IMsoObjectIf msoObj = msoAttr.getOwner();
+			// prepare
+			IMsoObjectIf msoObj = msoAttr.getOwnerObject();
 			IMsoModelIf model = msoObj.getModel();
 			List<IChangeRecordIf> list = changes.get(model);
+			// initialize list?
 			if(list==null) {
 				list = new ArrayList<IChangeRecordIf>();
 				changes.put(model, list);
@@ -191,7 +193,7 @@ public class FlowEvent extends EventObject {
 			// add change source to list
 			IChangeRecordIf change = addChangeSource(msoObj,list,!bFlag);
 			// add as partial?
-			if(bFlag) change.addFilter(msoAttr.getName());
+			if(bFlag && change!=null) change.addFilter(msoAttr.getName());
 		}
     	
     }	
@@ -206,7 +208,8 @@ public class FlowEvent extends EventObject {
 		}
 		// no duplicate found, add to list
 		IChangeRecordIf change = msoObj.getModel().getChanges(msoObj);
-		changes.add(change);
+		// found change?
+		if(change!=null) changes.add(change);
 		// finished
 		return change;
 	}

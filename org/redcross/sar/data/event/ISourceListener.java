@@ -6,10 +6,10 @@ import java.util.EventListener;
  * 
  * @author Administrator
  *
- * @param <I> - the class or interface that implements the source event information
+ * @param <D> - the class or interface that implements the source event information
  */
-public interface ISourceListener<I> extends EventListener {
+public interface ISourceListener<D> extends EventListener {
 
-	public void onSourceChanged(SourceEvent<I> e);
+	public void onSourceChanged(SourceEvent<D> e);
 
 }

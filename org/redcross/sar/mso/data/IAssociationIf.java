@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
+
 
 public interface IAssociationIf extends IMsoObjectIf {
 
@@ -8,7 +9,7 @@ public interface IAssociationIf extends IMsoObjectIf {
 
 	public String getOrganization();
 
-	public IMsoModelIf.ModificationState getOrganizationState();
+	public IData.DataOrigin getOrganizationState();
 
     public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute();
 
@@ -17,7 +18,7 @@ public interface IAssociationIf extends IMsoObjectIf {
 
     public String getDivision();
 
-    public IMsoModelIf.ModificationState getDivisionState();
+    public IData.DataOrigin getDivisionState();
 
     public IMsoAttributeIf.IMsoStringIf getDivisionAttribute();
     
@@ -26,7 +27,7 @@ public interface IAssociationIf extends IMsoObjectIf {
 
 	public String getDepartment();
 
-	public IMsoModelIf.ModificationState getDepartmentState();
+	public IData.DataOrigin getDepartmentState();
 
     public IMsoAttributeIf.IMsoStringIf getDepartmentAttribute();	
 	

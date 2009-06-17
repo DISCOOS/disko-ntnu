@@ -1,22 +1,14 @@
 package org.redcross.sar.gui.dialog;
 
 import java.awt.Dimension;
-import java.awt.FileDialog;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
@@ -39,9 +31,9 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 	private JTabbedPane tabbedPane = null;
 	private DefaultPanel sourcePanel = null;
 	private MapSourceTable mapSourceTable = null;
-	private JPanel browsePanel = null;
+	//private JPanel browsePanel = null;
 	
-	private JButton buttonBrowse = null;
+	//private JButton buttonBrowse = null;
 	
 	private JLabel labelCurrentMxd = null;
 	private JLabel labelCurrentMxdShow = null;
@@ -148,6 +140,7 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 		return sourcePanel;
 	}
 		
+	/*
 	private JPanel getBrowsePanel() {
 		if (browsePanel == null) {
 			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
@@ -164,9 +157,6 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 			gridBagConstraints11.anchor = GridBagConstraints.WEST;
 			gridBagConstraints11.insets = new Insets(5, 10, 5, 5);
 			gridBagConstraints11.gridx = 0;
-			/*GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-			gridBagConstraints2.gridx = 1;
-			gridBagConstraints2.gridy = 0;*/
 			labelCurrentMxdShow = new JLabel();
 			GridBagConstraints gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.gridx = 0;
@@ -188,7 +178,7 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 		}
 		return browsePanel;
 	}
-	
+	*/
 	
 	/**
 	 * This method initializes MapSourceTable	
@@ -217,6 +207,7 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 	 * 	
 	 * @return javax.swing.JTextField	
 	 */
+	/*
 	private JTextField getTextFieldBrowse() {
 		if (textFieldBrowse == null) {
 			textFieldBrowse = new JTextField();
@@ -225,12 +216,14 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 		}
 		return textFieldBrowse;
 	}
-
+	*/
+	
 	/**
 	 * This method initializes buttonBrowse	
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
+	/*
 	private JButton getButtonBrowse() {
 		if (buttonBrowse == null) {
 			buttonBrowse = new JButton();
@@ -250,43 +243,11 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 		}
 		return buttonBrowse;
 	}
+	*/
 
-	/**
-	 * 
-	 *
-	 */
+	/*
 	private File openFileDialog(){
-	
-		//File file = new File("C:\\shape\\poi.shp");		
-		
-		/*
-		final JFileChooser fc = new JFileChooser();
-		//FileNameExtensionFilter filter = new FileNameExtensionFilter("Shape og tiff", "shp", "tiff", "tif");
-		//fc.addChoosableFileFilter(filter);
-		int returnVal = fc.showDialog(new JFrame(), "Legg til");
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-            file = fc.getSelectedFile();
-            //This is where a real application would open the file.
-            System.out.println("Opening: " + file.getName() + "." );
-        } else {
-        	System.out.println("Open command cancelled by user.");
-        } 
-        
-		return file;
-		*/
-		
-		/*
-		final DiskoFileChooser dfc = new DiskoFileChooser();
-		file = dfc.getSelectedFile();
-		return file;
-		*/
-		
-		
-		//FileDialog fDialog = new FileDialog(this, "Legg til", 0);
-		//fDialog.setVisible(true);
-		//fDialog.setFilenameFilter();
-		//fDialog.setFilenameFilter(arg0)
-		
+			
 		FileDialog fileDialog = new FileDialog(this, "Legg til .shp, .tif eller .tiff fil", FileDialog.LOAD);
 		
 		FilenameFilter filter = new FilenameFilter(){
@@ -309,7 +270,8 @@ public class MapOptionDialog extends DefaultDialog implements ActionListener {
 		return file;		 
 		 
 	}
-
+	*/
+	
 	public void actionPerformed(ActionEvent e) {
 		// get command
 		String cmd = e.getActionCommand();

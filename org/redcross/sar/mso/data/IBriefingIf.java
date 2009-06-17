@@ -1,8 +1,9 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
 import java.util.Calendar;
 import java.util.Collection;
+
+import org.redcross.sar.data.IData;
 
 public interface IBriefingIf extends IMsoObjectIf
 {
@@ -14,7 +15,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public boolean isActive();
 
-    public IMsoModelIf.ModificationState getActiveState();
+    public IData.DataOrigin getActiveState();
 
     public IMsoAttributeIf.IMsoBooleanIf getActiveAttribute();
 
@@ -22,7 +23,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getChannel1();
 
-    public IMsoModelIf.ModificationState getChannel1State();
+    public IData.DataOrigin getChannel1State();
 
     public IMsoAttributeIf.IMsoStringIf getChannel1Attribute();
 
@@ -30,7 +31,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getChannel2();
 
-    public IMsoModelIf.ModificationState getChannel2State();
+    public IData.DataOrigin getChannel2State();
 
     public IMsoAttributeIf.IMsoStringIf getChannel2Attribute();
 
@@ -38,7 +39,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public Calendar getClosure();
 
-    public IMsoModelIf.ModificationState getClosureState();
+    public IData.DataOrigin getClosureState();
 
     public IMsoAttributeIf.IMsoCalendarIf getClosureAttribute();
 
@@ -46,7 +47,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getCommsProcedure();
 
-    public IMsoModelIf.ModificationState getCommsProcedureState();
+    public IData.DataOrigin getCommsProcedureState();
 
     public IMsoAttributeIf.IMsoStringIf getCommsProcedureAttribute();
 
@@ -54,7 +55,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getFindingsProcedure();
 
-    public IMsoModelIf.ModificationState getFindingsProcedureState();
+    public IData.DataOrigin getFindingsProcedureState();
 
     public IMsoAttributeIf.IMsoStringIf getFindingsProcedureAttribute();
 
@@ -62,7 +63,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getImportantClues();
 
-    public IMsoModelIf.ModificationState getImportantCluesState();
+    public IData.DataOrigin getImportantCluesState();
 
     public IMsoAttributeIf.IMsoStringIf getImportantCluesAttribute();
 
@@ -70,7 +71,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getMediaProcedure();
 
-    public IMsoModelIf.ModificationState getMediaProcedureState();
+    public IData.DataOrigin getMediaProcedureState();
 
     public IMsoAttributeIf.IMsoStringIf getMediaProcedureAttribute();
 
@@ -78,7 +79,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getOther();
 
-    public IMsoModelIf.ModificationState getOtherState();
+    public IData.DataOrigin getOtherState();
 
     public IMsoAttributeIf.IMsoStringIf getOtherAttribute();
 
@@ -86,7 +87,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getOthers();
 
-    public IMsoModelIf.ModificationState getOthersState();
+    public IData.DataOrigin getOthersState();
 
     public IMsoAttributeIf.IMsoStringIf getOthersAttribute();
 
@@ -94,7 +95,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getOverallStrategy();
 
-    public IMsoModelIf.ModificationState getOverallStrategyState();
+    public IData.DataOrigin getOverallStrategyState();
 
     public IMsoAttributeIf.IMsoStringIf getOverallStrategyAttribute();
 
@@ -102,7 +103,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getRepeaters();
 
-    public IMsoModelIf.ModificationState getRepeatersState();
+    public IData.DataOrigin getRepeatersState();
 
     public IMsoAttributeIf.IMsoStringIf getRepeatersAttribute();
 
@@ -110,7 +111,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getSupplies();
 
-    public IMsoModelIf.ModificationState getSuppliesState();
+    public IData.DataOrigin getSuppliesState();
 
     public IMsoAttributeIf.IMsoStringIf getSuppliesAttribute();
 
@@ -118,7 +119,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getTelephones();
 
-    public IMsoModelIf.ModificationState getTelephonesState();
+    public IData.DataOrigin getTelephonesState();
 
     public IMsoAttributeIf.IMsoStringIf getTelephonesAttribute();
 
@@ -126,7 +127,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public String getTransportProcedure();
 
-    public IMsoModelIf.ModificationState getTransportProcedureState();
+    public IData.DataOrigin getTransportProcedureState();
 
     public IMsoAttributeIf.IMsoStringIf getTransportProcedureAttribute();
 
@@ -138,7 +139,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IForecastListIf getBriefingForecasts();
 
-    public IMsoModelIf.ModificationState getBriefingForecastsState(IForecastIf anIForecastIf);
+    public IData.DataOrigin getBriefingForecastsState(IForecastIf anIForecastIf);
 
     public Collection<IForecastIf> getBriefingForecastsItems();
 
@@ -146,7 +147,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IEnvironmentListIf getBriefingEnvironments();
 
-    public IMsoModelIf.ModificationState getBriefingEnvironmentsState(IEnvironmentIf anIEnvironmentIf);
+    public IData.DataOrigin getBriefingEnvironmentsState(IEnvironmentIf anIEnvironmentIf);
 
     public Collection<IEnvironmentIf> getBriefingEnvironmentsItems();
 
@@ -154,7 +155,7 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public ISubjectListIf getBriefingSubjects();
 
-    public IMsoModelIf.ModificationState getBriefingSubjectsState(ISubjectIf anISubjectIf);
+    public IData.DataOrigin getBriefingSubjectsState(ISubjectIf anISubjectIf);
 
     public Collection<ISubjectIf> getBriefingSubjectsItems();
 
@@ -166,9 +167,9 @@ public interface IBriefingIf extends IMsoObjectIf
 
     public IHypothesisIf getBriefingHypothesis();
 
-    public IMsoModelIf.ModificationState getBriefingHypothesisState();
+    public IData.DataOrigin getBriefingHypothesisState();
 
-    public IMsoReferenceIf<IHypothesisIf> getBriefingHypothesisAttribute();
+    public IMsoRelationIf<IHypothesisIf> getBriefingHypothesisAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Other specified methods

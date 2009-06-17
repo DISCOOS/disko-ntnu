@@ -164,7 +164,7 @@ public class PromptDialog extends DefaultDialog {
 			// initialize
 			changeCount=0;
 			// suspend for faster update
-			app.getMsoModel().suspendClientUpdate();
+			app.getMsoModel().suspendUpdate();
 			// change status
 			JTable table = getAssignmentTable();
 			for (int i = 0; i < table.getRowCount(); i++) {
@@ -180,7 +180,7 @@ public class PromptDialog extends DefaultDialog {
 				}
 			}
 			// resume updates
-			app.getMsoModel().resumeClientUpdate(true);
+			app.getMsoModel().resumeUpdate();
 		} catch (IllegalOperationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

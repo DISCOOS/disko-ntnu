@@ -18,7 +18,11 @@ import javax.swing.table.TableColumn;
 public class LogisticsIconRenderer extends JLabel implements TableCellRenderer
 {
 
-    private static final Border firstCellBorder = new DiskoRoundBorder(2, 8, true, true, true, false);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private static final Border firstCellBorder = new DiskoRoundBorder(2, 8, true, true, true, false);
     private static final Border middleCellBorder = new DiskoRoundBorder(2, 8, true, false, true, false);
     private static final Border lastCellBorder = new DiskoRoundBorder(2, 8, true, false, true, true);
 
@@ -80,7 +84,12 @@ public class LogisticsIconRenderer extends JLabel implements TableCellRenderer
     public static class InfoIconRenderer extends LogisticsIconRenderer
     {
 
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
         {
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }

@@ -19,9 +19,8 @@ import no.cmr.hrs.sar.tools.ChangeObject;
 import no.cmr.hrs.sar.tools.IDHelper;
 import no.cmr.tools.Log;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.Application;
-import org.redcross.sar.mso.IChangeIf.ChangeType;
-import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoTransactionListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -29,6 +28,7 @@ import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 import org.rescuenorway.saraccess.api.*;
 import org.rescuenorway.saraccess.except.SaraException;
@@ -40,6 +40,11 @@ import org.rescuenorway.saraccess.model.*;
 public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf, SaraChangeListener
 {
 
+	/**
+	 * Logger object for this class.
+	 */
+	private static final Logger logger = Logger.getLogger(SaraDispatcherImpl.class);
+	
 	/** 
 	 * <b>SaraChangeEvent arrival buffer strategy</b></p>
 	 * 
@@ -50,19 +55,19 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	 * This property can be exploited. Since changes comes in "trains", a 
 	 * arrival buffer strategy reduces the amount of model and UI updates 
 	 * required locally. In this implementation, a 2 second buffer is 
-	 * hard coded. The following rules is applied
+	 * hard coded. The following rules and assumptions are applied
 	 * 
-	 * 1. Changes are added as long as it is less than 2 seconds since last
-	 *    time the mso model was updated
-	 * 2. The buffer will empty every 2 seconds, regardless of the arrivals
-	 * 3. It is assumed that the buffer is of sufficiently large capacity with
-	 *    respect to the operational requirements of the system.
+	 * 1. Changes are added as long as it is less than X seconds 
+	 *    since last time the MSO model was updated
+	 * 2. The buffer will empty every X seconds, regardless of the arrivals
+	 * 3. It is assumed that the buffer is of sufficiently large capacity 
+	 *    with respect to the operational requirements of the system.
 	 * 
 	 * IMPORTANT! It is not implemented any recovery mechanisms if the buffer
-	 * overruns. This voulnarbility should be addressed in the future.
+	 * overruns. This vulnerability should be addressed in the future...
 	 * 
 	 **/
-	final static int SARA_CHANGE_EVENT_BUFFER_DELAY = 2000;
+	final static int SARA_CHANGE_EVENT_BUFFER_DELAY = 1000;
 	
 	/**
 	 * <b>Timer used to implement the arrival buffer</b></p>
@@ -213,7 +218,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         // notify
         getWorkPool().suspend();
         getMsoModel().setRemoteUpdateMode();
-        getMsoModel().suspendClientUpdate();
+        getMsoModel().suspendUpdate();
 
     	try {
 
@@ -251,7 +256,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     	}
 
     	// resume old modes
-    	getMsoModel().resumeClientUpdate(true);
+    	getMsoModel().resumeUpdate();
         getMsoModel().restoreUpdateMode();
     	getWorkPool().resume();
 
@@ -301,7 +306,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
 	    		/* ==========================================================
 	    		 * The MSO model is cleared by deleting all objects
-	    		 * in reverse order (references first, then objects).
+	    		 * in reverse order (relations first, then objects).
 	    		 *  
 	    		 * Because all objects are iterated, only a shallow
 	    		 * delete is required. Hence, calling delete(), which 
@@ -312,9 +317,9 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	    		 * 
 	    		 * ========================================================== */
 	    			    		
-	        	// delete all deleteable references
+	        	// delete all deleteable relations
 	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
-	        		if(msoObj instanceof IMsoReferenceIf) {
+	        		if(msoObj instanceof IMsoRelationIf) {
 	        			if(msoObj.isDeletable()) {
 	        				((AbstractMsoObject) msoObj).delete(false);
 	        			}
@@ -413,7 +418,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
             while (table.hasNext())
             {
                 Map.Entry<String, SarBaseObject> entry = table.next();
-                updateMsoReference(so, (SarObjectImpl) entry.getValue(), entry.getKey(), SarBaseObjectImpl.ADD_NAMED_REL_FIELD);
+                updateMsoRelation(so, (SarObjectImpl) entry.getValue(), entry.getKey(), SarBaseObjectImpl.ADD_NAMED_REL_FIELD);
             }
 
             // get copy of named relations
@@ -430,7 +435,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                     {
                         SarObjectImpl sarBaseObject = (SarObjectImpl)entry.getValue().get(i);
 
-                        updateMsoReference(so, sarBaseObject, entry.getKey(), SarBaseObjectImpl.ADD_REL_FIELD);
+                        updateMsoRelation(so, sarBaseObject, entry.getKey(), SarBaseObjectImpl.ADD_REL_FIELD);
                     }
                     catch (Exception e)
                     {
@@ -549,9 +554,8 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         }
     }
 
-    // global object used to handle commit and loopback detection
-    private final HashMap<String, SarObject> commitObjects = new HashMap<String, SarObject>();
-    private final List<IMsoObjectIf> loopbackObjects = new ArrayList<IMsoObjectIf>();
+    // global object used in the the commit operation
+    private final HashMap<String, SarObject> newObjects = new HashMap<String, SarObject>();
 
     public void handleMsoCommitEvent(MsoEvent.Commit e) throws TransactionException
     {
@@ -561,15 +565,14 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     	 * thread the Work Pool mechanism. This ensures that all
     	 * commits are serialized to prevent concurrent commits.
     	 * Hence, every commit can be matched to the LOOPBACK
-    	 * events from the message queue. Is some updates are
+    	 * events from the message queue. If some updates are
     	 * still pending after a specified amount of time, a
     	 * CommitException is thrown with update residue
     	 * information.
     	 * ======================================================= */
 
     	// prepare
-        commitObjects.clear();
-        loopbackObjects.clear();
+        newObjects.clear();
 
         // Check that operation is added
         if (sarSvc.getSession().isFinishedLoading() && sarSvc.getSession().getOperations().getOperations().size() == 0)
@@ -581,41 +584,42 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         ITransactionIf transaction = (ITransactionIf) e.getSource();
 
         // get object list
-        List<IChangeObjectIf> objectList = transaction.getObjects();
+        List<IChangeRecordIf> list = transaction.getChanges();
 
         // prepare changed objects
-        for (IChangeObjectIf it : transaction.getObjects())
+        for (IChangeRecordIf it : list)
         {
             //IF created, create SARA object
-            if (it.getType().equals(ChangeType.CREATED))
+            if (it.isObjectCreated())
             {
+            	// create sara object
                 SarObject so = createSaraObject(it);
-                commitObjects.put(so.getID(), so);
+                newObjects.put(so.getID(), so);
                 so.createNewOut();
-            } else if (it.getType().equals(ChangeType.MODIFIED))
+            } else if (it.isChanged())
             {
-                // if modified, modify SaraObject.
+                // modify SaraObject.
                 updateSaraObject(it);
             }
         }
 
-        // prepare list changes (1-to-N references)
-        for (IChangeIf.IChangeReferenceIf it : transaction.getListReferences())
-        {
-            msoReferenceChanged(it, false);
-        }
-
-        // prepare object to object references (1-to-1, or named reference)
-        for (IChangeIf.IChangeReferenceIf it : transaction.getObjectReferences())
+        // prepare object to object relations (1-to-1, or named relation)
+        for (IChangeIf.IChangeRelationIf it : transaction.getObjectRelations())
         {
         	// forward
-            msoReferenceChanged(it, true);
+            msoRelationChanged(it, true);
+        }
+
+        // prepare list changes (1-to-N relations)
+        for (IChangeIf.IChangeRelationIf it : transaction.getListRelations())
+        {
+            msoRelationChanged(it, false);
         }
 
         // Handle delete object last
-        for (IChangeObjectIf it : objectList)
+        for (IChangeRecordIf it : list)
         {
-            if (it.getType().equals(ChangeType.DELETED))
+            if (it.isObjectDeleted())
             {
                 // if deleted remove Sara object
                 deleteSaraObject(it);
@@ -627,61 +631,64 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
     }
 
-    private void msoReferenceChanged(IChangeIf.IChangeReferenceIf ico, boolean isNamedReference)
+    private void msoRelationChanged(IChangeIf.IChangeRelationIf aChange, boolean isNamedRelation)
     {
         // initialize
-    	ChangeType ct = ico.getType();
-        IMsoObjectIf owner = ico.getReferringObject();
-        IMsoObjectIf ref = ico.getReferredObject();
-        SarObject sourceObj = sarOperation.getSarObject(owner.getObjectId());
-        SarObject relObj = sarOperation.getSarObject(ref.getObjectId());
-        String refName = ico.getName();
-        if (sourceObj == null)
+        IMsoObjectIf ownObj = aChange.getReferringObject();
+        IMsoObjectIf refObj = aChange.getReferredObject();
+        SarObject srcObj = sarOperation.getSarObject(ownObj.getObjectId());
+        SarObject relObj = sarOperation.getSarObject(refObj.getObjectId());
+        String refName = aChange.getName();
+        // if SAR objects does not exists in SAR operation, 
+        // try map of SAR objects created in this commit 
+        // operations, but not committed yet.
+        if (srcObj == null)
         {
-            sourceObj = commitObjects.get(owner.getObjectId());
+            srcObj = newObjects.get(ownObj.getObjectId());
         }
         if (relObj == null)
         {
-            relObj = commitObjects.get(ref.getObjectId());
+            relObj = newObjects.get(refObj.getObjectId());
         }
-        if (sourceObj == null || relObj == null)
+        // objects was still not found?
+        if (ownObj == null)
         {
-            Log.warning("Object not found " + owner.getObjectId() + " or " + ref.getObjectId());
+            Log.warning("Object not found: " + ownObj.getObjectId());
+        } 
+        else if (refObj == null)
+        {
+            Log.warning("Object not found: " + refObj.getObjectId());
         } else
         {
         	// dispatch
-            if (ct.equals(ChangeType.CREATED))
+            if (aChange.isRelationAdded())
             {
             	// add relation
-                if (isNamedReference)
+                if (isNamedRelation)
                 {
-                    sourceObj.addNamedRelation(refName, relObj);
+                    srcObj.addNamedRelation(refName, relObj);
                 } else
                 {
-                    sourceObj.addRelation(refName, relObj);
+                    srcObj.addRelation(refName, relObj);
                 }
-            } else if (ct.equals(ChangeType.MODIFIED))
-            {
-                //TODO skal dette kunne skje??
-                Log.warning("-------------Modify relation-----------");
-            } else if (ct.equals(ChangeType.DELETED))
+            } else if (aChange.isRelationRemoved())
             {
             	// add relation
-            	if (isNamedReference)
+            	if (isNamedRelation)
                 {
-                    sourceObj.removeNamedRelation(refName);
+                    srcObj.removeNamedRelation(refName);
                 } else
                 {
-                    sourceObj.removeRelation(refName, relObj);
+                    srcObj.removeRelation(refName, relObj);
                 }
             }
         }
     }
 
-    private SarObject createSaraObject(IChangeObjectIf changeObject)
+    private SarObject createSaraObject(IChangeRecordIf aRecord)
     {
-        IMsoObjectIf msoObj = changeObject.getMsoObject();
-        msoObj.getMsoClassCode();
+        IMsoObjectIf msoObj = aRecord.getMsoObject();
+        msoObj.getClassCode();
         // get object type
         SarSession sarSess = sarSvc.getSession();
         String className = msoObj.getClass().getName();
@@ -698,27 +705,27 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
         // connect to operation
         sbo.setOperation(sarOperation);
-        // update references and attributes
-        updateSaraObject(sbo, changeObject.getMsoObject(), changeObject, false);
+        // update relations and attributes
+        updateSaraObject(sbo, aRecord.getMsoObject(), aRecord, false);
         // finished
         return sbo;
     }
 
-    private void updateSaraObject(IChangeObjectIf changeObject)
+    private void updateSaraObject(IChangeRecordIf aRecord)
     {
         // get sara object
-    	SarObject soi = sarOperation.getSarObject(changeObject.getMsoObject().getObjectId());
-        // ensure that this change is submitted to all listeners before any references is updated
-        updateSaraObject(soi, changeObject.getMsoObject(), changeObject, true);
+    	SarObject so = sarOperation.getSarObject(aRecord.getMsoObject().getObjectId());
+        // ensure that this change is submitted to all listeners before any relations is updated
+        updateSaraObject(so, aRecord.getMsoObject(), aRecord, true);
     }
 
-    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, IChangeObjectIf changeObject, boolean submitChanges)
+    private void updateSaraObject(SarObject sbo, IMsoObjectIf msoObj, IChangeRecordIf aRecord, boolean submitChanges)
     {
     	// initialize
     	Map<String, IMsoAttributeIf<?>> attrMap = msoObj.getAttributes();
-        Map<String, IMsoReferenceIf<?>> objRefMap = msoObj.getObjectReferences();
+        Map<String, IMsoRelationIf<?>> objRefMap = msoObj.getObjectRelations();
         List<SarBaseObject> sarObjs = sbo.getObjects();
-        boolean isComplete = changeObject==null || changeObject!=null&&!changeObject.isFiltered();
+        boolean isComplete = aRecord==null || aRecord!=null&&!aRecord.isFiltered();
 
         // loop over all objects in sara object
         for (SarBaseObject so : sarObjs)
@@ -731,9 +738,9 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                     // Map fact to attribute
                     String attrName = ((SarFact) so).getLabel();
                     IMsoAttributeIf<?> msoAttr = attrMap.get(attrName.toLowerCase());
-                    // only update fact if this is not a partial update, or if attribute
+                    // only update fact if this is a complete update, or if attribute
                     // is included in the partial update
-                    if(isComplete || changeObject.containsFilter(msoAttr)) {
+                    if(isComplete || aRecord.containsFilter(msoAttr)) {
 	                    // found attribute?
 	                    if (msoAttr != null)
 	                    {
@@ -743,19 +750,19 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	                        Log.warning("Attribute " + attrName + " not found for " + sbo.getName());
 	                    }
                     }
-                /* object references (which is objects them selves) are
+                /* object relations (which is objects them selves) are
                  * only updated if this is a complete commit operation 
                  * (the opposite of a partial commit). */
                 } else 
                 {
                     if(so instanceof SarObject) {
 	                	String objName = ((SarObject) so).getName();
-	                    IMsoObjectIf refObj = objRefMap.get(objName).getReference();
-	                    // only update fact if this is not a partial update, or if object reference
+	                    IMsoObjectIf refObj = objRefMap.get(objName).get();
+	                    // only update fact if this is not a partial update, or if object relation
 	                    // is included in the partial update	                    
-	                    if (refObj != null && (isComplete || changeObject.containsFilter(refObj)))
+	                    if (refObj != null && (isComplete || aRecord.containsFilter(refObj)))
 	                    {
-	                    	// recurse on reference object
+	                    	// recurse on relation object
 	                        updateSaraObject((SarObject) so, refObj, null, submitChanges);
 	                    }
                     }
@@ -775,10 +782,10 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
     }
 
-    private void deleteSaraObject(IChangeObjectIf commitObject)
+    private void deleteSaraObject(IChangeRecordIf aRecord)
     {
         // get object from operation
-        SarObject soi = sarOperation.getSarObject(commitObject.getMsoObject().getObjectId());
+        SarObject soi = sarOperation.getSarObject(aRecord.getMsoObject().getObjectId());
 
     	// forward
         soi.delete("DISKO");
@@ -879,8 +886,14 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     private void scheduleSaraChangeWork(SaraChangeEvent e) {
     	// get new schedule from old
     	schedule = new DelaySchedule(schedule);
-    	// add to schedule
-    	schedule.add(e);
+    	try {
+			// add to schedule
+			schedule.add(e);
+		} catch (RuntimeException ex) {
+			logger.error("Failed to add Sara change work to schedule. This implies that " +
+					"the buffer is of usufficiently large capacity with respect to the operational " +
+					"requirements of the system. The buffer interval should therefore be decreased.");
+		}
 		// cancel schedule
 		timer.cancel();
 		// set new timer
@@ -928,8 +941,6 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	                if (msoObj != null)
 	                {
 	                    msoManager.remove(msoObj);
-	                    // detect loopback
-	                    detectLoopback(msoObj);
 	                }
 	            }
 	        }
@@ -954,7 +965,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
             String relId = toObject.length>1?toObject[1]:null;
             String relName = ((String[]) co.getToObj())[0];
             SarObjectImpl rel = (SarObjectImpl) sarOperation.getSarObject(relId);
-            updateMsoReference(so, rel, relName, co.getFieldName());
+            updateMsoRelation(so, rel, relName, co.getFieldName());
 
         } else
         {
@@ -973,22 +984,19 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                     SaraMsoMapper.mapSarFactToMsoAttr(attr, (SarFact) so, co.getGivenTime());
                 }
 
-                // detect loopback
-                detectLoopback(msoObj);
-
             }
             // not supported?
             if (parentObject == null || attr == null)
             {
-                Log.warning("NOT IMPLEMENTED YET changeMsoFromSara field: " + co.getFieldType() + " ftype: " + co.getFactType());
+                Log.warning("NOT IMPLEMENTED YET, changeMsoFromSara field: " + co.getFieldType() + " ftype: " + co.getFactType());
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-	private void updateMsoReference(SarBaseObject so, SarObjectImpl rel, String relName, String fieldName)
+	private void updateMsoRelation(SarBaseObject so, SarObjectImpl rel, String relName, String fieldName)
     {
-    	// get reference objects
+    	// get relation objects
         IMsoObjectIf source = saraMsoMap.get(so);
         IMsoObjectIf relObj = saraMsoMap.get(rel);
         //Get type relation change
@@ -996,34 +1004,34 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         {
             try
             {
-                source.addListReference(relObj, relName);
+                source.addListRelation(relObj, relName);
             }
             catch (Exception e)
             {
-                Log.printStackTrace("Failed to add list reference", e);
+                Log.printStackTrace("Failed to add list relation", e);
             }
         } else if (fieldName.equalsIgnoreCase(SarBaseObjectImpl.ADD_NAMED_REL_FIELD))
         {
         	try {
-				source.setObjectReference(relObj, relName);
+				source.setObjectRelation(relObj, relName);
 			} catch (Exception e) {
-                Log.printStackTrace("Failed to set object reference", e);
+                Log.printStackTrace("Failed to set object relation", e);
 			}
             
 	    } else if (fieldName.equalsIgnoreCase(SarBaseObjectImpl.REM_REL_FIELD))
 	    {	    	
 	    	try {
-				source.removeListReference(relObj, relName);
+				source.removeListRelation(relObj, relName);
 			} catch (Exception e) {
-                Log.printStackTrace("Failed to remove list reference", e);
+                Log.printStackTrace("Failed to remove list relation", e);
 			}
             
         } else if (fieldName.equalsIgnoreCase(SarBaseObjectImpl.REM_NAMED_REL_FIELD))
         {   
         	try {
-				source.setObjectReference(null, relName);
+				source.setObjectRelation(null, relName);
 			} catch (Exception e) {
-                Log.printStackTrace("Failed to reset object reference", e);
+                Log.printStackTrace("Failed to reset object relation", e);
 			}
 	    }
         
@@ -1091,9 +1099,6 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         	msoObj.setCreatedTime(creationTime);
         }
 
-        // detect loopback
-        detectLoopback(msoObj);
-
         // update MSO object values
         setMsoObjectValues(sarObject, msoObj);
 
@@ -1127,7 +1132,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                 {
                     try
                     {
-                        Log.warning("Attr not found " + ((SarFact) fact).getLabel() + " for msoobj " + msoObj.getMsoClassCode() + "\n" + ex.getMessage());
+                        Log.warning("Attr not found " + ((SarFact) fact).getLabel() + " for msoobj " + msoObj.getClassCode() + "\n" + ex.getMessage());
                     }
                     catch (Exception e)
                     {
@@ -1139,12 +1144,6 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                 //TODO handle internal object attributes
             }
         }
-    }
-
-    private void detectLoopback(IMsoObjectIf msoObj) {
-    	if(msoObj!=null) {
-    		loopbackObjects.add(msoObj);
-    	}
     }
 
     /*===============================================================
@@ -1191,7 +1190,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
 		public SaraChangeWork(List<SaraChangeEvent> changes) throws Exception {
 			// forward
-			super(HIGH_HIGH_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Bearbeider",500,true,true);
+			super(HIGH_HIGH_PRIORITY,false,true,WorkerType.SAFE,"Bearbeider",500,true,true);
 			// save event
 			this.changes = changes;
  		}
@@ -1206,7 +1205,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 		 *
 		 * Notifies the model of change in worker thread (system modal)
 		 */
-		public Void doWork() {
+		public Void doWork(IWorkLoop loop) {
 			// DEBUG: Print line
 			System.out.println("SaraChangeWork-"+System.currentTimeMillis());
         	// catch errors and log them

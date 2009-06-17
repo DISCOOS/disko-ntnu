@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 
 import org.redcross.sar.data.IData;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.util.mso.IGeodataIf.GeoClassCode;
 
 /**
@@ -120,9 +121,19 @@ public class GeoPos implements Cloneable, IData
     /**
      * Get geodata class code 
      */
-	public GeoClassCode getClassCode() {
+	@Override
+	public GeoClassCode getDataType() {
 		return GeoClassCode.CLASSCODE_GEOPOS;
 	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public MsoClassCode getClassCode() {
+		return MsoClassCode.CLASSCODE_NOCLASS;
+	}
+	
 
 	/**
      * Get position as a point

@@ -1,7 +1,7 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
 import java.util.Comparator;
@@ -48,7 +48,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public String getDescription();
 
-    public IMsoModelIf.ModificationState getDescriptionState();
+    public IData.DataOrigin getDescriptionState();
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
 
@@ -56,7 +56,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public int getProgress();
 
-    public IMsoModelIf.ModificationState getProgressState();
+    public IData.DataOrigin getProgressState();
 
     public IMsoAttributeIf.IMsoIntegerIf getProgressAttribute();
 
@@ -64,7 +64,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public String getResponsibleRole();
 
-    public IMsoModelIf.ModificationState getResponsibleRoleState();
+    public IData.DataOrigin getResponsibleRoleState();
 
     public IMsoAttributeIf.IMsoStringIf getResponsibleRoleAttribute();
 
@@ -72,7 +72,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public String getTaskText();
 
-    public IMsoModelIf.ModificationState getTaskTextState();
+    public IData.DataOrigin getTaskTextState();
 
     public IMsoAttributeIf.IMsoStringIf getTaskTextAttribute();
 
@@ -80,7 +80,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public Calendar getAlert();
 
-    public IMsoModelIf.ModificationState getAlertState();
+    public IData.DataOrigin getAlertState();
 
     public IMsoAttributeIf.IMsoCalendarIf getAlertAttribute();
 
@@ -88,7 +88,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public Calendar getCreated();
 
-    public IMsoModelIf.ModificationState getCreatedState();
+    public IData.DataOrigin getCreatedState();
 
     public IMsoAttributeIf.IMsoCalendarIf getCreatedAttribute();
 
@@ -96,7 +96,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public String getCreatingWorkProcess();
 
-    public IMsoModelIf.ModificationState getCreatingWorkProcessState();
+    public IData.DataOrigin getCreatingWorkProcessState();
 
     public IMsoAttributeIf.IMsoStringIf getCreatingWorkProcessAttribute();
 
@@ -108,17 +108,17 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IEventIf getCreatedEvent();
 
-    public IMsoModelIf.ModificationState getCreatedEventState();
+    public IData.DataOrigin getCreatedEventState();
 
-    public IMsoReferenceIf<IEventIf> getCreatedEventAttribute();
+    public IMsoRelationIf<IEventIf> getCreatedEventAttribute();
 
     public void setDependentObject(IMsoObjectIf anAbstractMsoObject);
 
     public IMsoObjectIf getDependentObject();
 
-    public IMsoModelIf.ModificationState getDependentObjectState();
+    public IData.DataOrigin getDependentObjectState();
 
-    public IMsoReferenceIf<IMsoObjectIf> getDependentObjectAttribute();
+    public IMsoRelationIf<IMsoObjectIf> getDependentObjectAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Methods for enums
@@ -132,7 +132,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public TaskType getType();
 
-    public IMsoModelIf.ModificationState getTypeState();
+    public IData.DataOrigin getTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<TaskType> getTypeAttribute();
 
@@ -146,7 +146,7 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public IMsoManagerIf.MsoClassCode getSourceClass();
 
-    public IMsoModelIf.ModificationState getSourceClassState();
+    public IData.DataOrigin getSourceClassState();
 
     public IMsoAttributeIf.IMsoEnumIf<IMsoManagerIf.MsoClassCode> getSourceClassAttribute();
 
@@ -162,6 +162,6 @@ public interface ITaskIf extends ITimeItemIf, ISerialNumberedIf, IEnumStatusHold
 
     public void setDueTime(Calendar aCalendar);
 
-    public IMsoModelIf.ModificationState getDueTimeState();
+    public IData.DataOrigin getDueTimeState();
 
 }

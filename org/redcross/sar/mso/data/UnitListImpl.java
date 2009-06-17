@@ -28,6 +28,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
         return retVal + 1;
     }
 
+    /*
     void rearrangeUnitSerialNumber(Class<?> aClass)
     {
         // todo make code
@@ -35,7 +36,8 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
         {
         }
     }
-
+	*/
+    
     public IVehicleIf createVehicle(String anIdentifier)
     {
         checkCreateOp();

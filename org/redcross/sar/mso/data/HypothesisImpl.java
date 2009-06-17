@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
@@ -46,7 +47,7 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_HYPOTHESIS;
     }
@@ -75,9 +76,9 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
         return m_status.getInternationalName();
     }
 
-    public IMsoModelIf.ModificationState getStatusState()
+    public IData.DataOrigin getStatusState()
     {
-        return m_status.getState();
+        return m_status.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<HypothesisStatus> getStatusAttribute()
@@ -99,9 +100,9 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
         return m_description.getString();
     }
 
-    public IMsoModelIf.ModificationState getDescriptionState()
+    public IData.DataOrigin getDescriptionState()
     {
-        return m_description.getState();
+        return m_description.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute()
@@ -124,9 +125,9 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
         return m_priorityIndex.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPriorityIndexState()
+    public IData.DataOrigin getPriorityIndexState()
     {
-        return m_priorityIndex.getState();
+        return m_priorityIndex.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPriorityIndexAttribute()
@@ -144,9 +145,9 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
         return m_number.intValue();
     }
 
-    public IMsoModelIf.ModificationState getNumberState()
+    public IData.DataOrigin getNumberState()
     {
-        return m_number.getState();
+        return m_number.getOrigin();
     }
 
 }

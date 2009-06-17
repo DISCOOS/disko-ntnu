@@ -2,7 +2,8 @@ package org.redcross.sar.mso.data;
 
 import java.util.List;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
+
 
 /**
  *
@@ -24,9 +25,9 @@ public interface IHierarchicalUnitIf extends IMsoObjectIf
      */
     public IHierarchicalUnitIf getSuperiorUnit();
 
-    public IMsoModelIf.ModificationState getSuperiorUnitState();
+    public IData.DataOrigin getSuperiorUnitState();
 
-    public IMsoReferenceIf<IHierarchicalUnitIf> getSuperiorUnitAttribute();
+    public IMsoRelationIf<IHierarchicalUnitIf> getSuperiorUnitAttribute();
 
     /**
      * Generate list of subordinates

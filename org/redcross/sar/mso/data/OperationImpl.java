@@ -4,6 +4,7 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 
@@ -15,7 +16,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     private final AttributeImpl.MsoString m_opNumber = new AttributeImpl.MsoString(this, "OpNumber");
     private final AttributeImpl.MsoString m_opNumberPrefix = new AttributeImpl.MsoString(this, "OpNumberPrefix");
 
-    private final MsoReferenceImpl<ISystemIf> m_system = new MsoReferenceImpl<ISystemIf>(this, "System", 1, false);
+    private final MsoRelationImpl<ISystemIf> m_system = new MsoRelationImpl<ISystemIf>(this, "System", 1, false, null);
 
     private final CmdPostListImpl m_cmdPostList = new CmdPostListImpl(this, "CmdPostList", true);
 
@@ -42,7 +43,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     	addObject(m_system);
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void addListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ICmdPostIf)
         {
@@ -50,7 +51,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof ICmdPostIf)
         {
@@ -58,7 +59,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATION;
     }
@@ -77,9 +78,9 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         return m_opNumber.getString();
     }
 
-    public IMsoModelIf.ModificationState getOpNumberState()
+    public IData.DataOrigin getOpNumberState()
     {
-        return m_opNumber.getState();
+        return m_opNumber.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getOpNumberAttribute()
@@ -97,9 +98,9 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         return m_opNumberPrefix.getString();
     }
 
-    public IMsoModelIf.ModificationState getOpNumberPrefixState()
+    public IData.DataOrigin getOpNumberPrefixState()
     {
-        return m_opNumberPrefix.getState();
+        return m_opNumberPrefix.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getOpNumberPrefixAttribute()
@@ -113,20 +114,20 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
 
     public void setSystem(ISystemIf aSystem)
     {
-        m_system.setReference(aSystem);
+        m_system.set(aSystem);
     }
 
     public ISystemIf getSystem()
     {
-        return m_system.getReference();
+        return m_system.get();
     }
 
-    public IMsoModelIf.ModificationState getSystemState()
+    public IData.DataOrigin getSystemState()
     {
-        return m_system.getState();
+        return m_system.getOrigin();
     }
 
-    public IMsoReferenceIf<ISystemIf> getSystemAttribute()
+    public IMsoRelationIf<ISystemIf> getSystemAttribute()
     {
         return m_system;
     }
@@ -145,9 +146,9 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
         return m_cmdPostList;
     }
 
-    public IMsoModelIf.ModificationState getCmdPostListState(ICmdPostIf anICmdPostIf)
+    public IData.DataOrigin getCmdPostListState(ICmdPostIf anICmdPostIf)
     {
-        return m_cmdPostList.getState(anICmdPostIf);
+        return m_cmdPostList.getOrigin(anICmdPostIf);
     }
 
     public Collection<ICmdPostIf> getCmdPostListItems()
@@ -182,7 +183,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     }
 
     public ISystemIf createSystem(IObjectIdIf id) {
-    	AbstractMsoObject msoObj = new SystemImpl(m_msoModel, id);
+    	AbstractMsoObject msoObj = new SystemImpl(m_model, id);
     	msoObj.setup(true);
         return (ISystemIf)msoObj;
     }

@@ -1,7 +1,7 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
@@ -137,7 +137,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public UnitType getType();
 
-    public IMsoModelIf.ModificationState getTypeState();
+    public IData.DataOrigin getTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<UnitType> getTypeAttribute();
 
@@ -151,7 +151,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public String getName();
 
-    public IMsoModelIf.ModificationState getNameState();
+    public IData.DataOrigin getNameState();
 
     public IMsoAttributeIf.IMsoStringIf getNameAttribute();
 
@@ -159,7 +159,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public String getCallSign();
 
-    public IMsoModelIf.ModificationState getCallSignState();
+    public IData.DataOrigin getCallSignState();
 
     public IMsoAttributeIf.IMsoStringIf getCallSignAttribute();
 
@@ -167,7 +167,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
 	public String getToneID();
 
-	public IMsoModelIf.ModificationState getToneIDState();
+	public IData.DataOrigin getToneIDState();
 
 	public IMsoAttributeIf.IMsoStringIf getToneIDAttribute();
 	
@@ -175,7 +175,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public String getTrackingID();
 
-    public IMsoModelIf.ModificationState getTrackingIDState();
+    public IData.DataOrigin getTrackingIDState();
 
     public IMsoAttributeIf.IMsoStringIf getTrackingIDAttribute();
     
@@ -183,7 +183,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public Position getPosition();
 
-    public IMsoModelIf.ModificationState getPositionState();
+    public IData.DataOrigin getPositionState();
 
     public IMsoAttributeIf.IMsoPositionIf getPositionAttribute();
 
@@ -191,7 +191,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
@@ -201,7 +201,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IAssignmentListIf getUnitAssignments();
 
-    public IMsoModelIf.ModificationState getUnitAssignmentsState(IAssignmentIf anAssignment);
+    public IData.DataOrigin getUnitAssignmentsState(IAssignmentIf anAssignment);
 
     public Collection<IAssignmentIf> getUnitAssignmentsItems();
 
@@ -211,7 +211,7 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IPersonnelListIf getUnitPersonnel();
 
-    public IMsoModelIf.ModificationState getUnitPersonnelState(IPersonnelIf anPersonnel);
+    public IData.DataOrigin getUnitPersonnelState(IPersonnelIf anPersonnel);
 
     public Collection<IPersonnelIf> getUnitPersonnelItems();
 
@@ -223,17 +223,17 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
 
     public IPersonnelIf getUnitLeader();
 
-    public IMsoModelIf.ModificationState getUnitLeaderState();
+    public IData.DataOrigin getUnitLeaderState();
 
-    public IMsoReferenceIf<IPersonnelIf> getUnitLeaderAttribute();
+    public IMsoRelationIf<IPersonnelIf> getUnitLeaderAttribute();
 
     public void setTrack(ITrackIf aTrack);
 
     public ITrackIf getTrack();
 
-    public IMsoModelIf.ModificationState getTrackState();
+    public IData.DataOrigin getTrackState();
 
-    public IMsoReferenceIf<ITrackIf> geTrackAttribute();
+    public IMsoRelationIf<ITrackIf> geTrackAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Other methods

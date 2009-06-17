@@ -124,7 +124,8 @@ public abstract class MsoLabel<M extends IMsoObjectIf> extends JLabel
         return m_isSelected;
     }
     
-    public MsoIcon<M> getMsoIcon() {
+    @SuppressWarnings("unchecked")
+	public MsoIcon<M> getMsoIcon() {
     	return getIcon() instanceof MsoIcon ? (MsoIcon<M>)getIcon() : null;
     }
 
@@ -166,7 +167,8 @@ public abstract class MsoLabel<M extends IMsoObjectIf> extends JLabel
      *
      * @return Returns a IMsoObjectIf instance
      */
-    public M getMsoObject()
+    @SuppressWarnings("unchecked")
+	public M getMsoObject()
     {
         if (m_msoObject != null)
         {

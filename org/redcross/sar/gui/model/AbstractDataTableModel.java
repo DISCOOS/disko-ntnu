@@ -7,6 +7,8 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.redcross.sar.data.AbstractDataModel;
+import org.redcross.sar.data.IData.DataOrigin;
+import org.redcross.sar.data.IData.DataState;
 import org.redcross.sar.data.IDataBinder;
 import org.redcross.sar.data.IData;
 import org.redcross.sar.data.IDataModel;
@@ -229,9 +231,25 @@ public abstract class AbstractDataTableModel<S,T extends IData>
 	}
 
 	public void setValueAt(Object value, int iRow, int iCol) {
-		impl.setValueAt(value, iRow,iCol);
+		impl.setValueAt(value,iRow,iCol);
 	}
 
+	public DataOrigin getOriginAt(int iRow, int iCol) {
+		return impl.getOriginAt(iRow,iCol);
+	}
+	
+	public void setOriginAt(DataOrigin origin, int iRow, int iCol) {
+		impl.setOriginAt(origin,iRow,iCol);
+	}
+	
+	public DataState getStateAt(int iRow, int iCol) {
+		return impl.getStateAt(iRow,iCol);
+	}
+	
+	public void setStateAt(DataState state, int iRow, int iCol) {
+		impl.setStateAt(state,iRow,iCol);
+	}
+	
 	public void addDataListener(IDataListener listener) {
 		impl.addDataListener(listener);
 	}
@@ -259,17 +277,60 @@ public abstract class AbstractDataTableModel<S,T extends IData>
 	 * @param T obj - The added data object
 	 * @param int size - number of values in object
 	 */
-	protected Object[] create(S id, T obj, int size) { return new Object[size]; }
+	protected IRow create(S id, T obj, int size) { return AbstractDataModel.createRow(size); }
 
 	/**
 	 * Is fired when IDataModel.update(S id, T obj) is called.
 	 *
 	 * @param S id - The updated row id
 	 * @param T obj - The updated data object
-	 * @param int size - array of values to update
+	 * @param IRow data - the row to update
 	 */
-	protected abstract Object[] update(S id, T obj, Object[] data);
+	protected abstract IRow update(S id, T obj, IRow data);
 
+	/**
+	 * This abstract method must be implemented by the extending class.
+	 * 
+	 * Is fired when IDataModel.update(T id, T obj, Row data) is called. 
+	 * 
+	 * @param int row - the row index
+	 * @param String column - the column key (name)
+	 * @return Returns the cell value given by row and column identifiers
+	 */
+	protected abstract Object getCellValue(int row, String column);
+
+	/**
+	 * Is fired when IDataModel.update(T id, T obj, Row data) is called. 
+	 * 
+	 * If {@code isNameAttribute} is {@code true}, then this method 
+	 * is only called if no attribute with name equal to the column
+	 * name is found in the data object (T obj).
+	 * 
+	 * @param int row - the row index
+	 * @param String column - the column key (name)
+	 * @return Returns the cell origin given by row and column identifiers. 
+	 * Default implementation returns always DataOrigin.NONE. 
+	 */
+	protected DataOrigin getCellOrigin(int row, String column) {
+		return DataOrigin.NONE;
+	}
+	
+	/**
+	 * Is fired when IDataModel.update(T id, T obj, Row data) is called.
+	 * 
+	 * If {@code isNameAttribute} is {@code true}, then this method 
+	 * is only called if no attribute with name equal to the column
+	 * name is found in the data object (T obj).
+	 * 
+	 * @param int row - the row index
+	 * @param String column - the column key (name)
+	 * @return Returns the cell state given by row and column identifiers. 
+	 * Default implementation returns always DataState.NONE. 
+	 */
+	protected DataState getCellState(int row, String column) {
+		return DataState.NONE;
+	}
+	
 	/**
 	 * Is fired when IDataModel.remove(S id) is called.
 	 *
@@ -279,8 +340,8 @@ public abstract class AbstractDataTableModel<S,T extends IData>
 	protected void cleanup(S id, boolean finalize) { /*NOP*/ }
 
 	/**
-	 * Implements default Data-To-ID translation. Override this is
-	 * alternative translation is needed.
+	 * Implements default Data-To-ID translation. Override this if
+	 * custom translation is needed.
 	 *
 	 * @param IData[] data - the data to translate
 	 * @return S[] - the ids translated from data
@@ -301,11 +362,11 @@ public abstract class AbstractDataTableModel<S,T extends IData>
 	private AbstractDataModel<S, T> createDataModel(int size, Class<T> c) {
 		AbstractDataModel<S, T> data = new AbstractDataModel<S, T>(size,c) {
 
-			protected Object[] create(S id, T obj, int size) {
+			protected IRow create(S id, T obj, int size) {
 				return AbstractDataTableModel.this.create(id, obj, size);
 			}
 
-			protected Object[] update(S id, T obj, Object[] data) {
+			protected IRow update(S id, T obj, IRow data) {
 				return AbstractDataTableModel.this.update(id, obj, data);
 			}
 
@@ -361,6 +422,7 @@ public abstract class AbstractDataTableModel<S,T extends IData>
 				try {
 					// get row count
 					int count = getRowCount();
+					
 					/* =====================================================
 					 * Hack: Resolves a refresh problem in JTable.
 					 * =====================================================

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -29,7 +30,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     private final AttributeImpl.MsoString m_telephone3 = new AttributeImpl.MsoString(this, "Telephone3");
     private final AttributeImpl.MsoEnum<CmdPostStatus> m_status = new AttributeImpl.MsoEnum<CmdPostStatus>(this, "Status", 1, CmdPostStatus.IDLE);
 
-    private final AbstractDerivedList<ICommunicatorIf> m_communicatorList;
+    private final AbstractCoList<ICommunicatorIf> m_communicatorList;
     private final TimeLineImpl m_timeLine = new TimeLineImpl();
 
     private final AreaListImpl m_areaList = new AreaListImpl(this, "AreaList", true, 100);
@@ -64,9 +65,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         m_communicatorList = createCommunicatorList();
     }
 
-    AbstractDerivedList<ICommunicatorIf> createCommunicatorList()
+    AbstractCoList<ICommunicatorIf> createCommunicatorList()
     {
-        return new AbstractDerivedList<ICommunicatorIf>()
+        return new AbstractCoList<ICommunicatorIf>()
         {
             public boolean hasInterestIn(Object anObject)
             {
@@ -175,7 +176,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_CMDPOST;
     }
@@ -204,9 +205,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_status.getInternationalName();
     }
 
-    public IMsoModelIf.ModificationState getStatusState()
+    public IData.DataOrigin getStatusState()
     {
-        return m_status.getState();
+        return m_status.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<CmdPostStatus> getStatusAttribute()
@@ -228,9 +229,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_established.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getEstablishedState()
+    public IData.DataOrigin getEstablishedState()
     {
-        return m_established.getState();
+        return m_established.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getEstablishedAttribute()
@@ -248,9 +249,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_callSign.getString();
     }
 
-    public IMsoModelIf.ModificationState getCallSignState()
+    public IData.DataOrigin getCallSignState()
     {
-        return m_callSign.getState();
+        return m_callSign.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getCallSignAttribute()
@@ -268,9 +269,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_toneId.getString();
     }
 
-    public IMsoModelIf.ModificationState getToneIDState()
+    public IData.DataOrigin getToneIDState()
     {
-        return m_toneId.getState();
+        return m_toneId.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getToneIDAttribute()
@@ -288,9 +289,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_released.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getReleasedState()
+    public IData.DataOrigin getReleasedState()
     {
-        return m_released.getState();
+        return m_released.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getReleasedAttribute()
@@ -308,9 +309,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_shift.intValue();
     }
 
-    public IMsoModelIf.ModificationState getShiftState()
+    public IData.DataOrigin getShiftState()
     {
-        return m_shift.getState();
+        return m_shift.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getShiftAttribute()
@@ -328,9 +329,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_telephone1.getString();
     }
 
-    public IMsoModelIf.ModificationState getTelephone1State()
+    public IData.DataOrigin getTelephone1State()
     {
-        return m_telephone1.getState();
+        return m_telephone1.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTelephone1Attribute()
@@ -348,9 +349,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_telephone2.getString();
     }
 
-    public IMsoModelIf.ModificationState getTelephone2State()
+    public IData.DataOrigin getTelephone2State()
     {
-        return m_telephone2.getState();
+        return m_telephone2.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTelephone2Attribute()
@@ -368,9 +369,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_telephone3.getString();
     }
 
-    public IMsoModelIf.ModificationState getTelephone3State()
+    public IData.DataOrigin getTelephone3State()
     {
-        return m_telephone3.getState();
+        return m_telephone3.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTelephone3Attribute()
@@ -387,9 +388,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_areaList;
     }
 
-    public IMsoModelIf.ModificationState getAreaListState(IAreaIf anIAreaIf)
+    public IData.DataOrigin getAreaListState(IAreaIf anIAreaIf)
     {
-        return m_areaList.getState(anIAreaIf);
+        return m_areaList.getOrigin(anIAreaIf);
     }
 
     public Collection<IAreaIf> getAreaListItems()
@@ -402,9 +403,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_assignmentList;
     }
 
-    public IMsoModelIf.ModificationState getAssignmentListState(IAssignmentIf anIAssignmentIf)
+    public IData.DataOrigin getAssignmentListState(IAssignmentIf anIAssignmentIf)
     {
-        return m_assignmentList.getState(anIAssignmentIf);
+        return m_assignmentList.getOrigin(anIAssignmentIf);
     }
 
     public Collection<IAssignmentIf> getAssignmentListItems()
@@ -417,9 +418,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_attendanceList;
     }
 
-    public IMsoModelIf.ModificationState getAttendanceListState(IPersonnelIf anIPersonnelIf)
+    public IData.DataOrigin getAttendanceListState(IPersonnelIf anIPersonnelIf)
     {
-        return m_attendanceList.getState(anIPersonnelIf);
+        return m_attendanceList.getOrigin(anIPersonnelIf);
     }
 
     public Collection<IPersonnelIf> getAttendanceListItems()
@@ -432,9 +433,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_briefingList;
     }
 
-    public IMsoModelIf.ModificationState getBriefingListState(IBriefingIf anIBriefingIf)
+    public IData.DataOrigin getBriefingListState(IBriefingIf anIBriefingIf)
     {
-        return m_briefingList.getState(anIBriefingIf);
+        return m_briefingList.getOrigin(anIBriefingIf);
     }
 
     public Collection<IBriefingIf> getBriefingListItems()
@@ -447,9 +448,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_calloutList;
     }
 
-    public IMsoModelIf.ModificationState getCalloutListState(ICalloutIf anICalloutIf)
+    public IData.DataOrigin getCalloutListState(ICalloutIf anICalloutIf)
     {
-        return m_calloutList.getState(anICalloutIf);
+        return m_calloutList.getOrigin(anICalloutIf);
     }
 
     public Collection<ICalloutIf> getCalloutListItems()
@@ -462,9 +463,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_checkpointList;
     }
 
-    public IMsoModelIf.ModificationState getCheckpointListState(ICheckpointIf anICheckpointIf)
+    public IData.DataOrigin getCheckpointListState(ICheckpointIf anICheckpointIf)
     {
-        return m_checkpointList.getState(anICheckpointIf);
+        return m_checkpointList.getOrigin(anICheckpointIf);
     }
 
     public Collection<ICheckpointIf> getCheckpointListItems()
@@ -477,9 +478,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_environmentList;
     }
 
-    public IMsoModelIf.ModificationState getEnvironmentListState(IEnvironmentIf anIEnvironmentIf)
+    public IData.DataOrigin getEnvironmentListState(IEnvironmentIf anIEnvironmentIf)
     {
-        return m_environmentList.getState(anIEnvironmentIf);
+        return m_environmentList.getOrigin(anIEnvironmentIf);
     }
 
     public Collection<IEnvironmentIf> getEnvironmentListItems()
@@ -492,9 +493,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_equipmentList;
     }
 
-    public IMsoModelIf.ModificationState getEquipmentListState(IEquipmentIf anIEquipmentIf)
+    public IData.DataOrigin getEquipmentListState(IEquipmentIf anIEquipmentIf)
     {
-        return m_equipmentList.getState(anIEquipmentIf);
+        return m_equipmentList.getOrigin(anIEquipmentIf);
     }
 
     public Collection<IEquipmentIf> getEquipmentListItems()
@@ -507,9 +508,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_eventLog;
     }
 
-    public IMsoModelIf.ModificationState getEventLogState(IEventIf anIEventIf)
+    public IData.DataOrigin getEventLogState(IEventIf anIEventIf)
     {
-        return m_eventLog.getState(anIEventIf);
+        return m_eventLog.getOrigin(anIEventIf);
     }
 
     public Collection<IEventIf> getEventLogItems()
@@ -522,9 +523,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_forecastList;
     }
 
-    public IMsoModelIf.ModificationState getForecastListState(IForecastIf anIForecastIf)
+    public IData.DataOrigin getForecastListState(IForecastIf anIForecastIf)
     {
-        return m_forecastList.getState(anIForecastIf);
+        return m_forecastList.getOrigin(anIForecastIf);
     }
 
     public Collection<IForecastIf> getForecastListItems()
@@ -537,9 +538,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_hypothesisList;
     }
 
-    public IMsoModelIf.ModificationState getHypothesisListState(IHypothesisIf anIHypothesisIf)
+    public IData.DataOrigin getHypothesisListState(IHypothesisIf anIHypothesisIf)
     {
-        return m_hypothesisList.getState(anIHypothesisIf);
+        return m_hypothesisList.getOrigin(anIHypothesisIf);
     }
 
     public Collection<IHypothesisIf> getHypothesisListItems()
@@ -552,9 +553,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_intelligenceList;
     }
 
-    public IMsoModelIf.ModificationState getIntelligenceListState(IIntelligenceIf anIIntelligenceIf)
+    public IData.DataOrigin getIntelligenceListState(IIntelligenceIf anIIntelligenceIf)
     {
-        return m_intelligenceList.getState(anIIntelligenceIf);
+        return m_intelligenceList.getOrigin(anIIntelligenceIf);
     }
 
     public Collection<IIntelligenceIf> getIntelligenceListItems()
@@ -567,9 +568,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_messageLog;
     }
 
-    public IMsoModelIf.ModificationState getMessageLogState(IMessageIf anIMessageIf)
+    public IData.DataOrigin getMessageLogState(IMessageIf anIMessageIf)
     {
-        return m_messageLog.getState(anIMessageIf);
+        return m_messageLog.getOrigin(anIMessageIf);
     }
 
     public Collection<IMessageIf> getMessageLogItems()
@@ -583,9 +584,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_messageLineList;
     }
 
-    public IMsoModelIf.ModificationState getMessageLineState(IMessageLineIf anIMessageLineIf)
+    public IData.DataOrigin getMessageLineState(IMessageLineIf anIMessageLineIf)
     {
-        return m_messageLineList.getState(anIMessageLineIf);
+        return m_messageLineList.getOrigin(anIMessageLineIf);
     }
 
     public Collection<IMessageLineIf> getMessageLineItems()
@@ -598,9 +599,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_operationAreaList;
     }
 
-    public IMsoModelIf.ModificationState getOperationAreaListState(IOperationAreaIf anIOperationAreaIf)
+    public IData.DataOrigin getOperationAreaListState(IOperationAreaIf anIOperationAreaIf)
     {
-        return m_operationAreaList.getState(anIOperationAreaIf);
+        return m_operationAreaList.getOrigin(anIOperationAreaIf);
     }
 
     public Collection<IOperationAreaIf> getOperationAreaListItems()
@@ -613,9 +614,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_poiList;
     }
 
-    public IMsoModelIf.ModificationState getPOIListState(IPOIIf anIPOIIf)
+    public IData.DataOrigin getPOIListState(IPOIIf anIPOIIf)
     {
-        return m_poiList.getState(anIPOIIf);
+        return m_poiList.getOrigin(anIPOIIf);
     }
 
     public Collection<IPOIIf> getPOIListItems()
@@ -628,9 +629,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_routeList;
     }
 
-    public IMsoModelIf.ModificationState getRouteListState(IRouteIf anIRouteIf)
+    public IData.DataOrigin getRouteListState(IRouteIf anIRouteIf)
     {
-        return m_routeList.getState(anIRouteIf);
+        return m_routeList.getOrigin(anIRouteIf);
     }
 
     public Collection<IRouteIf> getRouteListItems()
@@ -643,9 +644,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_searchAreaList;
     }
 
-    public IMsoModelIf.ModificationState getSearchAreaListState(ISearchAreaIf anISearchAreaIf)
+    public IData.DataOrigin getSearchAreaListState(ISearchAreaIf anISearchAreaIf)
     {
-        return m_searchAreaList.getState(anISearchAreaIf);
+        return m_searchAreaList.getOrigin(anISearchAreaIf);
     }
 
     public Collection<ISearchAreaIf> getSearchAreaListItems()
@@ -658,9 +659,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_sketchList;
     }
 
-    public IMsoModelIf.ModificationState getSketchListState(ISketchIf anISketchIf)
+    public IData.DataOrigin getSketchListState(ISketchIf anISketchIf)
     {
-        return m_sketchList.getState(anISketchIf);
+        return m_sketchList.getOrigin(anISketchIf);
     }
 
     public Collection<ISketchIf> getSketchListItems()
@@ -673,9 +674,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_subjectList;
     }
 
-    public IMsoModelIf.ModificationState getSubjectListState(ISubjectIf anISubjectIf)
+    public IData.DataOrigin getSubjectListState(ISubjectIf anISubjectIf)
     {
-        return m_subjectList.getState(anISubjectIf);
+        return m_subjectList.getOrigin(anISubjectIf);
     }
 
     public Collection<ISubjectIf> getSubjectListItems()
@@ -688,9 +689,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_taskList;
     }
 
-    public IMsoModelIf.ModificationState getTaskListState(ITaskIf anITaskIf)
+    public IData.DataOrigin getTaskListState(ITaskIf anITaskIf)
     {
-        return m_taskList.getState(anITaskIf);
+        return m_taskList.getOrigin(anITaskIf);
     }
 
     public Collection<ITaskIf> getTaskListItems()
@@ -703,9 +704,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_trackList;
     }
 
-    public IMsoModelIf.ModificationState getTrackListState(ITrackIf anITrackIf)
+    public IData.DataOrigin getTrackListState(ITrackIf anITrackIf)
     {
-        return m_trackList.getState(anITrackIf);
+        return m_trackList.getOrigin(anITrackIf);
     }
 
     public Collection<ITrackIf> getTrackListItems()
@@ -718,9 +719,9 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_unitList;
     }
 
-    public IMsoModelIf.ModificationState getUnitListState(IUnitIf anIUnitIf)
+    public IData.DataOrigin getUnitListState(IUnitIf anIUnitIf)
     {
-        return m_unitList.getState(anIUnitIf);
+        return m_unitList.getOrigin(anIUnitIf);
     }
 
     public Collection<IUnitIf> getUnitListItems()
@@ -746,7 +747,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return m_timeLine;
     }
 
-    public AbstractDerivedList<ICommunicatorIf> getCommunicatorList()
+    public AbstractCoList<ICommunicatorIf> getCommunicatorList()
     {
         return m_communicatorList;
     }
@@ -803,12 +804,12 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
         return null;
     }
 
-    public IMsoModelIf.ModificationState getSuperiorUnitState()
+    public IData.DataOrigin getSuperiorUnitState()
     {
-        return IMsoModelIf.ModificationState.STATE_UNDEFINED;
+        return IData.DataOrigin.NONE;
     }
 
-    public IMsoReferenceIf<IHierarchicalUnitIf> getSuperiorUnitAttribute()
+    public IMsoRelationIf<IHierarchicalUnitIf> getSuperiorUnitAttribute()
     {
         return null;
     }

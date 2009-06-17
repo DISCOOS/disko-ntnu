@@ -10,7 +10,7 @@ import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.geometry.IEnvelope;
@@ -87,7 +87,7 @@ public interface IMsoFeatureLayer extends IMapLayer<IMsoObjectIf,IMsoFeature>, I
 
 	public Collection<IMsoObjectIf> getGeodataMsoObjects(IMsoObjectIf msoObject);
 
-	public Collection<IMsoFeature> processMsoUpdateEvent(UpdateList events);
+	public Collection<IMsoFeature> processMsoUpdateEvent(ChangeList events);
 
 
 

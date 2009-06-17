@@ -323,6 +323,11 @@ public abstract class AbstractMapDataBinder<S, T extends IData, I, L extends IMa
 		return false;
 	}
 	
+	/**
+	 * Creates a IMapWork instance containing the given map work. 
+	 * @param work - Map between layers and associated collection of map work
+	 * @return Returns a IMapWork instance containing the map work
+	 */
 	protected abstract IMapWork createWork(Map<L, Collection<IMapData>> work);
 	
 	@SuppressWarnings("unchecked")

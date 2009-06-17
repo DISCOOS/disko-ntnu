@@ -188,11 +188,11 @@ public class AssociationDialog extends DefaultDialog {
 	private void save(IAssociationIf entity) {
 		// prepare
         if(entity!=null&&isDirty()) {
-        	entity.suspendClientUpdate();
+        	entity.suspendUpdate();
         	entity.setOrganization(getOrganization());
         	entity.setDivision(getDivision());
         	entity.setDepartment(getDepartment());
-        	entity.resumeClientUpdate(false);
+        	entity.resumeUpdate(false);
         }		
 	}
 	

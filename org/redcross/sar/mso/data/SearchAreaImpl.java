@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
@@ -13,7 +14,7 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
 
     private final AttributeImpl.MsoEnum<SearchAreaStatus> m_status = new AttributeImpl.MsoEnum<SearchAreaStatus>(this, "Status", 1, SearchAreaStatus.PROCESSING);
 
-    private final MsoReferenceImpl<IHypothesisIf> m_searchAreaHypothesis = new MsoReferenceImpl<IHypothesisIf>(this, "SearchAreaHypothesis", 1, false);
+    private final MsoRelationImpl<IHypothesisIf> m_searchAreaHypothesis = new MsoRelationImpl<IHypothesisIf>(this, "SearchAreaHypothesis", 1, false, null);
 
     public SearchAreaImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
@@ -49,7 +50,7 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_SEARCHAREA;
     }
@@ -78,9 +79,9 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         return m_status.getInternationalName();
     }
 
-    public IMsoModelIf.ModificationState getStatusState()
+    public IData.DataOrigin getStatusState()
     {
-        return m_status.getState();
+        return m_status.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<SearchAreaStatus> getStatusAttribute()
@@ -102,9 +103,9 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         return m_geodata.getPolygon();
     }
 
-    public IMsoModelIf.ModificationState getGeodataState()
+    public IData.DataOrigin getGeodataState()
     {
-        return m_geodata.getState();
+        return m_geodata.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoPolygonIf getGeodataAttribute()
@@ -122,9 +123,9 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         return m_priority.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPriorityState()
+    public IData.DataOrigin getPriorityState()
     {
-        return m_priority.getState();
+        return m_priority.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute()
@@ -142,9 +143,9 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
         return m_remarks.getString();
     }
 
-    public IMsoModelIf.ModificationState getRemarksState()
+    public IData.DataOrigin getRemarksState()
     {
-        return m_remarks.getState();
+        return m_remarks.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
@@ -158,20 +159,20 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
 
     public void setSearchAreaHypothesis(IHypothesisIf aHypothesis)
     {
-        m_searchAreaHypothesis.setReference(aHypothesis);
+        m_searchAreaHypothesis.set(aHypothesis);
     }
 
     public IHypothesisIf getSearchAreaHypothesis()
     {
-        return m_searchAreaHypothesis.getReference();
+        return m_searchAreaHypothesis.get();
     }
 
-    public IMsoModelIf.ModificationState getSearchAreaHypothesisState()
+    public IData.DataOrigin getSearchAreaHypothesisState()
     {
-        return m_searchAreaHypothesis.getState();
+        return m_searchAreaHypothesis.getOrigin();
     }
 
-    public IMsoReferenceIf<IHypothesisIf> getSearchAreaHypothesisAttribute()
+    public IMsoRelationIf<IHypothesisIf> getSearchAreaHypothesisAttribute()
     {
         return m_searchAreaHypothesis;
     }

@@ -18,6 +18,7 @@ import org.redcross.sar.mso.data.IAreaIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 
 import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
@@ -355,7 +356,7 @@ public class EraseTool extends BaseMapTool {
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 
 			try {
 

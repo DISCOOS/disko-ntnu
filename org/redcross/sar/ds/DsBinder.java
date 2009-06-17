@@ -99,7 +99,7 @@ public class DsBinder<S extends IData, T extends IDsObject> extends AbstractBind
 	public void onSourceChanged(SourceEvent<Update> e) {
 
 		// get DS update event
-		DsEvent.Update u = e.getInformation();
+		DsEvent.Update u = e.getData();
 
 		// get flags
 		int flags = u.getFlags();

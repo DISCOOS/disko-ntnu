@@ -32,17 +32,17 @@ public class DogImpl extends AbstractUnit implements IDogIf
 
     protected UnitType getTypeBySubclass()
     {
-        return IUnitIf.UnitType.DOG;
+        return UnitType.DOG;
     }
 
-    public Enum getSubType()
+    public UnitType getSubType()
     {
-        return IUnitIf.UnitType.DOG; // todo expand
+        return UnitType.DOG; // todo expand
     }
 
     public String getSubTypeName()
     {
-        return "CAR"; // todo expand
+        return "DOG"; // todo expand
     }
 
     public String toString()

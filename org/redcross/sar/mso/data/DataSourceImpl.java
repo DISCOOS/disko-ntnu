@@ -22,7 +22,7 @@ public class DataSourceImpl extends AbstractMsoObject implements IDataSourceIf
     {
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_DATASOURCE;
     }

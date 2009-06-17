@@ -113,14 +113,14 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		// add listener?
 		if(model!=null) {
 			m_msoInterests = interests;
-			m_msoModel.getEventManager().addClientUpdateListener(this);
+			m_msoModel.getEventManager().addLocalUpdateListener(this);
 		}
 	}
 	
 	public void disconnect() {
 		// unregister?
 		if(m_msoModel!=null) {
-			m_msoModel.getEventManager().removeClientUpdateListener(this);
+			m_msoModel.getEventManager().removeLocalUpdateListener(this);
 			m_msoModel = null;
 		}
 	}
@@ -202,11 +202,11 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		// consume change events
 		setChangeable(false);
 		// suspend for faster update?
-		if(m_msoModel!=null) m_msoModel.suspendClientUpdate();
+		if(m_msoModel!=null) m_msoModel.suspendUpdate();
 		// request action
 		bFlag = beforeFinish();
 		// resume updates?
-		if(m_msoModel!=null) m_msoModel.resumeClientUpdate(true);
+		if(m_msoModel!=null) m_msoModel.resumeUpdate();
 		// finish?
 		if(bFlag) {
 			// request action
@@ -551,16 +551,16 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		return m_msoInterests;
 	}
 
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		// consume?
 		if(!isChangeable()) return;
 
 		// loop over all events
-		for(MsoEvent.Update e : events.getEvents(m_msoInterests)) {
+		for(MsoEvent.Change e : events.getEvents(m_msoInterests)) {
 
 			// get mask
-			int mask = e.getEventTypeMask();
+			int mask = e.getMask();
 
 	        // get mso object
 	        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
@@ -585,8 +585,8 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 			        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
 			        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;
 			        boolean modifiedObject = (mask & MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue()) != 0;
-			        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_REFERENCE_EVENT.maskValue()) != 0;
-			        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_REFERENCE_EVENT.maskValue()) != 0;
+			        boolean addedReference = (mask & MsoEvent.MsoEventType.ADDED_RELATION_EVENT.maskValue()) != 0;
+			        boolean removedReference = (mask & MsoEvent.MsoEventType.REMOVED_RELATION_EVENT.maskValue()) != 0;
 
 			        // add object?
 					if (createdObject) {

@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
+
 
 public interface ICheckpointIf extends IMsoObjectIf
 {
@@ -11,7 +12,7 @@ public interface ICheckpointIf extends IMsoObjectIf
 
     public boolean isChecked();
 
-    public IMsoModelIf.ModificationState getCheckedState();
+    public IData.DataOrigin getCheckedState();
 
     public IMsoAttributeIf.IMsoBooleanIf getCheckedAttribute();
 
@@ -19,7 +20,7 @@ public interface ICheckpointIf extends IMsoObjectIf
 
     public String getDescription();
 
-    public IMsoModelIf.ModificationState getDescriptionState();
+    public IData.DataOrigin getDescriptionState();
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
 
@@ -27,7 +28,7 @@ public interface ICheckpointIf extends IMsoObjectIf
 
     public String getName();
 
-    public IMsoModelIf.ModificationState getNameState();
+    public IData.DataOrigin getNameState();
 
     public IMsoAttributeIf.IMsoStringIf getNameAttribute();
 
@@ -39,7 +40,7 @@ public interface ICheckpointIf extends IMsoObjectIf
 
     public ITaskIf getCheckpointTask();
 
-    public IMsoModelIf.ModificationState getCheckpointTaskState();
+    public IData.DataOrigin getCheckpointTaskState();
 
-    public IMsoReferenceIf<ITaskIf> getCheckpointTaskAttribute();
+    public IMsoRelationIf<ITaskIf> getCheckpointTaskAttribute();
 }

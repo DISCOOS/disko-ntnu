@@ -6,14 +6,7 @@ import org.redcross.sar.IApplication;
 
 import com.esri.arcgis.carto.RasterLayer;
 
-import com.esri.arcgis.carto.FeatureLayer;
 import com.esri.arcgis.carto.WMSLayer;
-//import com.esri.arcgis.datasourcesraster.RasterDataset;
-//import com.esri.arcgis.datasourcesraster.RasterWorkspace;
-//import com.esri.arcgis.datasourcesraster.RasterWorkspaceFactory;
-
-import com.esri.arcgis.system.FileStream;
-
 
 
 public class CustomMapData {
@@ -42,7 +35,7 @@ public class CustomMapData {
 		//lagre kartet med de nye dataene
 		try{
 			System.out.println("Ikke lagret");
-			FileStream fs = new FileStream();
+			//FileStream fs = new FileStream();
 			//fs.open("C:\\DISKO\\Disko.mxd", com.esri.arcgis.system.esriFilePermission.esriReadWrite);
 			//fs.loadFromFile("C:\\DISKO\\Disko.mxd");
 			//map.save(fs, 0);
@@ -57,7 +50,7 @@ public class CustomMapData {
 	private boolean addShapeFile(DiskoMap map, String fname, String path){
 		try{
 			//map
-			FeatureLayer fl = new FeatureLayer();
+			//FeatureLayer fl = new FeatureLayer();
 			map.getMapImpl().addShapeFile(path, fname);	
 			return true;
 			//map.save(mxd, false);//må ha tak i mxd dokumentet

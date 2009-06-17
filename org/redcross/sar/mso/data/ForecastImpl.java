@@ -48,7 +48,7 @@ public class ForecastImpl extends AbstractTimeItem implements IForecastIf
 //        return super.toString() + " Forecast: " + m_someText.getString();
 //    }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_FORECAST;
     }

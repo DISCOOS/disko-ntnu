@@ -46,7 +46,7 @@ public class ResourceUtils
 			IMsoModelIf model = Application.getInstance().getMsoModel();
 			
 			// suspend update events
-			model.suspendClientUpdate();
+			model.suspendUpdate();
 			
 			// Reinstate resource
 			IPersonnelIf newPersonnel = model.getMsoManager().createPersonnel();
@@ -97,7 +97,7 @@ public class ResourceUtils
 			*/
 			
 			// resume events
-			model.resumeClientUpdate(true);
+			model.resumeUpdate();
 
 			// finished
 			return newPersonnel;

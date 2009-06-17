@@ -298,7 +298,7 @@ public class ListDialog extends DefaultDialog {
 
 	private void change(AssignmentStatus status) {
 		try {
-			app.getMsoModel().suspendClientUpdate();
+			app.getMsoModel().suspendUpdate();
 			JTable table = getAssignmentTable();
 			for (int i = 0; i < table.getRowCount(); i++) {
 				// selected?
@@ -311,7 +311,7 @@ public class ListDialog extends DefaultDialog {
 				}
 			}
 			setDirty(false);
-			app.getMsoModel().resumeClientUpdate(true);
+			app.getMsoModel().resumeUpdate();
 		} catch (IllegalOperationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

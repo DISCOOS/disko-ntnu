@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.undo.UndoableEdit;
 
+import org.redcross.sar.AppProps;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.AWTUtilitiesWrapper;
 import org.redcross.sar.gui.DiskoGlassPane;
@@ -40,7 +41,6 @@ import org.redcross.sar.gui.panel.IPanelManager;
 import org.redcross.sar.gui.panel.PanelManager;
 import org.redcross.sar.gui.util.AlignUtils;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.util.AppProps;
 import org.redcross.sar.work.event.IFlowListener;
 import org.redcross.sar.work.event.FlowEvent;
 

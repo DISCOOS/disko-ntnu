@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
@@ -47,7 +48,7 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_OPERATIONAREA;
     }
@@ -62,9 +63,9 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
         return m_assignment.getString();
     }
 
-    public IMsoModelIf.ModificationState getAssignmentState()
+    public IData.DataOrigin getAssignmentState()
     {
-        return m_assignment.getState();
+        return m_assignment.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getAssignmentAttribute()
@@ -82,9 +83,9 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
         return m_geodata.getPolygon();
     }
 
-    public IMsoModelIf.ModificationState getGeodataState()
+    public IData.DataOrigin getGeodataState()
     {
-        return m_geodata.getState();
+        return m_geodata.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoPolygonIf getGeodataAttribute()
@@ -102,9 +103,9 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
         return m_remarks.getString();
     }
 
-    public IMsoModelIf.ModificationState getRemarksState()
+    public IData.DataOrigin getRemarksState()
     {
-        return m_remarks.getState();
+        return m_remarks.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()

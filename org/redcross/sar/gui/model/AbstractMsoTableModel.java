@@ -7,12 +7,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.redcross.sar.data.IDataBinder;
 import org.redcross.sar.data.Selector;
+import org.redcross.sar.data.IData.DataOrigin;
+import org.redcross.sar.data.IData.DataState;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.MsoBinder;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.util.MsoUtils;
+import org.redcross.sar.mso.data.IMsoRelationIf;
 
 public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 								extends AbstractDataTableModel<T,T> {
@@ -22,6 +24,7 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 
 	protected IMsoListIf<T> list;
 	protected boolean isNameAttribute;
+	protected Map<T,OriginChange> origins;
 
 	/* =============================================================================
 	 * Constructors
@@ -140,9 +143,9 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 		// load data from list?
 		if(source!=null) {
 			// get lists from data class type
-			Map<String,IMsoListIf<IMsoObjectIf>> map = source.getListReferences(getDataClass(), true);
+			Map<String,IMsoListIf<?>> map = source.getListRelations(getDataClass(), true);
 			// loop over all lists and select items
-			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
+			for(IMsoListIf<?> it : map.values()) {
 				// is item class supported?
 				if(isSupported(it.getObjectClass())) {
 					load((Collection<T>)it.getObjects(),true);
@@ -167,11 +170,78 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 	 * ============================================================================= */
 
 	/**
-	 *  Is fired when IDataModel.update(T id, T obj) is called.
+	 * This abstract method must be implemented by the extending class.
+	 * 
+	 * Is fired when IDataModel.update(T id, T obj, Row data) is called. 
+	 * 
+	 * If {@code isNameAttribute} is {@code true}, then this method 
+	 * is only called if no attribute with name equal to the column
+	 * name is found in the data object (T obj).
+	 * 
+	 * @param int row - the row index
+	 * @param String column - the column key (name)
+	 * @return Returns the cell value given by row and column identifiers
 	 */
+	@Override
 	protected abstract Object getCellValue(int row, String column);
 
-	protected Object[] update(T id, T obj, Object[] data) {
+	/**
+	 * Is fired when IDataModel.update(T id, T obj, Row data) is called. 
+	 * 
+	 * If {@code isNameAttribute} is {@code true}, then this method 
+	 * is only called if no attribute with name equal to the column
+	 * name is found in the data object (T obj).
+	 * 
+	 * @param int row - the row index
+	 * @param String column - the column key (name)
+	 * @return Returns the cell origin given by row and column identifiers. 
+	 * Default implementation returns always DataOrigin.NONE. 
+	 */
+	@Override
+	protected DataOrigin getCellOrigin(int row, String column) {
+		return DataOrigin.NONE;
+	}
+	
+	/**
+	 * Is fired when IDataModel.update(T id, T obj, Row data) is called.
+	 * 
+	 * If {@code isNameAttribute} is {@code true}, then this method 
+	 * is only called if no attribute with name equal to the column
+	 * name is found in the data object (T obj).
+	 * 
+	 * @param int row - the row index
+	 * @param String column - the column key (name)
+	 * @return Returns the cell state given by row and column identifiers. 
+	 * Default implementation returns always DataState.NONE. 
+	 */
+	@Override
+	protected DataState getCellState(int row, String column) {
+		return DataState.NONE;
+	}
+	
+	/**
+	 * This method implements the default algorithm for 
+	 * updating a IDataModel instance data to the current data
+	 * found in bound IMsoModelIf data sources. 
+	 * 
+	 * If {@code isNameAttribute} is {@code true}, then this method 
+	 * tries to match each column with an IMsoAttributeIf (equal names) 
+	 * in the data object (T obj). If a match is found, the associated 
+	 * cell, given by the id object (S id) and matched attribute and 
+	 * column name, is updated using the attribute data (value, origin 
+	 * and state). If no attribute match is found, the update is 
+	 * forwarded to {@code getCellValue}, {@code getCellOrigin} and 
+	 * {@code getCellState}. Note that the extending class is only 
+	 * required to implement the abstract method {@code getCellValue}.  
+	 * 
+	 * @param S id - The updated row id
+	 * @param T obj - The updated data object
+	 * @param IRow data - the row to update
+	 * 
+	 * @return Returns the update row object.
+	 */
+	@Override
+	protected IRow update(T id, T obj, IRow data) {
 		try {
 			int index = findRowFromId(id);
 			obj = (obj==null ? getObject(index) : obj);
@@ -179,20 +249,34 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 				Map<String,IMsoAttributeIf<?>> attrs = obj.getAttributes();
 				for(int i=0; i<names.size();i++) {
 					String name = names.get(i);
+					ICell cell = data.getCell(i);
 					if(attrs.containsKey(name)) {
-						data[i] = MsoUtils.getAttribValue(attrs.get(name));
+						IMsoAttributeIf<?> attr = attrs.get(name);
+						cell.setValue(attr.get());
+						cell.setDataOrigin(attr.getOrigin());
 					}
 					else {
-						data[i] = getCellValue(index,name);
+						cell.setValue(getCellValue(index,name));
+						cell.setDataOrigin(getCellOrigin(index,name));
+						cell.setDataState(getCellState(index,name));
 					}
 				}
 			}
 			else {
 				for(int i=0; i<names.size();i++) {
-					data[i] = getCellValue(index,names.get(i));
+					ICell cell = data.getCell(i);
+					String name = names.get(i);
+					cell.setValue(getCellValue(index,name));
+					cell.setDataOrigin(getCellOrigin(index,name));
+					cell.setDataState(getCellState(index,name));
 				}
 			}
-
+			/*
+			if(!obj.isRootObject()) 
+			{
+				setOrigin(id, obj.getMainList().getReference(obj));
+			}
+			*/
 		}
 		catch(Exception e) {
 			logger.error("Failed to update table model",e);
@@ -204,6 +288,19 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 	 * Helper methods
 	 * ============================================================================= */
 
+	private void setOrigin(T id, IMsoRelationIf<? super IMsoObjectIf> refObj) 
+	{
+		OriginChange change = origins.get(id);
+		if(change!=null)
+		{
+			
+		}
+		else
+		{
+			origins.put(id, new OriginChange(refObj));
+		}
+	}
+	
 	private MsoBinder<T> createBinder(IMsoModelIf source, Selector<T> selector, Comparator<T> comparator) {
 		MsoBinder<T> binder = new MsoBinder<T>(getDataClass());
 		binder.setSelector(selector);
@@ -222,4 +319,34 @@ public abstract class AbstractMsoTableModel<T extends IMsoObjectIf>
 		return selector;
 	}
 
+	/* =============================================================================
+	 * Inner classes
+	 * ============================================================================= */
+	
+	public static class OriginChange 
+	{
+		DataOrigin m_origin;
+		long m_remoteTimeMillis;
+		
+		private OriginChange(IMsoRelationIf<? super IMsoObjectIf> refObj)
+		{
+			m_origin = refObj.getOrigin();
+			if(m_origin.equals(DataOrigin.REMOTE)) 
+			{				
+				m_remoteTimeMillis = System.currentTimeMillis();
+			}
+		}
+		
+		public DataOrigin getOrigin() 
+		{
+			return m_origin;			
+		}
+		
+		public long getRemoteTimeMillis()
+		{
+			return m_remoteTimeMillis;
+		}
+	}
+	
+	
 }

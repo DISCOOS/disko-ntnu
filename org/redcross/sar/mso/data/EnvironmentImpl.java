@@ -54,7 +54,7 @@ public class EnvironmentImpl extends AbstractTimeItem implements IEnvironmentIf
 //        return super.toString() + " EnvironmentImpl: " + m_someText.getString();
 //    }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_ENVIRONMENT;
     }

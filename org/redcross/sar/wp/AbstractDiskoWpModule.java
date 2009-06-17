@@ -42,6 +42,7 @@ import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.event.IFlowListener;
 import org.redcross.sar.work.event.FlowEvent;
 import org.redcross.sar.work.event.FlowEventRepeater;
@@ -115,7 +116,7 @@ public abstract class AbstractDiskoWpModule
         // add listeners?
     	if(interests.size()>0) {
     		getApplication().getMsoModel().
-    			getEventManager().addClientUpdateListener(this);
+    			getEventManager().addLocalUpdateListener(this);
     	}
 
         // initialize timer
@@ -520,7 +521,7 @@ public abstract class AbstractDiskoWpModule
 		return m_interests;
 	}
 
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 		// TODO: Override this method
 	}
 
@@ -550,7 +551,7 @@ public abstract class AbstractDiskoWpModule
 	}
 
 	public void suspendUpdate() {
-		Application.getInstance().getMsoModel().suspendClientUpdate();
+		Application.getInstance().getMsoModel().suspendUpdate();
 		if(m_map!=null) {
 			m_map.suspendNotify();
 			m_map.setSupressDrawing(true);
@@ -558,7 +559,7 @@ public abstract class AbstractDiskoWpModule
 	}
 
 	public void resumeUpdate() {
-		Application.getInstance().getMsoModel().resumeClientUpdate(true);
+		Application.getInstance().getMsoModel().resumeUpdate();
 		if(m_map!=null) {
 			try {
 				m_map.setSupressDrawing(false);
@@ -730,7 +731,7 @@ public abstract class AbstractDiskoWpModule
 
 		public ModuleWork(String msg, boolean show, boolean suspend) throws Exception {
 			// forward
-			super(NORMAL_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,msg,100,show,false);
+			super(NORMAL_PRIORITY,false,true,WorkerType.SAFE,msg,100,show,false);
 			// prepare
 			m_suspend = suspend;
 		}
@@ -748,7 +749,7 @@ public abstract class AbstractDiskoWpModule
 		 * Implement the work in this method. Remember to call
 		 * ModuleWork::set() before returning the result
 		 */
-		public abstract Object doWork();
+		public abstract Object doWork(IWorkLoop loop);
 
 		/**
 		 * done

@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Vector;
 
+import org.redcross.sar.data.AbstractDataModel;
 import org.redcross.sar.gui.AbstractPopupHandler;
 import org.redcross.sar.gui.PopupAdapter;
 import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
@@ -182,7 +183,7 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
      * ===========================================================*/
 
 	@Override
-	protected Object[] create(IUnitIf id, IUnitIf obj, int size) {
+	protected IRow create(IUnitIf id, IUnitIf obj, int size) {
 		/* -------------------------------------------
 		 * create icons
 		 * ------------------------------------------- */
@@ -198,11 +199,11 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 	 * Update algorithm in MsoTableModel is overridden
 	 */
 	@Override
-	protected Object[] update(IUnitIf id, IUnitIf obj, Object[] data) {
+	protected IRow update(IUnitIf id, IUnitIf obj, IRow data) {
 		// get row index
 		int row = findRowFromId(id);
 		if(row!=-1) {
-			data = updateIcons(row, id,(Icon[])data);
+			data = updateIcons(row,id,data);
 		}
 		return data;
 	}
@@ -421,27 +422,27 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
     	return captions;
     }
 
-    private Icon[] createIcons(IUnitIf aUnit)
+    private IRow createIcons(IUnitIf aUnit)
     {
-        Icon[] retVal = new Icon[6];
-        retVal[0] = createUnitIcon(aUnit);
-        retVal[1] = createAssignmentIcon(aUnit, 0);
-        retVal[2] = createAssignmentIcon(aUnit, 1);
-        retVal[3] = createAssignmentIcon(aUnit, 2);
-        retVal[4] = createAssignmentIcon(aUnit, 3);
-        retVal[5] = createInfoIcon(aUnit.getRemarks());  // todo getInfo
-        return retVal;
+        Icon[] data = new Icon[6];
+        data[0] = createUnitIcon(aUnit);
+        data[1] = createAssignmentIcon(aUnit, 0);
+        data[2] = createAssignmentIcon(aUnit, 1);
+        data[3] = createAssignmentIcon(aUnit, 2);
+        data[4] = createAssignmentIcon(aUnit, 3);
+        data[5] = createInfoIcon(aUnit.getRemarks());
+        return AbstractDataModel.createRow(data);
     }
 
-    private Icon[] updateIcons(int i, IUnitIf aUnit,Icon[] icons)
+    private IRow updateIcons(int i, IUnitIf aUnit, IRow data)
     {
-        ((ObjectIcon.UnitIcon) icons[0]).setMsoObject(aUnit);
-        ((ObjectIcon.AssignmentIcon) icons[1]).setAssignments(aUnit, 0);
-        ((ObjectIcon.AssignmentIcon) icons[2]).setAssignments(aUnit, 1);
-        ((ObjectIcon.AssignmentIcon) icons[3]).setAssignments(aUnit, 2);
-        ((ObjectIcon.AssignmentIcon) icons[4]).setAssignments(aUnit, 3);
-        ((ObjectIcon.InfoIcon) icons[5]).setInfo(aUnit.getRemarks());
-        return icons;
+        ((ObjectIcon.UnitIcon) data.getValue(0)).setMsoObject(aUnit);
+        ((ObjectIcon.AssignmentIcon) data.getValue(1)).setAssignments(aUnit, 0);
+        ((ObjectIcon.AssignmentIcon) data.getValue(2)).setAssignments(aUnit, 1);
+        ((ObjectIcon.AssignmentIcon) data.getValue(3)).setAssignments(aUnit, 2);
+        ((ObjectIcon.AssignmentIcon) data.getValue(4)).setAssignments(aUnit, 3);
+        ((ObjectIcon.InfoIcon) data.getValue(5)).setInfo(aUnit.getRemarks());
+        return data;
     }
 
     private ObjectIcon.UnitIcon createUnitIcon(IUnitIf aUnit)

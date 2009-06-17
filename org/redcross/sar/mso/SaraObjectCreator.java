@@ -213,8 +213,6 @@ public class SaraObjectCreator
 
    private SarBaseObject createFact(String objId, String name, String type)
    {
-
-      SarFact sf = null;
       if (type.equalsIgnoreCase("int") || type.equalsIgnoreCase("Integer"))
       {
          return createIntFact(objId, name);
@@ -223,9 +221,7 @@ public class SaraObjectCreator
       {
          return createBoolFact(objId, name);
       }
-      else if (type.equalsIgnoreCase("String") || type.equals("java.lang.String")
-
-            )
+      else if (type.equalsIgnoreCase("String") || type.equals("java.lang.String"))
       {
          return createStringFact(objId, name);
       }

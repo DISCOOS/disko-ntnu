@@ -82,8 +82,8 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		// initialize GUI
 		initialize();
 		// add listeners
-		wp.getMsoEventManager().addClientUpdateListener(this);
-		wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
+		wp.getMsoEventManager().addLocalUpdateListener(this);
+		wp.getMsoEventManager().addLocalUpdateListener(getInfoPanel());
         getInfoPanel().addFlowListener(wp);
 	}
 
@@ -197,10 +197,10 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 					if(isSet()&&m_nameTextField.isChangeable() && e.isChange() && e.isSourceComponent()) {
 						String[] names = getNames(false);
 						if(names!=null) {
-							m_currentPersonnel.suspendClientUpdate();
+							m_currentPersonnel.suspendUpdate();
 							m_currentPersonnel.setFirstname(names[0]);
 							m_currentPersonnel.setLastname(names[1]);					
-							m_currentPersonnel.resumeClientUpdate(true);							
+							m_currentPersonnel.resumeUpdate(true);							
 							m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 						}
 					}
@@ -247,7 +247,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 					}
 					if(m_currentPersonnel!=null) {
 						m_associationTextField.setChangeable(false);
-						m_currentPersonnel.suspendClientUpdate();
+						m_currentPersonnel.suspendUpdate();
 						if(items!=null) {
 							m_currentPersonnel.setOrganization(items[0].getName(1));
 							m_currentPersonnel.setDivision(items[0].getName(2));
@@ -257,7 +257,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 							m_currentPersonnel.setDivision(null);
 							m_currentPersonnel.setDepartment(null);
 						}
-						m_currentPersonnel.resumeClientUpdate(false);
+						m_currentPersonnel.resumeUpdate(false);
 						m_associationTextField.setChangeable(true);
 						m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 					}
@@ -476,7 +476,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	
 	private String[] getNames(boolean validate) {
 		
-		String names = m_nameTextField.getValue();
+		String names = getFullNameTextField().getValue();
 
 		if(names!=null) {
 			
@@ -519,7 +519,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	/**
 	 * Update fields if any changes occur in the personnel object
 	 */
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		if(events.isClearAllEvent()) {
 			setPersonnel(null);
@@ -527,7 +527,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		}
 		else {
 			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
+			for(MsoEvent.Change e : events.getEvents(MsoClassCode.CLASSCODE_PERSONNEL)) {
 
 				// consume loopback updates
 				if(!e.isLoopbackMode())
@@ -538,7 +538,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 							(IPersonnelIf) e.getSource() : null;
 							
 					// is object modified?
-					if (e.isChangeReferenceEvent()) {
+					if (e.isModifiedReferenceEvent()) {
 						updateFieldContents();
 					}
 					else if (e.isModifyObjectEvent()) {

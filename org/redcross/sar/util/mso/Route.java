@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import org.redcross.sar.data.IData;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.mso.data.IMsoDataIf.MsoDataType;
 
 /**
  * Class for holding route information
@@ -36,7 +37,7 @@ public class Route extends AbstractGeodata
      */
     public Route(String anId, String aName)
     {
-        super(anId,aName,GeoClassCode.CLASSCODE_ROUTE);
+        super(anId,aName);
         m_route = new Vector<GeoPos>();
         m_distance = new Vector<Double>();
     }
@@ -50,11 +51,21 @@ public class Route extends AbstractGeodata
      */
     public Route(String anId, String aName, int aSize)
     {
-        super(anId,aName,GeoClassCode.CLASSCODE_ROUTE);
+        super(anId,aName);
         m_route = new Vector<GeoPos>(aSize);
         m_distance = new Vector<Double>();
     }
 
+    @Override
+	public MsoDataType getDataType() {
+		return MsoDataType.ROUTE;
+	}
+
+	@Override
+	public GeoClassCode getClassCode() {
+		return GeoClassCode.CLASSCODE_ROUTE;
+	}
+	
     /**
      * Add a new point to the route.
      *

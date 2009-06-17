@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.mso.*;
 
 public interface IOperationAreaIf extends IMsoObjectIf
@@ -14,7 +14,7 @@ public interface IOperationAreaIf extends IMsoObjectIf
 
     public String getAssignment();
 
-    public IMsoModelIf.ModificationState getAssignmentState();
+    public IData.DataOrigin getAssignmentState();
 
     public IMsoAttributeIf.IMsoStringIf getAssignmentAttribute();
 
@@ -22,7 +22,7 @@ public interface IOperationAreaIf extends IMsoObjectIf
 
     public Polygon getGeodata();
 
-    public IMsoModelIf.ModificationState getGeodataState();
+    public IData.DataOrigin getGeodataState();
 
     public IMsoAttributeIf.IMsoPolygonIf getGeodataAttribute();
 
@@ -30,7 +30,7 @@ public interface IOperationAreaIf extends IMsoObjectIf
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 

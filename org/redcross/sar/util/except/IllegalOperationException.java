@@ -5,7 +5,12 @@ package org.redcross.sar.util.except;
  */
 public class IllegalOperationException extends MsoException
 {
-    public IllegalOperationException()
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public IllegalOperationException()
     {
         super();
     }

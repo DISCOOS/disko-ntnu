@@ -23,15 +23,15 @@ import org.redcross.sar.data.event.SourceEvent;
  *
  * @param <S> - the class or interface that implements the data id object
  * @param <T> - the class or interface that implements the data object
- * @param <I> - the class or interface that implements the source event information
+ * @param <D> - the class or interface that implements the source event data (information)
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractBinder<S,T extends IData, I>
-										 implements IDataBinder<S,T,I>, ISourceListener<I> {
+public abstract class AbstractBinder<S,T extends IData, D>
+										 implements IDataBinder<S,T,D>, ISourceListener<D> {
 
 	private static final long serialVersionUID = 1L;
 
-	protected IDataSource<I> source;
+	protected IDataSource<D> source;
 	protected Class<T> dataClass;
 	protected Selector<T> selector;
 	protected Comparator<T> comparator;
@@ -89,7 +89,7 @@ public abstract class AbstractBinder<S,T extends IData, I>
 		return load(objects,false);
 	}
 	
-	public boolean connect(IDataSource<I> source) {
+	public boolean connect(IDataSource<D> source) {
 		if(source!=null && this.source==null && source.isSupported(dataClass)) {
 			this.source = source;
 			this.source.addSourceListener(this);
@@ -119,7 +119,7 @@ public abstract class AbstractBinder<S,T extends IData, I>
 		return false;
 	}
 
-	public IDataSource<I> getSource() {
+	public IDataSource<D> getSource() {
 		return source;
 	}
 
@@ -188,7 +188,7 @@ public abstract class AbstractBinder<S,T extends IData, I>
 	 * IDataSourceIf implementation
 	 * ============================================================================= */
 
-	public abstract void onSourceChanged(SourceEvent<I> e);
+	public abstract void onSourceChanged(SourceEvent<D> e);
 
 	/* =============================================================================
 	 * Helper methods

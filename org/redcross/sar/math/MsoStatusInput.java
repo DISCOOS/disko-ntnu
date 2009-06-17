@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
-import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf.IMsoEnumIf;
 import org.redcross.sar.util.except.UnknownAttributeException;
@@ -47,7 +47,7 @@ public class MsoStatusInput<T extends IMsoObjectIf, E extends Enum<E>> extends A
 			// get status attribute
 			IMsoEnumIf<E> attr = getAttribute(it);
 			// only use server values
-			if(attr.isState(ModificationState.STATE_REMOTE)) {
+			if(attr.isOrigin(IData.DataOrigin.REMOTE)) {
 				// get status
 				E status = attr.getValue();
 				// get flags

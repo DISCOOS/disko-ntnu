@@ -48,12 +48,12 @@ public abstract class AbstractService implements IService {
 	 * ============================================================ */
 
 	public AbstractService(Object id,
-			int dutyCycle, int timeOut) throws Exception {
+			long requestedDutyCycle, double requestedUtilization) throws Exception {
 
 		// prepare
 		m_id = id;
 		m_workPool = WorkPool.getInstance();
-		m_workLoop = new WorkLoop(dutyCycle,timeOut);
+		m_workLoop = new WorkLoop(requestedDutyCycle,requestedUtilization);
 		m_workLoop.addWorkLoopListener(m_loopListener);
 
 	}

@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.mso.Position;
 
@@ -58,9 +59,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_birthdate.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getBirthdateState()
+    public IData.DataOrigin getBirthdateState()
     {
-        return m_birthdate.getState();
+        return m_birthdate.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getBirthdateAttribute()
@@ -78,9 +79,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_firstname.getString();
     }
 
-    public IMsoModelIf.ModificationState getFirstnameState()
+    public IData.DataOrigin getFirstnameState()
     {
-        return m_firstname.getState();
+        return m_firstname.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getFirstnameAttribute()
@@ -98,9 +99,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_iD.getString();
     }
 
-    public IMsoModelIf.ModificationState getIDState()
+    public IData.DataOrigin getIDState()
     {
-        return m_iD.getState();
+        return m_iD.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getIDAttribute()
@@ -118,9 +119,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_lastname.getString();
     }
 
-    public IMsoModelIf.ModificationState getLastnameState()
+    public IData.DataOrigin getLastnameState()
     {
-        return m_lastname.getState();
+        return m_lastname.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getLastnameAttribute()
@@ -138,9 +139,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_photo.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPhotoState()
+    public IData.DataOrigin getPhotoState()
     {
-        return m_photo.getState();
+        return m_photo.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPhotoAttribute()
@@ -158,9 +159,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_residence.getPosition();
     }
 
-    public IMsoModelIf.ModificationState getResidenceState()
+    public IData.DataOrigin getResidenceState()
     {
-        return m_residence.getState();
+        return m_residence.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoPositionIf getResidenceAttribute()
@@ -178,9 +179,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
     	return m_address.getString();
     }
 
-    public IMsoModelIf.ModificationState getAddressState()
+    public IData.DataOrigin getAddressState()
     {
-    	return m_address.getState();
+    	return m_address.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getAddressAttribute()
@@ -198,9 +199,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_telephone1.getString();
     }
 
-    public IMsoModelIf.ModificationState getTelephone1State()
+    public IData.DataOrigin getTelephone1State()
     {
-        return m_telephone1.getState();
+        return m_telephone1.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTelephone1Attribute()
@@ -218,9 +219,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_telephone2.getString();
     }
 
-    public IMsoModelIf.ModificationState getTelephone2State()
+    public IData.DataOrigin getTelephone2State()
     {
-        return m_telephone2.getState();
+        return m_telephone2.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTelephone2Attribute()
@@ -238,9 +239,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
         return m_telephone3.getString();
     }
 
-    public IMsoModelIf.ModificationState getTelephone3State()
+    public IData.DataOrigin getTelephone3State()
     {
-        return m_telephone3.getState();
+        return m_telephone3.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTelephone3Attribute()
@@ -268,9 +269,9 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
     	return m_gender.getInternationalName();
     }
 
-    public IMsoModelIf.ModificationState getGenderState()
+    public IData.DataOrigin getGenderState()
     {
-        return m_gender.getState();
+        return m_gender.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<PersonGender> getGenderAttribute()

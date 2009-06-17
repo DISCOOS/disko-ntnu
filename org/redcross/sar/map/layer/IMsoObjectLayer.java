@@ -6,7 +6,7 @@ import org.redcross.sar.map.element.IMapElement;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 
 public interface IMsoObjectLayer<I,E> extends IElementLayer<I,E,IMsoObjectIf,IMsoObjectIf>, IMsoUpdateListenerIf {
 
@@ -17,6 +17,6 @@ public interface IMsoObjectLayer<I,E> extends IElementLayer<I,E,IMsoObjectIf,IMs
 	public LayerCode getLayerCode();
 	public MsoClassCode getClassCode();
 
-	public List<IMapElement<E, IMsoObjectIf, IMsoObjectIf>> processMsoUpdateEvent(UpdateList events);
+	public List<IMapElement<E, IMsoObjectIf, IMsoObjectIf>> processMsoUpdateEvent(ChangeList events);
 
 }

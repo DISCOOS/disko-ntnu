@@ -1,7 +1,7 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -51,7 +51,7 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
 
     public MessageStatus getStatus();
 
-    public IMsoModelIf.ModificationState getStatusState();
+    public IData.DataOrigin getStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<MessageStatus> getStatusAttribute();
 
@@ -65,7 +65,7 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
 
     public boolean isBroadcast();
 
-    public IMsoModelIf.ModificationState getBroadcastState();
+    public IData.DataOrigin getBroadcastState();
 
     public IMsoAttributeIf.IMsoBooleanIf getBroadcastAttribute();
 
@@ -85,13 +85,13 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMsoListIf<ICommunicatorIf> getConfirmedReceivers();
 
-    public IMsoModelIf.ModificationState getConfirmedReceiversState(ICommunicatorIf anICommunicatorIf);
+    public IData.DataOrigin getConfirmedReceiversState(ICommunicatorIf anICommunicatorIf);
 
     public Collection<ICommunicatorIf> getConfirmedReceiversItems();
 
     public IMsoListIf<ICommunicatorIf> getUnconfirmedReceivers();
 
-    public IMsoModelIf.ModificationState getUnconfirmedReceiversState(ICommunicatorIf anICommunicatorIf);
+    public IData.DataOrigin getUnconfirmedReceiversState(ICommunicatorIf anICommunicatorIf);
 
     public Collection<ICommunicatorIf> getUnconfirmedReceiversItems();
 
@@ -99,7 +99,7 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
 
     public ITaskListIf getMessageTasks();
 
-    public IMsoModelIf.ModificationState getMessageTasksState(ITaskIf anITaskIf);
+    public IData.DataOrigin getMessageTasksState(ITaskIf anITaskIf);
 
     public Collection<ITaskIf> getMessageTasksItems();
 
@@ -107,7 +107,7 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
 
     public IMessageLineListIf getMessageLines();
 
-    public IMsoModelIf.ModificationState getMessageLinesState(IMessageLineIf anIMessageLineIf);
+    public IData.DataOrigin getMessageLinesState(IMessageLineIf anIMessageLineIf);
 
     public Collection<IMessageLineIf> getMessageLineItems();
 
@@ -119,9 +119,9 @@ public interface IMessageIf extends ITimeItemIf, ISerialNumberedIf
 
     public ICommunicatorIf getSender();
 
-    public IMsoModelIf.ModificationState getSenderState();
+    public IData.DataOrigin getSenderState();
 
-    public IMsoReferenceIf<ICommunicatorIf> getSenderAttribute();
+    public IMsoRelationIf<ICommunicatorIf> getSenderAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Other specified methods

@@ -25,6 +25,7 @@ import org.redcross.sar.map.event.IToolListener;
 import org.redcross.sar.map.event.ToolEvent;
 import org.redcross.sar.map.event.ToolEvent.ToolEventType;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.event.IFlowListener;
 import org.redcross.sar.work.event.FlowEvent;
 
@@ -465,12 +466,12 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 				e.printStackTrace();
 			}
 		}
-		Application.getInstance().getMsoModel().suspendClientUpdate();
+		Application.getInstance().getMsoModel().suspendUpdate();
 	}
 
 	protected void resumeUpdate() {
 		// start with notifying all mso listeners
-		Application.getInstance().getMsoModel().resumeClientUpdate(true);
+		Application.getInstance().getMsoModel().resumeUpdate();
 		// allow map to update
 		if(map!=null) {
 			try {
@@ -586,7 +587,7 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 		public AbstractToolWork(boolean isThreadSafe, boolean notify, String message) throws Exception {
 			// forward
 			super(HIGH_PRIORITY,isThreadSafe,true,
-					isThreadSafe ? ThreadType.WORK_ON_UNSAFE : ThreadType.WORK_ON_SAFE,
+					isThreadSafe ? WorkerType.UNSAFE : WorkerType.SAFE,
 					"Vent litt",500,notify,false);
 		}
 
@@ -599,7 +600,7 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 		}
 
 		@Override
-		public abstract T doWork();
+		public abstract T doWork(IWorkLoop loop);
 
 		/**
 		 * done

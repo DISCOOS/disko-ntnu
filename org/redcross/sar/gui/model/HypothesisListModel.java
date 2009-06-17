@@ -28,7 +28,7 @@ public class HypothesisListModel extends AbstractListModel implements
 		this.msoModel = msoModel;
 		// add listeners
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
-		msoEventManager.addClientUpdateListener(this);
+		msoEventManager.addLocalUpdateListener(this);
 		// forward
 		load();
 	}
@@ -37,7 +37,7 @@ public class HypothesisListModel extends AbstractListModel implements
 		return myInterests;
 	}
 
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		// clear all data?
         if(events.isClearAllEvent()) {
@@ -47,12 +47,12 @@ public class HypothesisListModel extends AbstractListModel implements
         }
         else {
         	// loop over all events
-			for(MsoEvent.Update e : events.getEvents(myInterests)) {
+			for(MsoEvent.Change e : events.getEvents(myInterests)) {
 
 				// consume loopback updates
 				if(!e.isLoopbackMode()) {
 
-					int mask = e.getEventTypeMask();
+					int mask = e.getMask();
 
 			        boolean createdObject  = (mask & MsoEvent.MsoEventType.CREATED_OBJECT_EVENT.maskValue()) != 0;
 			        boolean deletedObject  = (mask & MsoEvent.MsoEventType.DELETED_OBJECT_EVENT.maskValue()) != 0;

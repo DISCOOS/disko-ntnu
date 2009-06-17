@@ -20,6 +20,7 @@ import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.work.IWork;
+import org.redcross.sar.work.IWorkLoop;
 
 import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geodatabase.esriSpatialRelEnum;
@@ -320,7 +321,7 @@ public class SelectTool extends BaseMapTool {
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 
 			try {
 				// forward to map

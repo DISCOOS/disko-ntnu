@@ -1,13 +1,16 @@
 package org.redcross.sar.gui.field;
 
+import org.redcross.sar.data.IData.DataOrigin;
+import org.redcross.sar.data.IData.DataState;
+
 public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 
 	private V m_localValue;
 	private V m_remoteValue;
 
 	private int m_changeCount;
-	private DataState m_state = DataState.STATE_LOOPBACK;
-	private DataOrigin m_origin = DataOrigin.ORIGIN_REMOTE;
+	private DataState m_state = DataState.NONE;
+	private DataOrigin m_origin = DataOrigin.NONE;
 	
 	/* ==================================================================
 	 *  Public methods
@@ -30,10 +33,10 @@ public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 
 	@Override
 	public void setLocalValue(V value) {
-		if(isEqual(m_localValue,value)) {
+		if(!isEqual(m_localValue,value)) {
 			m_localValue = value;
-			m_state = !isState(DataState.STATE_CONFLICT) ? DataState.STATE_CHANGED : m_state;
-			m_origin = !isOrigin(DataOrigin.ORIGIN_CONFLICT) ? DataOrigin.ORIGIN_LOCAL : m_origin;
+			m_state = !isState(DataState.CONFLICT) ? DataState.CHANGED : m_state;
+			m_origin = !isOrigin(DataOrigin.CONFLICT) ? DataOrigin.LOCAL : m_origin;
 			incrementChangeCount();
 		}
 	}
@@ -44,22 +47,22 @@ public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 	}
 
 	public void setRemoteValue(V value) {
-		if(isEqual(m_remoteValue,value)) {
+		if(!isEqual(m_remoteValue,value)) {
 			boolean isConflict = (m_localValue!=null && !isEqual(m_localValue, value));
 			m_remoteValue = value;
-			m_state = !isState(DataState.STATE_CONFLICT) ? (isConflict ? DataState.STATE_CONFLICT : DataState.STATE_LOOPBACK) : m_state;
-			m_origin = !isOrigin(DataOrigin.ORIGIN_CONFLICT) ? (isConflict ? DataOrigin.ORIGIN_CONFLICT : DataOrigin.ORIGIN_REMOTE) : m_origin;
+			m_state = !isState(DataState.CONFLICT) ? (isConflict ? DataState.CONFLICT : DataState.LOOPBACK) : m_state;
+			m_origin = !isOrigin(DataOrigin.CONFLICT) ? (isConflict ? DataOrigin.CONFLICT : DataOrigin.REMOTE) : m_origin;
 			incrementChangeCount();
 		}
 	}
 	
 	@Override
 	public boolean commit() {
-		if(isState(DataState.STATE_CHANGED)) {
+		if(isState(DataState.CHANGED)) {
 			m_remoteValue = m_localValue;
 			m_localValue = null;
-			m_origin = DataOrigin.ORIGIN_LOCAL;
-			m_state = DataState.STATE_CHANGED;
+			m_origin = DataOrigin.LOCAL;
+			m_state = DataState.CHANGED;
 			return true;
 		}
 		return false;
@@ -67,11 +70,11 @@ public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 
 	@Override
 	public boolean rollback() {
-		if(isState(DataState.STATE_CHANGED)) {
+		if(isState(DataState.CHANGED)) {
 			m_remoteValue = m_localValue;
 			m_localValue = null;
-			m_origin = DataOrigin.ORIGIN_LOCAL;
-			m_state = DataState.STATE_CHANGED;
+			m_origin = DataOrigin.LOCAL;
+			m_state = DataState.CHANGED;
 			incrementChangeCount();
 			return true;
 		}
@@ -81,9 +84,9 @@ public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 	
 	@Override
 	public boolean acceptLocalValue() {
-		if(isState(DataState.STATE_CONFLICT)) {
-			m_origin = DataOrigin.ORIGIN_LOCAL;
-			m_state = DataState.STATE_CHANGED;
+		if(isState(DataState.CONFLICT)) {
+			m_origin = DataOrigin.LOCAL;
+			m_state = DataState.CHANGED;
 			return true;
 		}
 		return false;
@@ -91,10 +94,10 @@ public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 
 	@Override
 	public boolean acceptRemoteValue() {
-		if(isState(DataState.STATE_CONFLICT)) {
+		if(isState(DataState.CONFLICT)) {
 			m_localValue = null;
-			m_origin = DataOrigin.ORIGIN_REMOTE;
-			m_state = DataState.STATE_ROLLBACK;
+			m_origin = DataOrigin.REMOTE;
+			m_state = DataState.ROLLBACK;
 			return true;
 		}
 		return false;

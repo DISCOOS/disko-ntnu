@@ -15,7 +15,7 @@ public class Work extends AbstractWork {
 	 * ================================================== */
 
 	public Work(boolean isSafe,
-			boolean isModal, ThreadType thread,
+			boolean isModal, WorkerType thread,
 			String message, long millisToPopup,
 			boolean showProgress, boolean suspend) throws Exception {
 
@@ -25,7 +25,7 @@ public class Work extends AbstractWork {
 	}
 
 	public Work(int priority, boolean isSafe,
-			boolean isModal, ThreadType thread,
+			boolean isModal, WorkerType thread,
 			String message, long millisToPopup,
 			boolean showProgress, boolean suspend) throws Exception {
 
@@ -35,7 +35,7 @@ public class Work extends AbstractWork {
 	}
 
 	public Work(boolean isSafe,
-			boolean isModal, ThreadType thread,
+			boolean isModal, WorkerType thread,
 			String message, long millisToPopup,
 			boolean showProgress, boolean suspend, boolean isLoop) throws Exception {
 
@@ -45,7 +45,7 @@ public class Work extends AbstractWork {
 	}
 
 	public Work(int priority,boolean isSafe,
-			boolean isModal, ThreadType thread,
+			boolean isModal, WorkerType thread,
 			String message, long millisToPopup,
 			boolean showProgress, boolean suspend, boolean isLoop) throws Exception {
 
@@ -62,7 +62,7 @@ public class Work extends AbstractWork {
 	/**
 	 * Override and implement the work in this method.
 	 */
-	public Object doWork() {
+	public Object doWork(IWorkLoop loop) {
 		return null;
 	}
 

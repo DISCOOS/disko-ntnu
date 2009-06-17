@@ -5,7 +5,12 @@ package org.redcross.sar.util.except;
  */
 public class DuplicateIdException extends MsoRuntimeException
 {
-    public DuplicateIdException(String aMessage)
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public DuplicateIdException(String aMessage)
     {
         super(aMessage);
     }

@@ -18,7 +18,7 @@ public interface IField<V> extends IChangeable {
 	 */
 	public IMsoAttributeIf<V> getMsoAttribute();
 	public IMsoAttributeIf<V> clearMsoAttribute();
-	public IMsoAttributeIf<V> clearMsoAttribute(Object setValue);
+	public IMsoAttributeIf<V> clearMsoAttribute(Object newEditValue);
 	public boolean setMsoAttribute(IMsoAttributeIf<?> attribute);
 	
 	/**
@@ -39,9 +39,21 @@ public interface IField<V> extends IChangeable {
 	/**
 	 * Check if buffered changes exists.
 	 * 
+	 * @see Overrided method {@code IChangeable:isDirty()}
+	 * 
 	 * @return Returns <code>true</code> if buffered changes exists.
 	 */
 	public boolean isDirty();
+	
+	/**
+	 * Force a given dirty state. Note that if buffered changes exists,
+	 * and the new dirty state is set to {@code false}, changes will be 
+	 * lost (a rollback is performed)
+	 * 
+	 * @see Overrided method {@code IChangeable:setDirty(boolean isDirty)}
+	 * @param isDirty - the new dirty state.
+	 */	
+	public void setDirty(boolean isDirty);
 	
 	/**
 	 * Check if field is in buffer mode. </p>
@@ -106,10 +118,7 @@ public interface IField<V> extends IChangeable {
 	public int clearEditableCount();
 
 	/**
-	 * Get current field value. The returned value dependent on the buffer mode. 
-	 * If the field is in buffer mode, and the value is edited
-	 * (<code>isDirty</code> is <code>true</code>), the buffered value 
-	 * is returned. Otherwise, <code>IFieldModel::getValue()</code> is returned. 
+	 * Get current field model value.  
 	 * 
 	 * @see <code>IFieldModel::getValue()</code> - The value returned by the IFieldModel depends on the 
 	 * data origin and state.
@@ -119,12 +128,35 @@ public interface IField<V> extends IChangeable {
 	public V getValue();
 	
 	/**
-	 * Set current field value. If 
+	 * Set current field model value.
 	 * @param value - new field value 
-	 * @return Returns <code>true</code> is field value was changed.
+	 * @return Returns <code>true</code> if field value was changed.
 	 */
 	public boolean setValue(Object value);
+	
+	/**
+	 * Set current field model value. 
+	 * @param value - new field value 
+	 * @param notify - if <code>true</code>, flow listeners are notified if value was changed 
+	 * @return Returns <code>true</code> if field value was changed.
+	 */
 	public boolean setValue(Object value, boolean notify);
+	
+	/**
+	 * Get current field edit value. The method {@code getValue()} and this method
+	 * returns the same value as long as {@code isDirty()} is {@code false}.
+	 * 
+	 * @see {@code isBufferMode()} and {@code isDirty}
+	 * @return Returns current field edit value
+	 */
+	public V getEditValue();
+	
+	/**
+	 * Set current field edit value.
+	 * @param value - new field edit value 
+	 * @return Returns <code>true</code> is field edit value was changed.
+	 */
+	public boolean setEditValue(Object value);
 	
 	public boolean isButtonVisible();
 	public void setButtonVisible(boolean isVisible);
@@ -172,7 +204,8 @@ public interface IField<V> extends IChangeable {
 	 */
 	public void parse();
 	
-	/** Check if field model is changed locally or remotely since
+	/** 
+	 * Check if field model is changed locally or remotely since
 	 * last time <code>parse()</code> was invoked.
 	 * 
 	 * @return Returns <code>true</code> if a <code>parse()</code> is required.

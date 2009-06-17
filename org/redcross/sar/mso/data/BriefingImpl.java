@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
@@ -13,7 +14,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
     private final EnvironmentListImpl m_briefingEnvironments = new EnvironmentListImpl(this, "BriefingEnvironments", false);
     private final SubjectListImpl m_briefingSubjects = new SubjectListImpl(this, "BriefingSubjects", false);
 
-    private final MsoReferenceImpl<IHypothesisIf> m_briefingHypothesis = new MsoReferenceImpl<IHypothesisIf>(this, "BriefingHypothesis", 0, true);
+    private final MsoRelationImpl<IHypothesisIf> m_briefingHypothesis = new MsoRelationImpl<IHypothesisIf>(this, "BriefingHypothesis", 0, true, null);
 
     private final AttributeImpl.MsoBoolean m_active = new AttributeImpl.MsoBoolean(this, "Active");
     private final AttributeImpl.MsoString m_channel1 = new AttributeImpl.MsoString(this, "Channel1");
@@ -67,7 +68,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         addObject(m_briefingHypothesis);
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void addListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IForecastIf)
         {
@@ -83,7 +84,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IForecastIf)
         {
@@ -111,7 +112,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_BRIEFING;
     }
@@ -130,9 +131,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_active.booleanValue();
     }
 
-    public IMsoModelIf.ModificationState getActiveState()
+    public IData.DataOrigin getActiveState()
     {
-        return m_active.getState();
+        return m_active.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoBooleanIf getActiveAttribute()
@@ -150,9 +151,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_channel1.getString();
     }
 
-    public IMsoModelIf.ModificationState getChannel1State()
+    public IData.DataOrigin getChannel1State()
     {
-        return m_channel1.getState();
+        return m_channel1.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getChannel1Attribute()
@@ -170,9 +171,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_channel2.getString();
     }
 
-    public IMsoModelIf.ModificationState getChannel2State()
+    public IData.DataOrigin getChannel2State()
     {
-        return m_channel2.getState();
+        return m_channel2.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getChannel2Attribute()
@@ -190,9 +191,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_closure.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getClosureState()
+    public IData.DataOrigin getClosureState()
     {
-        return m_closure.getState();
+        return m_closure.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getClosureAttribute()
@@ -210,9 +211,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_commsProcedure.getString();
     }
 
-    public IMsoModelIf.ModificationState getCommsProcedureState()
+    public IData.DataOrigin getCommsProcedureState()
     {
-        return m_commsProcedure.getState();
+        return m_commsProcedure.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getCommsProcedureAttribute()
@@ -230,9 +231,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_findingsProcedure.getString();
     }
 
-    public IMsoModelIf.ModificationState getFindingsProcedureState()
+    public IData.DataOrigin getFindingsProcedureState()
     {
-        return m_findingsProcedure.getState();
+        return m_findingsProcedure.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getFindingsProcedureAttribute()
@@ -250,9 +251,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_importantClues.getString();
     }
 
-    public IMsoModelIf.ModificationState getImportantCluesState()
+    public IData.DataOrigin getImportantCluesState()
     {
-        return m_importantClues.getState();
+        return m_importantClues.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getImportantCluesAttribute()
@@ -270,9 +271,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_mediaProcedure.getString();
     }
 
-    public IMsoModelIf.ModificationState getMediaProcedureState()
+    public IData.DataOrigin getMediaProcedureState()
     {
-        return m_mediaProcedure.getState();
+        return m_mediaProcedure.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getMediaProcedureAttribute()
@@ -290,9 +291,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_other.getString();
     }
 
-    public IMsoModelIf.ModificationState getOtherState()
+    public IData.DataOrigin getOtherState()
     {
-        return m_other.getState();
+        return m_other.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getOtherAttribute()
@@ -310,9 +311,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_others.getString();
     }
 
-    public IMsoModelIf.ModificationState getOthersState()
+    public IData.DataOrigin getOthersState()
     {
-        return m_others.getState();
+        return m_others.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getOthersAttribute()
@@ -330,9 +331,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_overallStrategy.getString();
     }
 
-    public IMsoModelIf.ModificationState getOverallStrategyState()
+    public IData.DataOrigin getOverallStrategyState()
     {
-        return m_overallStrategy.getState();
+        return m_overallStrategy.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getOverallStrategyAttribute()
@@ -350,9 +351,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_repeaters.getString();
     }
 
-    public IMsoModelIf.ModificationState getRepeatersState()
+    public IData.DataOrigin getRepeatersState()
     {
-        return m_repeaters.getState();
+        return m_repeaters.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRepeatersAttribute()
@@ -370,9 +371,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_supplies.getString();
     }
 
-    public IMsoModelIf.ModificationState getSuppliesState()
+    public IData.DataOrigin getSuppliesState()
     {
-        return m_supplies.getState();
+        return m_supplies.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getSuppliesAttribute()
@@ -390,9 +391,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_telephones.getString();
     }
 
-    public IMsoModelIf.ModificationState getTelephonesState()
+    public IData.DataOrigin getTelephonesState()
     {
-        return m_telephones.getState();
+        return m_telephones.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTelephonesAttribute()
@@ -410,9 +411,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_transportProcedure.getString();
     }
 
-    public IMsoModelIf.ModificationState getTransportProcedureState()
+    public IData.DataOrigin getTransportProcedureState()
     {
-        return m_transportProcedure.getState();
+        return m_transportProcedure.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getTransportProcedureAttribute()
@@ -434,9 +435,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_briefingForecasts;
     }
 
-    public IMsoModelIf.ModificationState getBriefingForecastsState(IForecastIf anIForecastIf)
+    public IData.DataOrigin getBriefingForecastsState(IForecastIf anIForecastIf)
     {
-        return m_briefingForecasts.getState(anIForecastIf);
+        return m_briefingForecasts.getOrigin(anIForecastIf);
     }
 
     public Collection<IForecastIf> getBriefingForecastsItems()
@@ -454,9 +455,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_briefingEnvironments;
     }
 
-    public IMsoModelIf.ModificationState getBriefingEnvironmentsState(IEnvironmentIf anIEnvironmentIf)
+    public IData.DataOrigin getBriefingEnvironmentsState(IEnvironmentIf anIEnvironmentIf)
     {
-        return m_briefingEnvironments.getState(anIEnvironmentIf);
+        return m_briefingEnvironments.getOrigin(anIEnvironmentIf);
     }
 
     public Collection<IEnvironmentIf> getBriefingEnvironmentsItems()
@@ -474,9 +475,9 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
         return m_briefingSubjects;
     }
 
-    public IMsoModelIf.ModificationState getBriefingSubjectsState(ISubjectIf anISubjectIf)
+    public IData.DataOrigin getBriefingSubjectsState(ISubjectIf anISubjectIf)
     {
-        return m_briefingSubjects.getState(anISubjectIf);
+        return m_briefingSubjects.getOrigin(anISubjectIf);
     }
 
     public Collection<ISubjectIf> getBriefingSubjectsItems()
@@ -490,20 +491,20 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
 
     public void setBriefingHypothesis(IHypothesisIf aHypothesis)
     {
-        m_briefingHypothesis.setReference(aHypothesis);
+        m_briefingHypothesis.set(aHypothesis);
     }
 
     public IHypothesisIf getBriefingHypothesis()
     {
-        return m_briefingHypothesis.getReference();
+        return m_briefingHypothesis.get();
     }
 
-    public IMsoModelIf.ModificationState getBriefingHypothesisState()
+    public IData.DataOrigin getBriefingHypothesisState()
     {
-        return m_briefingHypothesis.getState();
+        return m_briefingHypothesis.getOrigin();
     }
 
-    public IMsoReferenceIf<IHypothesisIf> getBriefingHypothesisAttribute()
+    public IMsoRelationIf<IHypothesisIf> getBriefingHypothesisAttribute()
     {
         return m_briefingHypothesis;
     }

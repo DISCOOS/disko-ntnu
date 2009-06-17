@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.redcross.sar.AppProps;
 import org.redcross.sar.gui.factory.DiskoEnumFactory;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.map.feature.MsoFeatureModel;
@@ -30,7 +31,6 @@ import org.redcross.sar.mso.data.ISearchAreaIf;
 import org.redcross.sar.mso.data.ITrackIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.util.MsoUtils;
-import org.redcross.sar.util.AppProps;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.IGeodataIf;
@@ -449,7 +449,7 @@ public class MapUtil {
 			geomBag.setSpatialReferenceByRef(srs);
 			for(IMsoObjectIf mso : msoList.getObjects()) {
 				// valid class type?
-				if (code == null || mso.getMsoClassCode().equals(code)) {
+				if (code == null || mso.getClassCode().equals(code)) {
 					// initialize
 					IGeometry geo = null;
 					// parse

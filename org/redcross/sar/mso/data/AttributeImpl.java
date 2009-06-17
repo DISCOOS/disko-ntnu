@@ -1,11 +1,13 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IChangeIf.ChangeType;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
-import org.redcross.sar.mso.IMsoModelIf.ModificationState;
+import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.mso.util.EnumHistory;
 import org.redcross.sar.mso.ChangeImpl;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.Internationalization;
@@ -23,7 +25,7 @@ import java.util.Vector;
  * Generic class for all MSO attributes
  */
 @SuppressWarnings("unchecked")
-public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable<AttributeImpl<T>>
+public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 {
     private final String m_name;
     private final int m_cardinality;
@@ -36,11 +38,11 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
 
 	protected final Class m_class;
     protected final AbstractMsoObject m_owner;
-    protected final IMsoModelIf m_msoModel;
+    protected final IMsoModelIf m_model;
 
     protected T m_localValue;
-    protected T m_serverValue;
-    protected ModificationState m_state = ModificationState.STATE_UNDEFINED;
+    protected T m_remoteValue;
+    protected IData.DataOrigin m_origin = IData.DataOrigin.NONE;
 
     protected AttributeImpl(Class aClass, AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, T theValue)
     {
@@ -50,7 +52,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     	{
     		throw new IllegalArgumentException("MsoListImpl must have a owner");
     	}
-        m_msoModel = m_owner.getModel();
+        m_model = m_owner.getModel();
         m_name = theName.toLowerCase();
         m_cardinality = theCardinality;
         m_indexNo = theIndexNo;
@@ -60,17 +62,6 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         }
     }
 
-    /**
-     * Compare attribute indices, used for sorting.
-     *
-     * @param anObject Object to compare
-     * @return As {@link Comparable#compareTo(Object)}
-     */
-    public int compareTo(AttributeImpl<T> anObject)
-    {
-        return getIndexNo() - anObject.getIndexNo();
-    }
-
     public String getName()
     {
         return m_name;
@@ -78,31 +69,42 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
 
     protected T getAttrValue()
     {
-        return m_state == ModificationState.STATE_LOCAL ? m_localValue : m_serverValue;
+        return m_origin == IData.DataOrigin.LOCAL ? m_localValue : m_remoteValue;
     }
 
-    public ModificationState getState()
+    public IData.DataOrigin getOrigin()
     {
-        return m_state;
+        return m_origin;
     }
 
-    public boolean isState(ModificationState state) {
-    	return (m_state==state);
-    }
-    
+	@Override
+	public boolean isOrigin(IData.DataOrigin origin) {
+		if(m_origin!=null)
+		{
+			return m_origin.equals(origin);
+		}
+		// failed to compare
+		return false;
+	}
+	    
     @Override
-	public boolean isLocalState() {
-		return m_state==ModificationState.STATE_LOCAL;
+	public boolean isOriginLocal() {
+		return isOrigin(IData.DataOrigin.LOCAL);
 	}
 
 	@Override
-	public boolean isRemoteState() {
-		return m_state==ModificationState.STATE_REMOTE;
+	public boolean isOriginRemote() {
+		return isOrigin(IData.DataOrigin.REMOTE);
 	}
 
 	@Override
-	public boolean isConflictState() {
-		return m_state==ModificationState.STATE_CONFLICT;
+	public boolean isOriginConflict() {
+		return isOrigin(IData.DataOrigin.CONFLICT);
+	}
+		
+	@Override
+	public boolean isOriginMixed() {
+		return false;
 	}
 	
 	@Override
@@ -116,9 +118,74 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
 	}
 	
 	@Override
-	public boolean isMixedState() {
+	public boolean isDeleted() {
+		return m_owner.isDeleted();
+	}
+
+	@Override
+	public boolean isState(DataState state) {
+		if(state!=null)
+		{
+			return state.equals(getState());
+		}
 		return false;
 	}
+
+	@Override
+	public DataState getState() {
+		DataState state = DataState.NONE;
+		if(isChanged())
+		{
+			if(m_origin.equals(DataOrigin.CONFLICT))
+			{
+				state = DataState.CONFLICT;
+			}
+			else 
+			{
+				state = DataState.CHANGED;
+			}
+		}
+		else 
+		{
+			if(isRollbackMode())
+			{
+				state = DataState.ROLLBACK;
+			}
+			else if(isOriginRemote() || isLoopbackMode())
+			{
+				state = DataState.LOOPBACK;
+			} 
+		}
+		// mixed state?
+		if(isDeleted() && !state.equals(DataState.NONE)) 
+		{
+			// finished
+			return DataState.MIXED;
+		}
+		
+		// finished
+		return state;
+	}
+
+	@Override
+	public abstract MsoDataType getDataType();
+
+	@Override
+	public MsoClassCode getClassCode() {
+		return MsoClassCode.CLASSCODE_NOCLASS;
+	}
+
+    public int compareTo(IData anObject)
+    {
+    	if(anObject instanceof IMsoAttributeIf)
+    	{
+    		if(anObject.getClass().equals(getClass()))
+    		{
+    			return ((IMsoAttributeIf)anObject).getIndexNo() - getIndexNo(); 
+    		}
+    	}
+		return anObject != null ? anObject.hashCode() - hashCode(): -1;
+    }
 
 	Class getAttributeClass()
     {
@@ -126,8 +193,8 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     }
 
     public boolean isChanged() {
-    	return m_state == ModificationState.STATE_LOCAL 
-    		|| m_state == ModificationState.STATE_CONFLICT;
+    	return m_origin == IData.DataOrigin.LOCAL 
+    		|| m_origin == IData.DataOrigin.CONFLICT;
     }
 
     public boolean isChangedSince(int changeCount)
@@ -140,11 +207,24 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         return m_changeCount;
     }
 
-    protected void incrementChangeCount() {
+    /**
+     * This method increments the change counter and creates a attribute 
+     * change instance that is returned and stored locally.
+     * @param aMode - the model update mode when change occurred.
+     * @return Returns a IChangeAttributeIf instance.
+     */
+    protected IChangeIf onChangeOccurred(UpdateMode aMode) {
+    	// increment change count
     	m_changeCount++;
+    	// create attribute change instance 
+    	IChangeIf change = new ChangeImpl.ChangeAttribute(this, aMode,get(),
+				MsoEventType.MODIFIED_DATA_EVENT.maskValue(),
+				isLoopbackMode(),isRollbackMode());
+    	// finished
+    	return change;
     }
 
-    public IMsoObjectIf getOwner() {
+    public IMsoObjectIf getOwnerObject() {
     	return m_owner;
     }
     
@@ -160,7 +240,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     
     public T getRemoteValue()
     {
-    	return m_serverValue;
+    	return m_remoteValue;
     }
     
     public void set(T aValue)
@@ -221,8 +301,8 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     	 * 
     	 * ======================================================== */
 
-        UpdateMode updateMode = m_msoModel.getUpdateMode();
-        ModificationState newState;
+        UpdateMode updateMode = m_model.getUpdateMode();
+        IData.DataOrigin newState;
         boolean isDirty = false;
         boolean isLoopback = false;
         boolean isRollback = false;
@@ -253,19 +333,19 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
             	 * =========================================================== */
 
             	// check if a conflict has occurred?
-            	boolean isConflict = (m_state == ModificationState.STATE_LOCAL
-            			|| m_state == ModificationState.STATE_CONFLICT) ?
+            	boolean isConflict = (m_origin == IData.DataOrigin.LOCAL
+            			|| m_origin == IData.DataOrigin.CONFLICT) ?
             			!isEqual(m_localValue, aValue) : false;
 
             	// get next state
                 newState = isConflict ?
-                		  ModificationState.STATE_CONFLICT
-                		: ModificationState.STATE_REMOTE;
+                		  IData.DataOrigin.CONFLICT
+                		: IData.DataOrigin.REMOTE;
 
                 // any change?
-                if (!isEqual(m_serverValue, aValue))
+                if (!isEqual(m_remoteValue, aValue))
                 {
-                    m_serverValue = aValue;
+                    m_remoteValue = aValue;
                     isDirty = true;
                 }
 
@@ -297,15 +377,15 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
             	 * set to local state.
             	 * =========================================================== */
 
-            	if (isEqual(m_serverValue, aValue))
+            	if (isEqual(m_remoteValue, aValue))
                 {
-                    newState = ModificationState.STATE_REMOTE;
+                    newState = IData.DataOrigin.REMOTE;
                     isDirty = isEqual(m_localValue, aValue);
                     isRollback = true;
                     m_localValue = null;
                 } else
                 {
-                    newState = ModificationState.STATE_LOCAL;
+                    newState = IData.DataOrigin.LOCAL;
                     if (!isEqual(m_localValue, aValue))
                     {
                         m_localValue = aValue;
@@ -315,9 +395,9 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
             }
             break;
         }
-        if (m_state != newState)
+        if (m_origin != newState)
         {
-            m_state = newState;
+            m_origin = newState;
             isDirty = true;
         }
         // set loopback mode
@@ -327,8 +407,8 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         // notify change
         if (!isCreating && (isDirty || isLoopback || isRollback))
         {
-        	incrementChangeCount();
-            m_owner.registerModifiedData(this,updateMode,isDirty,isLoopback,isRollback);
+        	m_owner.registerModifiedData(onChangeOccurred(updateMode),isDirty);
+            //m_owner.registerModifiedData(this,updateMode,isDirty,isLoopback,isRollback);
         }
     }
 
@@ -354,10 +434,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
 
     public Vector<T> getConflictingValues()
     {
-        if (m_state == ModificationState.STATE_CONFLICT)
+        if (m_origin == IData.DataOrigin.CONFLICT)
         {
             Vector<T> retVal = new Vector<T>(2);
-            retVal.add(m_serverValue);
+            retVal.add(m_remoteValue);
             retVal.add(m_localValue);
             return retVal;
         }
@@ -372,11 +452,11 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         if(isDirty)
         {
         	// get change source
-        	IChangeRecordIf changes = m_owner.getModel().getChanges(m_owner);
+        	IChangeRecordIf changes = m_model.getChanges(m_owner);
         	// add this as partial commit
-        	changes.addFilter(m_name);
+        	changes.addFilter(this);
 	        // increment change count
-	        incrementChangeCount();
+	        onChangeOccurred(m_model.getUpdateMode());
 	        // commit changes
         	m_owner.getModel().commit(changes);
         }
@@ -385,11 +465,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
     
     public boolean rollback()
     {
-    	// get dirty flag
-        boolean isDirty = isChanged();
-        // is changed?
-        if(isDirty)
+        if(isChanged())
         {
+        	// get change update mode flag
+        	boolean bFlag = !m_model.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
+        	// ensure that model is in local update mode
+        	if(bFlag) m_model.setLocalUpdateMode();
         	// reset loopback mode
             m_isLoopbackMode = false;
             // set rollback mode
@@ -397,29 +478,32 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
             // reset local value
 	        m_localValue = null;
 	        // update state to REMOTE
-	        m_state = ModificationState.STATE_REMOTE;
-	        // increment change count
-	        incrementChangeCount();
+	        m_origin = IData.DataOrigin.REMOTE;
 	        // notify owner
-            m_owner.registerModifiedData(this,m_msoModel.getUpdateMode(),true,false,true);
+            m_owner.registerModifiedData(onChangeOccurred(m_model.getUpdateMode()),true);
+        	// restore previous update mode?
+            if(bFlag) m_model.restoreUpdateMode();
+            // success
+            return true;
         }
-        // finished
-        return isDirty;
+        // failure
+        return false;
     }
     
     public IChangeAttributeIf getChange() {
-    	if(isChanged()) 
+    	IChangeRecordIf rs = m_model.getChanges(m_owner);
+    	if(rs!=null)
     	{
-    		return new ChangeImpl.ChangeAttribute(this,ChangeType.MODIFIED);
+    		return rs.get(this);
     	}
-    	return null;
+		return null;
     }
 
-    private boolean acceptConflicting(ModificationState aState)
+    private boolean acceptConflicting(IData.DataOrigin aState)
     {
-        if (m_state == ModificationState.STATE_CONFLICT)
+        if (m_origin == IData.DataOrigin.CONFLICT)
         {
-            if (aState == ModificationState.STATE_LOCAL)
+            if (aState == IData.DataOrigin.LOCAL)
             {
             	/* ==========================================================
             	 * resolve conflict as a local value state (keep local value)
@@ -444,9 +528,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
                 m_localValue = null;
 
             }
-            m_state = aState;
-        	incrementChangeCount();
-            m_owner.registerModifiedData(this,m_msoModel.getUpdateMode(),false,false,false);
+            m_origin = aState;
+            // notify owner
+            m_owner.registerModifiedData(onChangeOccurred(m_model.getUpdateMode()),false);
+            //m_owner.registerModifiedData(this,m_model.getUpdateMode(),false,false,false);
             return true;
         }
         return false;
@@ -454,17 +539,17 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
 
     public boolean acceptLocalValue()
     {
-        return acceptConflicting(ModificationState.STATE_LOCAL);
+        return acceptConflicting(IData.DataOrigin.LOCAL);
     }
 
     public boolean acceptRemoteValue()
     {
-        return acceptConflicting(ModificationState.STATE_REMOTE);
+        return acceptConflicting(IData.DataOrigin.REMOTE);
     }
 
     public boolean isUncommitted()
     {
-        return m_state == ModificationState.STATE_LOCAL;
+        return m_origin == IData.DataOrigin.LOCAL;
     }
 
     public boolean isGisAttribute()
@@ -538,6 +623,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return getAttrValue();
         }
+
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.BOOLEAN;
+		}
+		
     }
 
     public static class MsoInteger extends AttributeImpl<Integer> implements IMsoIntegerIf
@@ -614,6 +705,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return getAttrValue();
         }
+        
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.INTEGER;
+		}
+        
     }
 
     public static class MsoDouble extends AttributeImpl<Double> implements IMsoDoubleIf
@@ -684,6 +781,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return getAttrValue();
         }
+        
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.DOUBLE;
+		}
+        
     }
 
     public static class MsoString extends AttributeImpl<String> implements IMsoStringIf
@@ -718,6 +821,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return getAttrValue();
         }
+
+        @Override
+		public MsoDataType getDataType() {
+			return MsoDataType.STRING;
+		}
+        
     }
 
     public static class MsoCalendar extends AttributeImpl<Calendar> implements IMsoCalendarIf
@@ -770,6 +879,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return DTG.CalToDTG(getAttrValue());
         }
+        
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.CALENDAR;
+		}
+        
     }
 
     public static class MsoPosition extends AttributeImpl<Position> implements IMsoPositionIf
@@ -810,6 +925,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return getAttrValue();
         }
+        
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.POSITION;
+		}
+        
     }
 
     public static class MsoTimePos extends AttributeImpl<TimePos> implements IMsoTimePosIf
@@ -849,6 +970,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return true;
         }
+        
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.TIMEPOS;
+		}
+        
     }
 
     public static class MsoPolygon extends AttributeImpl<Polygon> implements IMsoPolygonIf
@@ -888,6 +1015,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return true;
         }
+        
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.POLYGON;
+		}
+        
     }
 
     public static class MsoRoute extends AttributeImpl<Route> implements IMsoRouteIf
@@ -927,6 +1060,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return true;
         }
+        
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.ROUTE;
+		}
+        
     }
 
     public static class MsoTrack extends AttributeImpl<Track> implements IMsoTrackIf
@@ -966,6 +1105,12 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return true;
         }
+        
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.TRACK;
+		}
+        
     }
 
     public static class MsoEnum<E extends Enum<E>> extends AttributeImpl<E> implements IMsoEnumIf<E>
@@ -1123,7 +1268,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
 			return m_history.getDuration(list,total);
 		}
 
-
+		@Override
+		public MsoDataType getDataType() {
+			return MsoDataType.ENUM;
+		}
 
         /* ====================================================
          * Protected methods
@@ -1135,7 +1283,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
          * @param Calendar t - the time of creation
          */
         protected void setInitialTime(Calendar t) {
-        	if(m_owner.m_msoModel.isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
+        	if(m_owner.m_model.isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
         		m_history.setHead(m_initialValue, t);
         	}
         }
@@ -1151,7 +1299,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
          */
         protected void addHistory(E aStatus, Calendar aTime)
         {
-            if(aTime!=null && m_owner.m_msoModel.isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
+            if(aTime!=null && m_owner.m_model.isUpdateMode(UpdateMode.REMOTE_UPDATE_MODE)) {
             	m_history.add(aStatus,aTime);
             }
         }
@@ -1195,11 +1343,11 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         {
             return false;
         }
-        if (m_serverValue != null ? !m_serverValue.equals(attribute.m_serverValue) : attribute.m_serverValue != null)
+        if (m_remoteValue != null ? !m_remoteValue.equals(attribute.m_remoteValue) : attribute.m_remoteValue != null)
         {
             return false;
         }
-        if (m_state != attribute.m_state)
+        if (m_origin != attribute.m_origin)
         {
             return false;
         }
@@ -1216,8 +1364,8 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>, Comparable
         result = 31 * result + m_indexNo;
         result = 31 * result + (m_isRequired ? 1 : 0);
         result = 31 * result + (m_localValue != null ? m_localValue.hashCode() : 0);
-        result = 31 * result + (m_serverValue != null ? m_serverValue.hashCode() : 0);
-        result = 31 * result + (m_state != null ? m_state.hashCode() : 0);
+        result = 31 * result + (m_remoteValue != null ? m_remoteValue.hashCode() : 0);
+        result = 31 * result + (m_origin != null ? m_origin.hashCode() : 0);
         return result;
     }
 }

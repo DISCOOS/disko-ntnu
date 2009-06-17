@@ -14,16 +14,15 @@ public abstract class AbstractGeodata implements IGeodataIf, IData, Cloneable
     protected int m_changeCount;
 
     protected final String m_name;
-    protected final GeoClassCode m_classCode;
 
     /**
      * Constructor, default collection size
      *
      * @param anId Object Id
      */
-    public AbstractGeodata(String anId, GeoClassCode classCode)
+    public AbstractGeodata(String anId)
     {
-        this(anId,"",classCode);
+        this(anId,"");
     }
 
     /**
@@ -32,18 +31,13 @@ public abstract class AbstractGeodata implements IGeodataIf, IData, Cloneable
      * @param anId  Object Id
      * @param aName Name of object
      */
-    public AbstractGeodata(String anId, String aName, GeoClassCode classCode)
+    public AbstractGeodata(String anId, String aName)
     {
         m_id = anId;
         m_name = aName;
         m_layout = "";
-        m_classCode = classCode;
     }
 
-	public GeoClassCode getClassCode() {
-		return m_classCode;
-	}
-	
     public int getChangeCount()
     {
         return m_changeCount;

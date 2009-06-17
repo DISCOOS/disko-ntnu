@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
+
 
 /**
  * Interface for objects with serial numbers
@@ -22,11 +23,11 @@ public interface ISerialNumberedIf extends IMsoObjectIf
     public int getNumber();
 
     /**
-     * Get serial number {@link org.redcross.sar.mso.IMsoModelIf.ModificationState Modification state}
+     * Get serial number {@link org.redcross.sar.data.IData.DataOrigin Modification state}
      *
      * @return The serial number Modification state.
      */
-    public IMsoModelIf.ModificationState getNumberState();
+    public IData.DataOrigin getNumberState();
 
     /**
      * Get serial number attribute

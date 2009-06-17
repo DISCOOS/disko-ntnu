@@ -1,11 +1,11 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.gui.factory.BasicDiskoFactory;
 import org.redcross.sar.map.MapUtil;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.IMsoModelIf.ModificationState;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoCastException;
@@ -32,9 +32,9 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
     private final AttributeImpl.MsoPosition m_linePosition = new AttributeImpl.MsoPosition(this, "LinePosition");
     private final AttributeImpl.MsoEnum<MessageLineType> m_lineType = new AttributeImpl.MsoEnum<MessageLineType>(this, "LineType", 1, MessageLineType.TEXT);
 
-    private final MsoReferenceImpl<IPOIIf> m_linePOI = new MsoReferenceImpl<IPOIIf>(this, "LinePOI", 0, true);
-    private final MsoReferenceImpl<IUnitIf> m_lineUnit = new MsoReferenceImpl<IUnitIf>(this, "LineUnit", 0, true);
-    private final MsoReferenceImpl<IAssignmentIf> m_lineAssignment = new MsoReferenceImpl<IAssignmentIf>(this, "LineAssignment", 0, true);
+    private final MsoRelationImpl<IPOIIf> m_linePOI = new MsoRelationImpl<IPOIIf>(this, "LinePOI", 0, true, null);
+    private final MsoRelationImpl<IUnitIf> m_lineUnit = new MsoRelationImpl<IUnitIf>(this, "LineUnit", 0, true, null);
+    private final MsoRelationImpl<IAssignmentIf> m_lineAssignment = new MsoRelationImpl<IAssignmentIf>(this, "LineAssignment", 0, true, null);
 
     public static String getText(String aKey)
     {
@@ -83,7 +83,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_MESSAGELINE;
     }
@@ -108,9 +108,9 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_lineType.getValue();
     }
 
-    public IMsoModelIf.ModificationState getLineTypeState()
+    public IData.DataOrigin getLineTypeState()
     {
-        return m_lineType.getState();
+        return m_lineType.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<MessageLineType> getLineTypeAttribute()
@@ -132,9 +132,9 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_lineNumber.intValue();
     }
 
-    public IMsoModelIf.ModificationState getLineNumberState()
+    public IData.DataOrigin getLineNumberState()
     {
-        return m_lineNumber.getState();
+        return m_lineNumber.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getLineNumberAttribute()
@@ -153,9 +153,9 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_lineText.getString();
     }
 
-    public IMsoModelIf.ModificationState getLineTextState()
+    public IData.DataOrigin getLineTextState()
     {
-        return m_lineText.getState();
+        return m_lineText.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getLineTextAttribute()
@@ -173,9 +173,9 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
         return m_operationTime.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getLineTimeState()
+    public IData.DataOrigin getLineTimeState()
     {
-        return m_operationTime.getState();
+        return m_operationTime.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getLineTimeAttribute()
@@ -192,8 +192,8 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 		return m_linePosition.getPosition();
 	}
 
-	public ModificationState getLinePositionState() {
-		return m_linePosition.getState();
+	public IData.DataOrigin getLinePositionState() {
+		return m_linePosition.getOrigin();
 	}
 
     public IMsoAttributeIf.IMsoPositionIf getLinePositionAttribute()
@@ -207,56 +207,56 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 
     public void setLinePOI(IPOIIf aPoi)
     {
-        m_linePOI.setReference(aPoi);
+        m_linePOI.set(aPoi);
     }
 
     public IPOIIf getLinePOI()
     {
-        return m_linePOI.getReference();
+        return m_linePOI.get();
     }
 
-	public IMsoModelIf.ModificationState getLinePOIState()
+	public IData.DataOrigin getLinePOIState()
     {
-        return m_linePOI.getState();
+        return m_linePOI.getOrigin();
     }
 
-    public IMsoReferenceIf<IPOIIf> getLinePOIAttribute()
+    public IMsoRelationIf<IPOIIf> getLinePOIAttribute()
     {
         return m_linePOI;
     }
 
 	public void setLineUnit(IUnitIf aUnit) {
-		m_lineUnit.setReference(aUnit);
+		m_lineUnit.set(aUnit);
 	}
 
 	public IUnitIf getLineUnit() {
-		return m_lineUnit.getReference();
+		return m_lineUnit.get();
 	}
 
-	public ModificationState getLineUnitState() {
-		return m_lineUnit.getState();
+	public IData.DataOrigin getLineUnitState() {
+		return m_lineUnit.getOrigin();
 	}
 
-	public IMsoReferenceIf<IUnitIf> getLineUnitAttribute() {
+	public IMsoRelationIf<IUnitIf> getLineUnitAttribute() {
 		return m_lineUnit;
 	}
 
     public void setLineAssignment(IAssignmentIf anAssignment)
     {
-        m_lineAssignment.setReference(anAssignment);
+        m_lineAssignment.set(anAssignment);
     }
 
     public IAssignmentIf getLineAssignment()
     {
-        return m_lineAssignment.getReference();
+        return m_lineAssignment.get();
     }
 
-    public IMsoModelIf.ModificationState getLineAssignmentState()
+    public IData.DataOrigin getLineAssignmentState()
     {
-        return m_lineAssignment.getState();
+        return m_lineAssignment.getOrigin();
     }
 
-    public IMsoReferenceIf<IAssignmentIf> geLinetAssignmentAttribute()
+    public IMsoRelationIf<IAssignmentIf> geLinetAssignmentAttribute()
     {
         return m_lineAssignment;
     }

@@ -64,7 +64,7 @@ public class TimePos extends GeoPos implements Comparable<IData>, Cloneable
     }
 
     @Override
-	public GeoClassCode getClassCode() {
+	public GeoClassCode getDataType() {
 		return GeoClassCode.CLASSCODE_TIMEPOS;
 	}
 

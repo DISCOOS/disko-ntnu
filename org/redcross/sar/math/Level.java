@@ -46,6 +46,13 @@ public class Level<S extends IData, T, D extends Number> implements ILevel<T,D> 
 	public String getUnit() {
 		return m_level.m_unit;
 	}
+	
+	/**
+	 * Get data class
+	 */
+	public Class<D> getDataClass() {
+		return m_level.getDataClass();
+	}
 
 	/**
 	 * Get input

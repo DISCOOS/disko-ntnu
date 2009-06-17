@@ -6,7 +6,12 @@ package org.redcross.sar.util.except;
 public class UnknownAttributeException  extends MsoException
 {
 
-    public UnknownAttributeException()
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public UnknownAttributeException()
     {
         super();
     }

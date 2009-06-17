@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.Internationalization;
@@ -87,7 +88,7 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_POI;
     }
@@ -111,9 +112,9 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_type.getValue();
     }
 
-    public IMsoModelIf.ModificationState getTypeState()
+    public IData.DataOrigin getTypeState()
     {
-        return m_type.getState();
+        return m_type.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<POIType> getTypeAttribute()
@@ -135,9 +136,9 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_name.getString();
     }
 
-    public IMsoModelIf.ModificationState getNameState()
+    public IData.DataOrigin getNameState()
     {
-        return m_name.getState();
+        return m_name.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getNameAttribute()
@@ -155,9 +156,9 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_position.getPosition();
     }
 
-    public IMsoModelIf.ModificationState getPositionState()
+    public IData.DataOrigin getPositionState()
     {
-        return m_position.getState();
+        return m_position.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoPositionIf getPositionAttribute()
@@ -175,9 +176,9 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_remarks.getString();
     }
 
-    public IMsoModelIf.ModificationState getRemarksState()
+    public IData.DataOrigin getRemarksState()
     {
-        return m_remarks.getState();
+        return m_remarks.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
@@ -195,9 +196,9 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
         return m_areaSequenceNumber.intValue();
     }
 
-    public IMsoModelIf.ModificationState getAreaSequenceNumberState()
+    public IData.DataOrigin getAreaSequenceNumberState()
     {
-        return m_areaSequenceNumber.getState();
+        return m_areaSequenceNumber.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute()

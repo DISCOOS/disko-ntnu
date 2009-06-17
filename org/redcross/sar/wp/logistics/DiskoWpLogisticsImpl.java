@@ -182,7 +182,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
             if (confirmTransfer(anAssignment, toStatus, toUnit)) {
 
 		        // suspend for faster transfer
-				getMsoModel().suspendClientUpdate();
+				getMsoModel().suspendUpdate();
 
 				// initialize
 		        boolean bCreate = true;
@@ -229,7 +229,7 @@ public class DiskoWpLogisticsImpl extends AbstractDiskoWpModule implements IDisk
 		        }
 
 		        // resume update
-				getMsoModel().resumeClientUpdate(true);
+				getMsoModel().resumeUpdate();
 
             }
         }

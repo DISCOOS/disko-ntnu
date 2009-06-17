@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.DuplicateIdException;
@@ -44,7 +45,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
     {
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void addListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IPersonnelIf)
         {
@@ -52,7 +53,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IPersonnelIf)
         {
@@ -105,7 +106,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_personnel.getObjects();
 	}
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_CALLOUT;
     }
@@ -120,9 +121,9 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_title.getString();
 	}
 
-	public IMsoModelIf.ModificationState getTitleState()
+	public IData.DataOrigin getTitleState()
 	{
-		return m_title.getState();
+		return m_title.getOrigin();
 	}
 
     public IMsoAttributeIf.IMsoStringIf getTitleAttribute()
@@ -140,9 +141,9 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_created.getCalendar();
 	}
 
-	public IMsoModelIf.ModificationState getCreatedState()
+	public IData.DataOrigin getCreatedState()
 	{
-		return m_created.getState();
+		return m_created.getOrigin();
 	}
 
     public IMsoAttributeIf.IMsoCalendarIf getCreatedAttribute()
@@ -160,9 +161,9 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_organization.getString();
 	}
 
-	public IMsoModelIf.ModificationState getOrganizationState()
+	public IData.DataOrigin getOrganizationState()
 	{
-		return m_organization.getState();
+		return m_organization.getOrigin();
 	}
 
     public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute()
@@ -180,9 +181,9 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_division.getString();
 	}
 
-	public IMsoModelIf.ModificationState getDivisionState()
+	public IData.DataOrigin getDivisionState()
 	{
-		return m_division.getState();
+		return m_division.getOrigin();
 	}
 
     public IMsoAttributeIf.IMsoStringIf getDivisionAttribute()
@@ -200,9 +201,9 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 		return m_department.getString();
 	}
 
-	public IMsoModelIf.ModificationState getDepartmentState()
+	public IData.DataOrigin getDepartmentState()
 	{
-		return m_department.getState();
+		return m_department.getOrigin();
 	}
 
     public IMsoAttributeIf.IMsoStringIf getDepartmentAttribute()

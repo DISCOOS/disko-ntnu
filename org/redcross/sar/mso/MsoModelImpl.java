@@ -29,23 +29,19 @@ import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEventManagerImpl;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
-import org.redcross.sar.mso.work.IMsoWork;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.TransactionException;
-import org.redcross.sar.work.WorkLoop;
-import org.redcross.sar.work.WorkPool;
 
 /**
  * Singleton class for accessing the MSO model
  */
-public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
+public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.ChangeList>
 							implements IMsoModelIf
 {
  
 	private static final Logger m_logger = Logger.getLogger(MsoModelImpl.class); 
 	
-	private final WorkLoop m_workLoop;
     private final IDispatcherIf m_dispatcher;
     private final MsoManagerImpl m_msoManager;
     private final MsoEventManagerImpl m_msoEventManager;
@@ -55,7 +51,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
     private final Object m_lock = new Object();
     private final Stack<UpdateMode> m_updateModeStack = new Stack<UpdateMode>();
 
-    private int m_suspendClientUpdate = 0;
+    private int m_suspendUpdate = 0;
     private boolean m_isEditable = true;
 
   	/*========================================================
@@ -75,9 +71,6 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
         m_msoEventManager = new MsoEventManagerImpl();
         m_msoManager = new MsoManagerImpl(this,m_msoEventManager);
         m_msoTransactionManager = new TransactionManagerImpl(this);
-        // create a MSO work loop and register it as deamon thread in work pool
-        m_workLoop = new WorkLoop(500,5000);
-        WorkPool.getInstance().add(m_workLoop);
         // initialize to local update mode
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
         // create update event repeater
@@ -88,16 +81,16 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 				return EnumSet.allOf(MsoClassCode.class);
 			}
 
-			public void handleMsoUpdateEvent(UpdateList events)
+			public void handleMsoChangeEvent(ChangeList events)
             {
 				// forward
-				fireSourceChanged(new SourceEvent<MsoEvent.UpdateList>(MsoModelImpl.this,events));
+				fireSourceChanged(new SourceEvent<MsoEvent.ChangeList>(MsoModelImpl.this,events));
             }
 
 
         };
         // connect repeater to client update events
-        m_msoEventManager.addClientUpdateListener(m_updateRepeater);
+        m_msoEventManager.addLocalUpdateListener(m_updateRepeater);
     }
 
     /* ====================================================================
@@ -116,6 +109,18 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
      * IMsoModelIf implementation
      * ==================================================================== */
 
+    @Override
+    public boolean exists()
+    {
+    	return getMsoManager().operationExists();
+    }
+    
+    @Override
+    public boolean isDeleted()
+    {
+    	return getMsoManager().isOperationDeleted();
+    }
+    
 	public boolean isEditable() {
 		return m_isEditable;
 	}
@@ -176,36 +181,32 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
     /**
      * This method is thread safe
      */
-    public void suspendClientUpdate()
+    public void suspendUpdate()
     {
     	// increment
     	synchronized(m_lock) {
-	        m_suspendClientUpdate++;
+	        m_suspendUpdate++;
     	}
         // notify of irregular operation
-        if (m_suspendClientUpdate > 10)
+        if (m_suspendUpdate > 10)
         {
-            Log.error("suspend client update stack grows too large, size:" + m_suspendClientUpdate);
+            Log.error("suspend client update stack grows too large, size:" + m_suspendUpdate);
         }
     }
 
-
-    /**
-     * This method is thread safe
-     */
-    public void resumeClientUpdate(boolean all)
+    public void resumeUpdate()
     {
     	synchronized(m_lock) {
-    		if(m_suspendClientUpdate>0)
-	        	m_suspendClientUpdate--;
+    		if(m_suspendUpdate>0)
+	        	m_suspendUpdate--;
     	}
-        if(m_suspendClientUpdate==0)
-        	m_msoManager.resumeClientUpdate(all);
+        if(m_suspendUpdate==0)
+        	m_msoManager.resumeUpdate();
     }
 
-    public synchronized boolean isClientUpdateSuspended()
+    public synchronized boolean isUpdateSuspended()
     {
-        return (m_suspendClientUpdate>0);
+        return (m_suspendUpdate>0);
     }
 
     /**
@@ -395,8 +396,8 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 		// allowed?
 		if(isAvailable()) {
 			List list = new ArrayList(100);
-			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getListReferences(c, true);
-			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
+			Map<String,IMsoListIf<?>> map = getMsoManager().getCmdPost().getListRelations(c, true);
+			for(IMsoListIf<?> it : map.values()) {
 				list.addAll(it.getObjects());
 			}
 			// success
@@ -411,8 +412,8 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
     	// allowed?
 		if(isAvailable() && e instanceof MsoClassCode) {
 			List list = new ArrayList(100);
-			Map<String,IMsoListIf<IMsoObjectIf>> map = getMsoManager().getCmdPost().getListReferences((MsoClassCode)e);
-			for(IMsoListIf<IMsoObjectIf> it : map.values()) {
+			Map<String,IMsoListIf<?>> map = getMsoManager().getCmdPost().getListRelations((MsoClassCode)e);
+			for(IMsoListIf<?> it : map.values()) {
 				list.addAll(it.getObjects());
 			}
 			// success
@@ -427,18 +428,5 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.UpdateList>
 		// supports all classes that implement IMsoObjectIf
 		return IMsoObjectIf.class.isAssignableFrom(dataClass);
 	}
-
-    /* ====================================================================
-     *	Work pool
-     * ==================================================================== */
-
-	public long getLoopID() {
-		return m_workLoop.getID();
-	}
-
-	public long schedule(IMsoWork work) {
-		return m_workLoop.schedule(work);
-	}
-
-
+	
 }

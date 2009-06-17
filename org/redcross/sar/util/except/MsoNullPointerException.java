@@ -5,7 +5,12 @@ package org.redcross.sar.util.except;
  */
 public class MsoNullPointerException extends MsoException
 {
-    public MsoNullPointerException()
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public MsoNullPointerException()
     {
         super();
     }

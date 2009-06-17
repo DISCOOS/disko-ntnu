@@ -36,7 +36,7 @@ public class EquipmentImpl extends AbstractMsoObject implements IEquipmentIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_EQUIPMENT;
     }

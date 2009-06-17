@@ -1,7 +1,7 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.mso.Position;
 
 import java.util.Calendar;
@@ -97,7 +97,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public MessageLineType getLineType();
 
-    public IMsoModelIf.ModificationState getLineTypeState();
+    public IData.DataOrigin getLineTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<MessageLineType> getLineTypeAttribute();
 
@@ -111,7 +111,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public int getLineNumber();
 
-    public IMsoModelIf.ModificationState getLineNumberState();
+    public IData.DataOrigin getLineNumberState();
 
     public IMsoAttributeIf.IMsoIntegerIf getLineNumberAttribute();
 
@@ -119,7 +119,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public String getLineText();
 
-    public IMsoModelIf.ModificationState getLineTextState();
+    public IData.DataOrigin getLineTextState();
 
     public IMsoAttributeIf.IMsoStringIf getLineTextAttribute();
 
@@ -127,7 +127,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public Calendar getLineTime();
 
-    public IMsoModelIf.ModificationState getLineTimeState();
+    public IData.DataOrigin getLineTimeState();
 
     public IMsoAttributeIf.IMsoCalendarIf getLineTimeAttribute();
 
@@ -135,7 +135,7 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public Position getLinePosition();
 
-    public IMsoModelIf.ModificationState getLinePositionState();
+    public IData.DataOrigin getLinePositionState();
 
     public IMsoAttributeIf.IMsoPositionIf getLinePositionAttribute();
 
@@ -147,25 +147,25 @@ public interface IMessageLineIf extends IMsoObjectIf
 
     public IPOIIf getLinePOI();
 
-    public IMsoModelIf.ModificationState getLinePOIState();
+    public IData.DataOrigin getLinePOIState();
 
-    public IMsoReferenceIf<IPOIIf> getLinePOIAttribute();
+    public IMsoRelationIf<IPOIIf> getLinePOIAttribute();
 
     public void setLineUnit(IUnitIf aUnit);
 
     public IUnitIf getLineUnit();
 
-    public IMsoModelIf.ModificationState getLineUnitState();
+    public IData.DataOrigin getLineUnitState();
 
-    public IMsoReferenceIf<IUnitIf> getLineUnitAttribute();
+    public IMsoRelationIf<IUnitIf> getLineUnitAttribute();
 
     public void setLineAssignment(IAssignmentIf anAssignment);
 
     public IAssignmentIf getLineAssignment();
 
-    public IMsoModelIf.ModificationState getLineAssignmentState();
+    public IData.DataOrigin getLineAssignmentState();
 
-    public IMsoReferenceIf<IAssignmentIf> geLinetAssignmentAttribute();
+    public IMsoRelationIf<IAssignmentIf> geLinetAssignmentAttribute();
 
     public IMessageIf getOwningMessage();
 }

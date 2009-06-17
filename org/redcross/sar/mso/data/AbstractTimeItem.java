@@ -51,9 +51,9 @@ public abstract class AbstractTimeItem extends AbstractMsoObject implements ITim
         return m_timeStamp.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getTimeStampState()
+    public IData.DataOrigin getTimeStampState()
     {
-        return m_timeStamp.getState();
+        return m_timeStamp.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getTimeStampAttribute()
@@ -106,9 +106,9 @@ public abstract class AbstractTimeItem extends AbstractMsoObject implements ITim
 //        return "Timeitem " + DTG.CalToDTG(getTimeStamp()) ;
 //    }
 
-    public IMsoModelIf.ModificationState getVisibleState()
+    public IData.DataOrigin getVisibleState()
     {
-        return m_visible.getState();
+        return m_visible.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoBooleanIf getVisibleAttribute()

@@ -3,6 +3,7 @@
  */
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 
@@ -38,7 +39,7 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
     }
 
 	@Override
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void addListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IDataSourceIf)
         {
@@ -46,7 +47,7 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
+    public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName)
     {
         if (anObject instanceof IDataSourceIf)
         {
@@ -54,7 +55,7 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_SYSTEM;
     }
@@ -73,9 +74,9 @@ public class SystemImpl extends AbstractMsoObject implements ISystemIf
         return m_dataSourceList;
     }
 
-    public IMsoModelIf.ModificationState getDataSourceListState(IDataSourceIf anICmdPostIf)
+    public IData.DataOrigin getDataSourceListState(IDataSourceIf anICmdPostIf)
     {
-        return m_dataSourceList.getState(anICmdPostIf);
+        return m_dataSourceList.getOrigin(anICmdPostIf);
     }
 
     public Collection<IDataSourceIf> getDataSourceListItems()

@@ -46,6 +46,7 @@ import org.redcross.sar.mso.event.MsoEvent.Commit;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.TransactionException;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.work.event.IFlowListener;
 import org.redcross.sar.work.event.FlowEvent;
@@ -852,7 +853,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// reset
 			inferNextElement = false;
 			// get class code
-			MsoClassCode code = msoObject.getMsoClassCode();
+			MsoClassCode code = msoObject.getClassCode();
 			// select correct dialog
 			if(MsoClassCode.CLASSCODE_OPERATIONAREA.equals(code)) {
 				getMissionToggleButton().doClick();
@@ -920,7 +921,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 			try {
 				// dispatch task
 				switch(m_task) {

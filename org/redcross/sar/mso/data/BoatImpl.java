@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.MsoCastException;
@@ -89,9 +90,9 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_subType.getValue();
     }
 
-    public IMsoModelIf.ModificationState getSubTypeState()
+    public IData.DataOrigin getSubTypeState()
     {
-        return m_subType.getState();
+        return m_subType.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<BoatSubType> getSubTypeAttribute()
@@ -118,9 +119,9 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_capacity.intValue();
     }
 
-    public IMsoModelIf.ModificationState getCapacityState()
+    public IData.DataOrigin getCapacityState()
     {
-        return m_capacity.getState();
+        return m_capacity.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getCapacityAttribute()
@@ -138,9 +139,9 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_depth.intValue();
     }
 
-    public IMsoModelIf.ModificationState getDepthState()
+    public IData.DataOrigin getDepthState()
     {
-        return m_depth.getState();
+        return m_depth.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getDepthAttribute()
@@ -158,9 +159,9 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_freeboard.intValue();
     }
 
-    public IMsoModelIf.ModificationState getFreeboardState()
+    public IData.DataOrigin getFreeboardState()
     {
-        return m_freeboard.getState();
+        return m_freeboard.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getFreeboardAttribute()
@@ -178,9 +179,9 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_height.intValue();
     }
 
-    public IMsoModelIf.ModificationState getHeightState()
+    public IData.DataOrigin getHeightState()
     {
-        return m_height.getState();
+        return m_height.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getHeightAttribute()
@@ -198,9 +199,9 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
         return m_length.intValue();
     }
 
-    public IMsoModelIf.ModificationState getLengthState()
+    public IData.DataOrigin getLengthState()
     {
-        return m_length.getState();
+        return m_length.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getLengthAttribute()

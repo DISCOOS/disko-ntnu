@@ -436,10 +436,10 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
         	}
 		}
 		else if(refreshCount==1)
-			refreshGeography(refreshLayer, getExtent());
-			//refreshGraphics(refreshLayer, getExtent());
+			//refreshGeography(refreshLayer, getExtent());
+			refreshGraphics(refreshLayer, getExtent());
 		else if(refreshCount > 1)
-			refreshGeography(null, getExtent());
+			refreshGraphics(null, getExtent());
 		else
 			refreshDrawFrame();
 
@@ -908,7 +908,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 			// forward?
 			msoObj = getGeodataMsoObject(msoObj);
 			if (msoObj != null) {
-				List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
+				List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getClassCode());
 				for (int i = 0; i < layers.size(); i++) {
 					IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 					MsoFeatureModel msoFC = (MsoFeatureModel)flayer.getFeatureClass();
@@ -1011,7 +1011,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 		msoObject = getGeodataMsoObject(msoObject);
 		if (msoObject != null) {
 			IEnvelope env = null;
-			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
+			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getClassCode());
 			for (int i = 0; i < layers.size(); i++) {
 				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 				MsoFeatureModel msoFC = (MsoFeatureModel)flayer.getFeatureClass();
@@ -1063,7 +1063,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 		msoObject = getGeodataMsoObject(msoObject);
 		if (msoObject != null) {
 			IEnvelope env = null;
-			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
+			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getClassCode());
 
 			for (int i = 0; i < layers.size(); i++) {
 
@@ -1115,7 +1115,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 		List<IMsoFeatureLayer> affected = new ArrayList<IMsoFeatureLayer>();
 		msoObject = getGeodataMsoObject(msoObject);
 		if (msoObject != null) {
-			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getMsoClassCode());
+			List<IMsoFeatureLayer> layers = getMsoLayers(msoObject.getClassCode());
 			for (int i = 0; i < layers.size(); i++) {
 				IMsoFeatureLayer flayer = (IMsoFeatureLayer)layers.get(i);
 				for(IMsoObjectIf it : flayer.getGeodataMsoObjects(msoObject)) {
@@ -1434,7 +1434,7 @@ public final class DiskoMap extends JComponent implements IDiskoMap {
 	public List<IMsoFeature> getMsoFeature(IMsoObjectIf msoObj) throws AutomationException, IOException {
 		List<IMsoFeature> features = new ArrayList<IMsoFeature>();
 		if(msoObj!=null) {
-			List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getMsoClassCode());
+			List<IMsoFeatureLayer> layers = getMsoLayers(msoObj.getClassCode());
 			for (int i = 0; i < layers.size(); i++) {
 				IMsoFeatureLayer flayer = layers.get(i);
 				if (flayer!=null) {

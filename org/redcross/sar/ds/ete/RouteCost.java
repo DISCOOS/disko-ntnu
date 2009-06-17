@@ -14,6 +14,7 @@ import org.redcross.sar.util.mso.GeoPos;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 import org.redcross.sar.ds.AbstractDsObject;
+import org.redcross.sar.ds.IDs.DsDataType;
 import org.redcross.sar.ds.ete.RouteCostEstimator.ETEClassCode;
 import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.map.MapUtil;
@@ -2057,5 +2058,9 @@ public class RouteCost extends AbstractDsObject {
 	public ETEClassCode getClassCode() {
 		return ETEClassCode.CLASSCODE_ROUTECOST;
 	}
+	
+	public DsDataType getDataType() {
+		return DsDataType.INTEGER;
+	}	
 
 }

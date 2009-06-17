@@ -6,7 +6,6 @@ import java.lang.instrument.IllegalClassFormatException;
 import javax.swing.JButton;
 
 import org.apache.log4j.Logger;
-import org.redcross.sar.IApplication;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.DiskoMap;
@@ -48,7 +47,7 @@ public class DiskoWpBriefingImpl extends AbstractDiskoWpModule implements IDisko
 
     private JButton getSituationButton()
     {
-        IApplication app = getDiskoRole().getApplication();
+        //IApplication app = getDiskoRole().getApplication();
         if (m_situationButton == null)
         {
             try

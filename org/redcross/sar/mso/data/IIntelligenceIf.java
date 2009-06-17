@@ -1,8 +1,9 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
+
+import org.redcross.sar.data.IData;
 
 public interface IIntelligenceIf extends IMsoObjectIf
 {
@@ -30,7 +31,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public String getStatusText();
 
-    public IMsoModelIf.ModificationState getStatusState();
+    public IData.DataOrigin getStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<IntelligenceStatus> getStatusAttribute();
 
@@ -42,7 +43,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public String getDescription();
 
-    public IMsoModelIf.ModificationState getDescriptionState();
+    public IData.DataOrigin getDescriptionState();
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute();
 
@@ -50,7 +51,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public int getPriority();
 
-    public IMsoModelIf.ModificationState getPriorityState();
+    public IData.DataOrigin getPriorityState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute();
 
@@ -58,7 +59,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public String getSource();
 
-    public IMsoModelIf.ModificationState getSourceState();
+    public IData.DataOrigin getSourceState();
 
     public IMsoAttributeIf.IMsoStringIf getSourceAttribute();
 
@@ -66,7 +67,7 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public Calendar getTime();
 
-    public IMsoModelIf.ModificationState getTimeState();
+    public IData.DataOrigin getTimeState();
 
     public IMsoAttributeIf.IMsoCalendarIf getTimeAttribute();
 
@@ -78,31 +79,31 @@ public interface IIntelligenceIf extends IMsoObjectIf
 
     public IPOIIf getIntelligencePOI();
 
-    public IMsoModelIf.ModificationState getIntelligencePOIState();
+    public IData.DataOrigin getIntelligencePOIState();
 
-    public IMsoReferenceIf<IPOIIf> getIntelligencePOIAttribute();
+    public IMsoRelationIf<IPOIIf> getIntelligencePOIAttribute();
 
     public void setIntelligenceRoute(IRouteIf aRoute);
 
     public IRouteIf getIntelligenceRoute();
 
-    public IMsoModelIf.ModificationState getIntelligenceRouteState();
+    public IData.DataOrigin getIntelligenceRouteState();
 
-    public IMsoReferenceIf<IRouteIf> getIntelligenceRouteAttribute();
+    public IMsoRelationIf<IRouteIf> getIntelligenceRouteAttribute();
 
     public void setIntelligenceSubject(ISubjectIf aSubject);
 
     public ISubjectIf getIntelligenceSubject();
 
-    public IMsoModelIf.ModificationState getIntelligenceSubjectState();
+    public IData.DataOrigin getIntelligenceSubjectState();
 
-    public IMsoReferenceIf<ISubjectIf> getIntelligenceSubjectAttribute();
+    public IMsoRelationIf<ISubjectIf> getIntelligenceSubjectAttribute();
 
     public void setIntelligenceTrack(ITrackIf aTrack);
 
     public ITrackIf getIntelligenceTrack();
 
-    public IMsoModelIf.ModificationState getIntelligenceTrackState();
+    public IData.DataOrigin getIntelligenceTrackState();
 
-    public IMsoReferenceIf<ITrackIf> getIntelligenceTrackAttribute();
+    public IMsoRelationIf<ITrackIf> getIntelligenceTrackAttribute();
 }

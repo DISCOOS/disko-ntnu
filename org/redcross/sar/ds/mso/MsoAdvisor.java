@@ -28,9 +28,10 @@ import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEvent.Update;
-import org.redcross.sar.mso.event.MsoEvent.UpdateList;
+import org.redcross.sar.mso.event.MsoEvent.Change;
+import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.IWorkLoop.LoopState;
 
 public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
@@ -97,7 +98,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 	public MsoAdvisor(String oprID) throws Exception {
 
 		// forward
-		super(IDsObject.class, oprID, 1000, 500);
+		super(IDsObject.class, oprID, 1000, 0.5);
 
 		// prepare
 		m_interests = getMsoInterests();
@@ -168,7 +169,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 			m_dispatcher = m_model.getDispatcher();
 
 			// listen for changes
-			m_model.getEventManager().addClientUpdateListener(m_msoAdapter);
+			m_model.getEventManager().addLocalUpdateListener(m_msoAdapter);
 
 			// finished
 			return true;
@@ -180,7 +181,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 		// allowed?
 		if(m_model!=null) {
 			// remove listener
-			m_model.getEventManager().removeClientUpdateListener(m_msoAdapter);
+			m_model.getEventManager().removeLocalUpdateListener(m_msoAdapter);
 			// initialize
 			m_model = null;
 			m_comitter = null;
@@ -375,7 +376,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
     	}
 
     	@Override
-    	public void handleMsoUpdateEvent(UpdateList list) {
+    	public void handleMsoChangeEvent(ChangeList list) {
 
     		// consume?
     		if(!getID().equals(m_dispatcher.getActiveOperationID()) || m_dsObjs.isEmpty()) return;
@@ -384,12 +385,12 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
     		if(!list.isClearAllEvent()) {
 
     			// loop over all events
-    			for(Update e : list.getEvents(m_interests)) {
+    			for(Change e : list.getEvents(m_interests)) {
 
 					// get flags
 			        boolean deletedObject  = e.isDeleteObjectEvent();
 			        boolean modifiedObject = e.isModifyObjectEvent();
-			        boolean modifiedReference = e.isChangeReferenceEvent();
+			        boolean modifiedReference = e.isModifiedReferenceEvent();
 
 			        // initialize dirty flag
 			        boolean isDirty = false;
@@ -401,9 +402,9 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 						// add to queue?
 						if(found==null)
 							isDirty = m_queue.add(e);
-						else if(found instanceof MsoEvent.Update){
+						else if(found instanceof MsoEvent.Change){
 							// make union
-							isDirty = ((MsoEvent.Update)found).union(e);
+							isDirty = ((MsoEvent.Change)found).union(e);
 						}
 						// decide action on changes
 		 				if(isDirty && isLoopState(LoopState.SUSPENDED)) {
@@ -441,45 +442,51 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 			return m_number - ((ID)data).m_number;
 		}
 
+		public DsDataType getDataType() {
+			return DsDataType.NONE;
+		}
+
 		public DsClassCode getClassCode() {
 			return DsClassCode.CLASSCODE_CUE;
 		}
-
     }
 
     private class LoopWork extends AbstractWork {
 
-    	private int m_timeOut;
+    	private int m_requestedWorkTime;
 
 		/* ============================================================
 		 * Constructors
 		 * ============================================================ */
 
-		public LoopWork(int timeOut) throws Exception {
+		public LoopWork(int requestedWorkTime) throws Exception {
 			// forward
-			super(0,true,false,ThreadType.WORK_ON_LOOP,"",0,false,false,true);
+			super(0,true,false,WorkerType.UNSAFE,"",0,false,false,true);
 			// prepare
-			m_timeOut = timeOut;
+			m_requestedWorkTime = requestedWorkTime;
 		}
 
 		/* ============================================================
 		 * IDiskoWork implementation
 		 * ============================================================ */
 
-		public Void doWork() {
+		public Void doWork(IWorkLoop loop) {
 
 			// get start tic
 			long tic = System.currentTimeMillis();
+			
+			// calculate timeout
+			long timeout = Math.min(loop.getWorkTime(), m_requestedWorkTime);
 
 			// notify changes
 			fireArchived();
 			fireAdded();
 
 			// handle updates in queue
-			List<IDsObject> changed = update(tic,m_timeOut/2);
+			List<IDsObject> changed = update(tic,timeout/2);
 
 			// forward
-			execute(changed,tic,m_timeOut/2);
+			execute(changed,tic,timeout/2);
 
 			// finished
 			return null;
@@ -490,7 +497,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 		 * Helper methods
 		 * ============================================================ */
 
-		private List<IDsObject> update(long tic, int timeOut) {
+		private List<IDsObject> update(long tic, long timeOut) {
 
 			// initialize
 			int count = 0;
@@ -507,10 +514,10 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 				EventObject next = m_queue.poll();
 
 				// translate
-				if(next instanceof MsoEvent.Update) {
+				if(next instanceof MsoEvent.Change) {
 
 					// cast to MsoEvent.Update
-					MsoEvent.Update  e = (MsoEvent.Update)next;
+					MsoEvent.Change  e = (MsoEvent.Change)next;
 
 					// increment update counter
 					count++;
@@ -519,7 +526,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 					boolean createdObject  = e.isCreateObjectEvent();
 			        boolean deletedObject  = e.isDeleteObjectEvent();
 			        boolean modifiedObject =   e.isModifyObjectEvent()
-		        							|| e.isChangeReferenceEvent();
+		        							|| e.isModifiedReferenceEvent();
 
 			        // get MSO object
 			        IMsoObjectIf msoObj = (IMsoObjectIf)e.getSource();
@@ -563,7 +570,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 
 		}
 
-    	protected Collection<IDsObject> msoObjectCreated(IMsoObjectIf msoObj, Update e) {
+    	protected Collection<IDsObject> msoObjectCreated(IMsoObjectIf msoObj, Change e) {
     		// initialize
     		Collection<IDsObject> isDirty = new Vector<IDsObject>();
     		// translate
@@ -575,7 +582,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
     		return isDirty;
     	}
 
-    	protected Collection<IDsObject> msoObjectChanged(IMsoObjectIf msoObj, Update e) {
+    	protected Collection<IDsObject> msoObjectChanged(IMsoObjectIf msoObj, Change e) {
     		// initialize
     		Collection<IDsObject> isDirty = new Vector<IDsObject>();
     		// translate
@@ -587,7 +594,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
     		return isDirty;
     	}
 
-    	protected Collection<IDsObject> msoObjectDeleted(IMsoObjectIf msoObj, Update e) {
+    	protected Collection<IDsObject> msoObjectDeleted(IMsoObjectIf msoObj, Change e) {
     		// initialize
     		Collection<IDsObject> isDirty = new Vector<IDsObject>();
     		// translate

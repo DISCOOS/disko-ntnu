@@ -105,9 +105,7 @@ public abstract class AbstractDsTableModel<S extends IData, T extends IDsObject>
 	 * Protected methods
 	 * ============================================================================= */
 
-	protected abstract Object getCellValue(int row, String column);
-
-	protected Object[] update(S id, T obj, Object[] data) {
+	protected IRow update(S id, T obj, IRow data) {
 		try {
 			int index = findRowFromId(id);
 			obj = (obj==null ? getObject(index) : obj);
@@ -115,16 +113,16 @@ public abstract class AbstractDsTableModel<S extends IData, T extends IDsObject>
 				for(int i=0; i<names.size();i++) {
 					String name = names.get(i);
 					if(obj.getAttrIndex(name)!=-1) {
-						data[i] = obj.getAttrValue(name);
+						data.setValue(i,obj.getAttrValue(name));
 					}
 					else {
-						data[i] = getCellValue(index,name);
+						data.setValue(i,getCellValue(index,name));
 					}
 				}
 			}
 			else {
 				for(int i=0; i<names.size();i++) {
-					data[i] = getCellValue(index,names.get(i));
+					data.setValue(i,getCellValue(index,names.get(i)));
 				}
 			}
 		}

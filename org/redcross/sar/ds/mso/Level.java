@@ -3,7 +3,9 @@ package org.redcross.sar.ds.mso;
 import java.util.Calendar;
 
 import org.redcross.sar.data.IData;
-import org.redcross.sar.ds.AbstractDs.DsClassCode;
+import org.redcross.sar.ds.DsUtils;
+import org.redcross.sar.ds.IDs.DsClassCode;
+import org.redcross.sar.ds.IDs.DsDataType;
 import org.redcross.sar.math.IInput;
 import org.redcross.sar.math.ILevel;
 
@@ -124,9 +126,20 @@ public class Level<S extends IData, T, D extends Number>
 		m_level.setInput(input);
 	}
 
-
+	@Override
+	public DsDataType getDataType() {
+		return DsUtils.getDataType(m_level.getDataClass());
+	}
+	
+	@Override
+	public Class<D> getDataClass() {
+		return m_level.getDataClass();
+	}
+	
+	@Override
 	public DsClassCode getClassCode() {
 		return DsClassCode.CLASSCODE_CUE;
 	}
+	
 
 }

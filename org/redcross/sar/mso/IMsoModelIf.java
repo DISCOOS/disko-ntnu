@@ -12,12 +12,11 @@ package org.redcross.sar.mso;
 import org.redcross.sar.data.IDataSource;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.work.IMsoWork;
 
 /**
  * Interface for singleton class for accessing the MSO model
  */
-public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>, IMsoTransactionManagerIf
+public interface IMsoModelIf extends IDataSource<MsoEvent.ChangeList>, IMsoTransactionManagerIf
 {
     /**
      * Update modes, to be used when updating local data in order to inform the GUI how data have been updated.
@@ -28,25 +27,26 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>, IMsoTrans
         REMOTE_UPDATE_MODE 
     }
 
-    /**
-     * Modification state, tells the modification state of each attribute or relation.
-     */
-    public enum ModificationState
-    {
-        STATE_UNDEFINED,
-        STATE_REMOTE,
-        STATE_CONFLICT,
-        STATE_LOCAL
-    }
-
-    /**
+	/**
      * Get the data source id
      *
      * @return The data source id
      */
     @Override
     public String getID();
-
+    
+    /**
+     * Check if model exists
+     * @return Returns <code>true</code> if model exists.
+     */
+    public boolean exists();
+    
+    /**
+     * Check if model is deleted
+     * @return Returns <code>true</code> if model is deleted.
+     */
+    public boolean isDeleted();
+    
     /**
      * Get the {@link IMsoManagerIf MSO manager}
      *
@@ -105,22 +105,44 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.UpdateList>, IMsoTrans
      */
     public IMsoTransactionManagerIf getMsoTransactionManager();
 
-    public void suspendClientUpdate();
+    /**
+     * Check if updates are suspended.
+     *  
+     * @return Returns <code>true</code> if updates are suspended.
+     */
+    public boolean isUpdateSuspended();
 
-    public void resumeClientUpdate(boolean all);
+    /**
+     * Suspend update notifications to listeners. <p/>
+     * 
+     * Use this method to group all update notifications into one single event. This
+     * will greatly improve the event handling process when a large number of
+     * updates is pending. The method has memory function, which ensures 
+     * that the same number invocations of {@code suspendUpdate()} and 
+     * {@code resumeUpdate()} is required to return to the same state. 
+     * For example, if updates are suspended by calling {@code suspendUpdate()}
+     * four times, resuming updates requires {@code resumeUpdate()} to be called
+     * four times. This make it possible to enable and disable updates in a
+     * object hierarchy.
+     */
+    public void suspendUpdate();
 
-    public boolean isClientUpdateSuspended();
+    /**
+     * Resume pending update notification to listeners. <p/>
+     *
+     * @return Returns <code>true</code> if suspended updates were resumed. 
+     * If no suspended updates were resumed and notified to clients, this 
+     * method returns <code>false</code>. </p>
+     * 
+     * @see For more information, see {@code suspendUpdate()}
+     */
+    public void resumeUpdate();
 
-    public long schedule(IMsoWork work);
-    
     /**
      * Get editable state of mode
      * 
      * @return Returns <code>true</code> if model is editable, otherwise <code>false</code>
-     */
-    
+     */   
     public boolean isEditable();
-    
-    
 
 }

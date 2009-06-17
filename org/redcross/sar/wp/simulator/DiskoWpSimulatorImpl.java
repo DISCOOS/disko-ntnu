@@ -211,8 +211,8 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 			// get work loop
 			IWorkLoop loop = m_simulator.getWorkLoop();
 			getAvgSimTimeAttr().setValue(loop.getAverageWorkTime() + " ms");
-			getMaxSimTimeAttr().setValue(loop.getMaxWorkTime() + " ms");
-			getUtilSimTimeAttr().setValue(Math.round(loop.getUtilization()*100) + " %");
+			getMaxSimTimeAttr().setValue(loop.getMaximumWorkTime() + " ms");
+			getUtilSimTimeAttr().setValue(Math.round(loop.getAverageUtilization()*100) + " %");
 		}
 	}
 
@@ -553,7 +553,7 @@ public class DiskoWpSimulatorImpl extends AbstractDiskoWpModule implements IDisk
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 			try {
 				// dispatch task
 				switch(m_task) {

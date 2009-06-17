@@ -137,7 +137,7 @@ public class MessageLogPanel
         m_messagePanel.setPreferredSize(new Dimension(PANEL_WIDTH, MessageLogBottomPanel.PANEL_HEIGHT));
 
         // Message panel should be informed of updates to MSO-model
-        m_wpModule.getMsoEventManager().addClientUpdateListener(m_messagePanel);
+        m_wpModule.getMsoEventManager().addLocalUpdateListener(m_messagePanel);
 
         m_splitter1.setContinuousLayout(false);
         m_splitter1.setResizeWeight(1.0);

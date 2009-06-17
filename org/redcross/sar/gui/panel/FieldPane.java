@@ -414,7 +414,7 @@ public class FieldPane extends TogglePanel {
 		if(source instanceof IMsoAttributeIf<?>) {
 			// get IMsoObject from attribute
 			IMsoAttributeIf<?> attr = (IMsoAttributeIf<?>)source;
-			IMsoObjectIf msoObj = attr.getOwner();
+			IMsoObjectIf msoObj = attr.getOwnerObject();
 			// get all fields bound to this IMsoObjectIf instances 
 			List<IField<?>> fields = m_boundFields.get(msoObj);
 			// initialize?
@@ -423,7 +423,7 @@ public class FieldPane extends TogglePanel {
 				m_boundFields.put(msoObj,fields);
 			}
 			// add interest
-			m_msoInterests.add(msoObj.getMsoClassCode());				
+			m_msoInterests.add(msoObj.getClassCode());				
 			// add field to field list
 			fields.add(field);
 		}
@@ -448,7 +448,7 @@ public class FieldPane extends TogglePanel {
 		// remove empty field lists and interests
 		for(IMsoObjectIf it : removeList) {
 			m_boundFields.remove(it);
-			m_msoInterests.remove(it.getMsoClassCode());
+			m_msoInterests.remove(it.getClassCode());
 		}
 	}
 	

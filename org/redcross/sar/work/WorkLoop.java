@@ -3,8 +3,14 @@ package org.redcross.sar.work;
 import java.util.Vector;
 import java.util.Collection;
 
-import org.redcross.sar.work.IWork.ThreadType;
+import org.redcross.sar.work.IWork.WorkerType;
 
+/**
+ * This class extends the AbstractWorkLoop class. It implements default work 
+ * loop functionality that complies with the work pool rules. (only one SAFE WORK POOL) 
+ * @author Administrator
+ *
+ */
 public class WorkLoop extends AbstractWorkLoop {
 
 	/**
@@ -18,27 +24,28 @@ public class WorkLoop extends AbstractWorkLoop {
 
 	/**
 	 * This implements a work loop (deamon) that will be executed on
-	 * a unsafe thread if scheduled on the WorkPool. The target
-	 * duty cycle is in milliseconds, same for the work cycle timeout.
-	 * The message is used to for logging. </p>
+	 * a unsafe thread if scheduled on the WorkPool. The requested
+	 * duty cycle is in milliseconds, duty cycle utilization is
+	 * a factor greater than zero and less than one. The message is 
+	 * used to for logging. </p>
 	 *
 	 * <b>IMPORTANT</b>: Work executed on deamon work loops are
 	 * only DISKO thread safe if and only if the work loop is
 	 * executed on a safe DISKO thread (loop is scheduled on the DISKO
-	 * Work Pool with work type WORK_ON_SAFE or WORK_ON_EDT). By definition,
+	 * Work Pool with work type EDT or SAFE). By definition,
 	 * only one safe thread should exist in addition to the safe Event
 	 * Dispatch Thread, for each DISKO application. This thread is
 	 * automatically added to the DISKO work pool. Hence, scheduling a
-	 * new work loop on the work pool with WORK_ON_SAFE will fail if one
+	 * new work loop on the work pool with SAFE will fail if one
 	 * already exists. If a work loop is implemented onto any other
 	 * thread, the following must be kept in mind about scheduled work: </p>
 	 *
-	 * To ensure that work complies to the DISKO thread safe requirements,
+	 * A) To ensure that work complies to the DISKO thread safe requirements,
 	 * do not implement work that change the MSO model, nor access
 	 * any Swing components. If these guidelines are not followed, it will
 	 * result in inconsistent data and possibly severe GUI failures. </p>
 	 *
-	 * This IWorkLoop implementation will check the passed work an try to
+	 * B) This IWorkLoop implementation will check the passed work an try to
 	 * determine if the work can be executed safely. If the work loop is
 	 * not executed on a safe thread, and the scheduled work implements
 	 * the IWork interface, only work with <code>isThreadSafe():=false</code>
@@ -46,35 +53,37 @@ public class WorkLoop extends AbstractWorkLoop {
 	 * should be scheduled on the DISKO work pool directly! The DISKO Work
 	 * Pool has a safe thread running already. </p>
 	 */
-	public WorkLoop(long dutyCycle, int timeout) throws Exception {
+	public WorkLoop(long requestedDutyCycle, double requestedUtilization) throws Exception {
 		// forward
-		this(ThreadType.WORK_ON_UNSAFE, dutyCycle, timeout);
+		this(WorkerType.UNSAFE, requestedDutyCycle, requestedUtilization);
 	}
 
 	/**
 	 * This implements a work loop (deamon) that will be executed on
-	 * the indicated thread type if scheduled on the WorkPool. The target
-	 * duty cycle is in milliseconds, same for the work cycle timeout.
-	 * The message is used to for logging. This constructor is for
-	 * internal use only!</p>
+	 * the indicated thread type if scheduled on the WorkPool. The requested
+	 * duty cycle is in milliseconds, duty cycle utilization is
+	 * a factor greater than zero and less than one. The message is 
+	 * used to for logging. </p>
+	 * 
+	 * <i>This constructor is for internal use only!</i></p>
 	 *
 	 * <b>IMPORTANT</b>: Work executed on deamon work loops are
 	 * only DISKO thread safe if and only if the work loop is
 	 * executed on a safe DISKO thread (loop is scheduled on the DISKO
-	 * Work Pool with work type WORK_ON_SAFE or WORK_ON_EDT). By definition,
+	 * Work Pool with work type EDT or SAFE). By definition,
 	 * only one safe thread should exist in addition to the safe Event
 	 * Dispatch Thread, for each DISKO application. This thread is
 	 * automatically added to the DISKO work pool. Hence, scheduling a
-	 * new work loop on the work pool with WORK_ON_SAFE will fail if one
+	 * new work loop on the work pool with SAFE will fail if one
 	 * already exists. If a work loop is implemented onto any other
 	 * thread, the following must be kept in mind about scheduled work: </p>
 	 *
-	 * To ensure that work complies to the DISKO thread safe requirements,
+	 * A) To ensure that work complies to the DISKO thread safe requirements,
 	 * do not implement work that change the MSO model, nor access
 	 * any Swing components. If these guidelines are not followed, it will
 	 * result in inconsistent data and possibly severe GUI failures. </p>
 	 *
-	 * This IWorkLoop implementation will check the passed work an try to
+	 * B) This IWorkLoop implementation will check the passed work an try to
 	 * determine if the work can be executed safely. If the work loop is
 	 * not executed on a safe thread, and the scheduled work implements
 	 * the IWork interface, only work where <code>isSafe()</code> is
@@ -83,9 +92,9 @@ public class WorkLoop extends AbstractWorkLoop {
 	 * directly! The DISKO Work Pool has a safe thread running already. </p>
 	 *
 	 */
-	protected WorkLoop(ThreadType thread, long dutyCycle, int timeout) throws Exception {
+	protected WorkLoop(WorkerType workOn, long requestedDutyCycle, double requestedUtilization) throws Exception {
 		// forward
-		super(thread, dutyCycle, timeout);
+		super(workOn, requestedDutyCycle, requestedUtilization);
 	}
 
 	/* =======================================================
@@ -129,7 +138,7 @@ public class WorkLoop extends AbstractWorkLoop {
 		long tic = System.currentTimeMillis();
 		
 		// loop until finished or timeout
-		while(duration < m_timeOut && m_queue.peek()!=null) {
+		while(duration < getWorkTime() && m_queue.peek()!=null) {
 
 			// get head of queue;
 			m_current = m_queue.poll();
@@ -148,14 +157,17 @@ public class WorkLoop extends AbstractWorkLoop {
 				 * indicated safe is executed.
 				 *
 				 * ============================================= */
-				if(getThreadType().equals(ThreadType.WORK_ON_SAFE) || work.isSafe()) {
+				if(getWorkOnType().equals(WorkerType.SAFE) || work.isSafe()) {
 					// do the work
-					work.run();
+					work.run(this);
+				}
+				else
+				{
+					m_logger.debug("Failed to execute work. Work was not safe"+work);
 				}
 
 			} catch (RuntimeException e) {
-				// TODO Log the error
-				e.printStackTrace();
+				m_logger.error("Failed to execute work",e);
 			}
 
 			// increment
@@ -187,8 +199,14 @@ public class WorkLoop extends AbstractWorkLoop {
 		// reschedule work?
 		if(loops.size()>0)  m_queue.addAll(loops);
 
-		// save duration
-		logWorkTime(duration);
+		// save work time?
+		if(getID()==0)
+		{
+			logWorkTime(duration);
+		}
+		
+		// calculate startup delay
+		onExit(tic);		
 
 		// finished
 		return count;
@@ -218,7 +236,7 @@ public class WorkLoop extends AbstractWorkLoop {
 			WorkPool pool = WorkPool.getInstance();
 			WorkLoop loop = new WorkLoop(1000,500);
 			for(int i=0;i<=10;i++) {
-				loop.schedule(new Work(i,true,false,ThreadType.WORK_ON_LOOP,"",0,false,false) {
+				loop.schedule(new Work(i,true,false,ThreadType.UNSAFE,"",0,false,false) {
 					public Void doWork() {
 						System.out.println("Priority:"+m_priority);
 						return null;

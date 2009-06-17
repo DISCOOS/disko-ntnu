@@ -1,8 +1,9 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
+
+import org.redcross.sar.data.IData;
 
 public interface ITimeItemIf extends IMsoObjectIf
 {
@@ -10,7 +11,7 @@ public interface ITimeItemIf extends IMsoObjectIf
 
     public void setTimeStamp(Calendar aDTG);
 
-    public IMsoModelIf.ModificationState getTimeStampState();
+    public IData.DataOrigin getTimeStampState();
 
     public IMsoAttributeIf.IMsoCalendarIf getTimeStampAttribute();
 
@@ -20,7 +21,7 @@ public interface ITimeItemIf extends IMsoObjectIf
 
     public boolean isVisible();
 
-    public IMsoModelIf.ModificationState getVisibleState();
+    public IData.DataOrigin getVisibleState();
 
     public IMsoAttributeIf.IMsoBooleanIf getVisibleAttribute();
 }

@@ -1,8 +1,9 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Collection;
+
+import org.redcross.sar.data.IData;
 
 /**
  *
@@ -17,7 +18,7 @@ public interface IOperationIf extends IMsoObjectIf
 
     public String getNumber();
 
-    public IMsoModelIf.ModificationState getOpNumberState();
+    public IData.DataOrigin getOpNumberState();
 
     public IMsoAttributeIf.IMsoStringIf getOpNumberAttribute();
 
@@ -25,7 +26,7 @@ public interface IOperationIf extends IMsoObjectIf
 
     public String getOpNumberPrefix();
 
-    public IMsoModelIf.ModificationState getOpNumberPrefixState();
+    public IData.DataOrigin getOpNumberPrefixState();
 
     public IMsoAttributeIf.IMsoStringIf getOpNumberPrefixAttribute();
 
@@ -37,9 +38,9 @@ public interface IOperationIf extends IMsoObjectIf
 
     public ISystemIf getSystem();
 
-    public IMsoModelIf.ModificationState getSystemState();
+    public IData.DataOrigin getSystemState();
 
-    public IMsoReferenceIf<ISystemIf> getSystemAttribute();
+    public IMsoRelationIf<ISystemIf> getSystemAttribute();
     
     
     /*-------------------------------------------------------------------------------------------
@@ -50,7 +51,7 @@ public interface IOperationIf extends IMsoObjectIf
 
     public ICmdPostListIf getCmdPostList();
 
-    public IMsoModelIf.ModificationState getCmdPostListState(ICmdPostIf anICmdPostIf);
+    public IData.DataOrigin getCmdPostListState(ICmdPostIf anICmdPostIf);
 
     public Collection<ICmdPostIf> getCmdPostListItems();
 

@@ -8,7 +8,7 @@ package org.redcross.sar.mso.data;
  * 
  * @author vinjar, kenneth
  */
-public interface IMsoObjectHolderIf<M extends IMsoObjectIf>
+public interface IMsoObjectHolderIf
 {
     /**
      * Check if a reference to object can be deleted.
@@ -16,7 +16,7 @@ public interface IMsoObjectHolderIf<M extends IMsoObjectIf>
      * @param anObject The object to delete a reference from
      * @return <code>true</code> if referenced object exists and can be deleted, <code>false</code> otherwise
      */
-    public boolean isReferenceDeletable(M anObject);
+    public boolean isRelationDeletable(IMsoObjectIf anObject);
 
     /**
      * Deletes a reference to the given IMsoObjectIf object if possible.
@@ -24,5 +24,5 @@ public interface IMsoObjectHolderIf<M extends IMsoObjectIf>
      * @param anObject The object to delete
      * @return <code>true</code> if the reference has been deleted, <code>false</code> otherwise.
      */
-    public boolean deleteReference(M anObject);
+    public boolean deleteRelation(IMsoObjectIf anObject);
 }

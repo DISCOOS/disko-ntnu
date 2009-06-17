@@ -67,8 +67,8 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
         // initialize GUI
         initialize();
         // add listeners
-        wp.getMsoEventManager().addClientUpdateListener(this);
-        wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
+        wp.getMsoEventManager().addLocalUpdateListener(this);
+        wp.getMsoEventManager().addLocalUpdateListener(getInfoPanel());
         getInfoPanel().addFlowListener(wp);
 	}
 
@@ -141,7 +141,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 					}
 					if(m_currentCallout!=null) {
 						m_associationTextField.setChangeable(false);
-						m_currentCallout.suspendClientUpdate();
+						m_currentCallout.suspendUpdate();
 						if(items!=null) {
 							m_currentCallout.setOrganization(items[0].getName(1));
 							m_currentCallout.setDivision(items[0].getName(2));
@@ -151,7 +151,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 							m_currentCallout.setDivision(null);
 							m_currentCallout.setDepartment(null);
 						}
-						m_currentCallout.resumeClientUpdate(false);
+						m_currentCallout.resumeUpdate(false);
 						m_associationTextField.setChangeable(true);
 						m_wp.onFlowPerformed(new FlowEvent(this,m_currentCallout,FlowEvent.EVENT_CHANGE));
 					}
@@ -299,7 +299,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 	/**
 	 * Update fields if any changes occur in the callout object
 	 */
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		if(events.isClearAllEvent()) {
 			setCallOut(null);
@@ -307,7 +307,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 		}
 		else {
 			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_CALLOUT)) {
+			for(MsoEvent.Change e : events.getEvents(MsoClassCode.CLASSCODE_CALLOUT)) {
 
 				// consume loopback updates
 				if(!e.isLoopbackMode())
@@ -317,7 +317,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 							(e.getSource() instanceof ICalloutIf) ?
 							(ICalloutIf) e.getSource() : null;
 					// is object modified?
-					if (e.isChangeReferenceEvent()) {
+					if (e.isModifiedReferenceEvent()) {
 						updateFieldContents();
 					}
 					else if (e.isModifyObjectEvent()) {

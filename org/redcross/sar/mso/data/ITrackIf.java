@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 
@@ -14,7 +14,7 @@ public interface ITrackIf extends IMsoObjectIf
 
     public Track getGeodata();
 
-    public IMsoModelIf.ModificationState getGeodataState();
+    public IData.DataOrigin getGeodataState();
 
     public IMsoAttributeIf.IMsoTrackIf getGeodataAttribute();
 
@@ -22,7 +22,7 @@ public interface ITrackIf extends IMsoObjectIf
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
@@ -30,7 +30,7 @@ public interface ITrackIf extends IMsoObjectIf
 
     public int getAreaSequenceNumber();
 
-    public IMsoModelIf.ModificationState getAreaSequenceNumberState();
+    public IData.DataOrigin getAreaSequenceNumberState();
 
     public IMsoAttributeIf.IMsoIntegerIf getAreaSequenceNumberAttribute();
 

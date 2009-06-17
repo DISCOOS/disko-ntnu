@@ -12,7 +12,12 @@ import java.util.EventObject;
  */
 public class TickEvent extends EventObject
 {
-    public TickEvent(Object source)
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public TickEvent(Object source)
     {
         super(source);
     }

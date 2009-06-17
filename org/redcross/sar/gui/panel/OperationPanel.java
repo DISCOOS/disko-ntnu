@@ -97,7 +97,21 @@ public class OperationPanel extends DefaultPanel {
 		getScrollPane().setPreferredSize(dimension);
 	}
 	
-	public String getSelectedOperation() {
+	public int setSelectedOperationID(String id) {
+		int size = m_table.getRowCount();
+		int iRow = m_table.getSelectedRow();
+		for(int i=0;i<size;i++)
+		{
+			if(m_table.getValueAt(i, 0)==id) 
+			{
+				iRow = i;
+			}
+		}
+		m_table.setRowSelectionInterval(iRow, iRow);
+		return iRow;
+	}
+	
+	public String getSelectedOperationID() {
 		return m_table.getValueAt(m_table.getSelectedRow(),0).toString();
 	}
 	

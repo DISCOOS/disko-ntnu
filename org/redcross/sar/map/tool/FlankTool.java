@@ -25,6 +25,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IRouteIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.mso.Route;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 
 /**
@@ -163,7 +164,7 @@ public class FlankTool extends BaseMsoTool {
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 
 			try {
 

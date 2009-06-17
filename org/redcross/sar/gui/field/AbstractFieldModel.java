@@ -3,6 +3,8 @@ package org.redcross.sar.gui.field;
 import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
+import org.redcross.sar.data.IData.DataOrigin;
+import org.redcross.sar.data.IData.DataState;
 import org.redcross.sar.gui.event.FieldModelEvent;
 import org.redcross.sar.gui.event.IFieldModelListener;
 
@@ -34,8 +36,8 @@ public abstract class AbstractFieldModel<V> implements IFieldModel<V> {
 	private final EventListenerList m_listeners = new EventListenerList();
 	
 	private int m_lastChangeCount = -1;
-	private DataState m_lastState = DataState.STATE_NOSOURCE;
-	private DataOrigin m_lastOrigin = DataOrigin.ORIGIN_NOSOURCE;
+	private DataState m_lastState = DataState.NONE;
+	private DataOrigin m_lastOrigin = DataOrigin.NONE;
 	
 
 	/* ==================================================================
@@ -82,11 +84,11 @@ public abstract class AbstractFieldModel<V> implements IFieldModel<V> {
 	
 	@Override
 	public V getValue() {
-		switch(m_lastOrigin) {
-		case ORIGIN_LOCAL:
-		case ORIGIN_CONFLICT:
+		switch(getOrigin()) {
+		case LOCAL:
+		case CONFLICT:
 			return getLocalValue();
-		case ORIGIN_REMOTE:
+		case REMOTE:
 			return getRemoteValue();
 		}
 		// data origin is NOSOURCE
@@ -118,8 +120,8 @@ public abstract class AbstractFieldModel<V> implements IFieldModel<V> {
 	public void reset() {
 		// reset internal counters and states
 		m_lastChangeCount = -1;
-		m_lastState = DataState.STATE_NOSOURCE;
-		m_lastOrigin = DataOrigin.ORIGIN_NOSOURCE;
+		m_lastState = DataState.NONE;
+		m_lastOrigin = DataOrigin.NONE;
 		// parse source(s) into the model
 		parse();
 	}

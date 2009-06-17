@@ -1,11 +1,12 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
 
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+
+import org.redcross.sar.data.IData;
 
 public interface ICmdPostIf extends IMsoObjectIf
 {
@@ -37,7 +38,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public String getStatusText();
 
-    public IMsoModelIf.ModificationState getStatusState();
+    public IData.DataOrigin getStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<CmdPostStatus> getStatusAttribute();
 
@@ -49,7 +50,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public Calendar getEstablished();
 
-    public IMsoModelIf.ModificationState getEstablishedState();
+    public IData.DataOrigin getEstablishedState();
 
     public IMsoAttributeIf.IMsoCalendarIf getEstablishedAttribute();
 
@@ -57,7 +58,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public String getCallSign();
 
-    public IMsoModelIf.ModificationState getCallSignState();
+    public IData.DataOrigin getCallSignState();
 
     public IMsoAttributeIf.IMsoStringIf getCallSignAttribute();
 
@@ -65,7 +66,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public Calendar getReleased();
 
-    public IMsoModelIf.ModificationState getReleasedState();
+    public IData.DataOrigin getReleasedState();
 
     public IMsoAttributeIf.IMsoCalendarIf getReleasedAttribute();
 
@@ -73,7 +74,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public int getShift();
 
-    public IMsoModelIf.ModificationState getShiftState();
+    public IData.DataOrigin getShiftState();
 
     public IMsoAttributeIf.IMsoIntegerIf getShiftAttribute();
 
@@ -81,7 +82,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public String getTelephone1();
 
-    public IMsoModelIf.ModificationState getTelephone1State();
+    public IData.DataOrigin getTelephone1State();
 
     public IMsoAttributeIf.IMsoStringIf getTelephone1Attribute();
 
@@ -89,7 +90,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public String getTelephone2();
 
-    public IMsoModelIf.ModificationState getTelephone2State();
+    public IData.DataOrigin getTelephone2State();
 
     public IMsoAttributeIf.IMsoStringIf getTelephone2Attribute();
 
@@ -97,7 +98,7 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public String getTelephone3();
 
-    public IMsoModelIf.ModificationState getTelephone3State();
+    public IData.DataOrigin getTelephone3State();
 
     public IMsoAttributeIf.IMsoStringIf getTelephone3Attribute();
 
@@ -107,139 +108,139 @@ public interface ICmdPostIf extends IMsoObjectIf
 
     public IAreaListIf getAreaList();
 
-    public IMsoModelIf.ModificationState getAreaListState(IAreaIf anIAreaIf);
+    public IData.DataOrigin getAreaListState(IAreaIf anIAreaIf);
 
     public Collection<IAreaIf> getAreaListItems();
 
     public IAssignmentListIf getAssignmentList();
 
-    public IMsoModelIf.ModificationState getAssignmentListState(IAssignmentIf anIAssignmentIf);
+    public IData.DataOrigin getAssignmentListState(IAssignmentIf anIAssignmentIf);
 
     public Collection<IAssignmentIf> getAssignmentListItems();
 
     public IPersonnelListIf getAttendanceList();
 
-    public IMsoModelIf.ModificationState getAttendanceListState(IPersonnelIf anIPersonnelIf);
+    public IData.DataOrigin getAttendanceListState(IPersonnelIf anIPersonnelIf);
 
     public Collection<IPersonnelIf> getAttendanceListItems();
 
     public IBriefingListIf getBriefingList();
 
-    public IMsoModelIf.ModificationState getBriefingListState(IBriefingIf anIBriefingIf);
+    public IData.DataOrigin getBriefingListState(IBriefingIf anIBriefingIf);
 
     public Collection<IBriefingIf> getBriefingListItems();
 
     public ICalloutListIf getCalloutList();
 
-    public IMsoModelIf.ModificationState getCalloutListState(ICalloutIf anICalloutIf);
+    public IData.DataOrigin getCalloutListState(ICalloutIf anICalloutIf);
 
     public Collection<ICalloutIf> getCalloutListItems();
 
     public ICheckpointListIf getCheckpointList();
 
-    public IMsoModelIf.ModificationState getCheckpointListState(ICheckpointIf anICheckpointIf);
+    public IData.DataOrigin getCheckpointListState(ICheckpointIf anICheckpointIf);
 
     public Collection<ICheckpointIf> getCheckpointListItems();
 
     public IEnvironmentListIf getEnvironmentList();
 
-    public IMsoModelIf.ModificationState getEnvironmentListState(IEnvironmentIf anIEnvironmentIf);
+    public IData.DataOrigin getEnvironmentListState(IEnvironmentIf anIEnvironmentIf);
 
     public Collection<IEnvironmentIf> getEnvironmentListItems();
 
     public IEquipmentListIf getEquipmentList();
 
-    public IMsoModelIf.ModificationState getEquipmentListState(IEquipmentIf anIEquipmentIf);
+    public IData.DataOrigin getEquipmentListState(IEquipmentIf anIEquipmentIf);
 
     public Collection<IEquipmentIf> getEquipmentListItems();
 
     public IEventLogIf getEventLog();
 
-    public IMsoModelIf.ModificationState getEventLogState(IEventIf anIEventIf);
+    public IData.DataOrigin getEventLogState(IEventIf anIEventIf);
 
     public Collection<IEventIf> getEventLogItems();
 
     public IForecastListIf getForecastList();
 
-    public IMsoModelIf.ModificationState getForecastListState(IForecastIf anIForecastIf);
+    public IData.DataOrigin getForecastListState(IForecastIf anIForecastIf);
 
     public Collection<IForecastIf> getForecastListItems();
 
     public IHypothesisListIf getHypothesisList();
 
-    public IMsoModelIf.ModificationState getHypothesisListState(IHypothesisIf anIHypothesisIf);
+    public IData.DataOrigin getHypothesisListState(IHypothesisIf anIHypothesisIf);
 
     public Collection<IHypothesisIf> getHypothesisListItems();
 
     public IIntelligenceListIf getIntelligenceList();
 
-    public IMsoModelIf.ModificationState getIntelligenceListState(IIntelligenceIf anIIntelligenceIf);
+    public IData.DataOrigin getIntelligenceListState(IIntelligenceIf anIIntelligenceIf);
 
     public Collection<IIntelligenceIf> getIntelligenceListItems();
 
     public IMessageLogIf getMessageLog();
 
-    public IMsoModelIf.ModificationState getMessageLogState(IMessageIf anIMessageIf);
+    public IData.DataOrigin getMessageLogState(IMessageIf anIMessageIf);
 
     public Collection<IMessageIf> getMessageLogItems();
 
     public IMessageLineListIf getMessageLines();
 
-    public IMsoModelIf.ModificationState getMessageLineState(IMessageLineIf anIMessageLineIf);
+    public IData.DataOrigin getMessageLineState(IMessageLineIf anIMessageLineIf);
 
     public Collection<IMessageLineIf> getMessageLineItems();
 
     public IOperationAreaListIf getOperationAreaList();
 
-    public IMsoModelIf.ModificationState getOperationAreaListState(IOperationAreaIf anIOperationAreaIf);
+    public IData.DataOrigin getOperationAreaListState(IOperationAreaIf anIOperationAreaIf);
 
     public Collection<IOperationAreaIf> getOperationAreaListItems();
 
     public IPOIListIf getPOIList();
 
-    public IMsoModelIf.ModificationState getPOIListState(IPOIIf anIPOIIf);
+    public IData.DataOrigin getPOIListState(IPOIIf anIPOIIf);
 
     public Collection<IPOIIf> getPOIListItems();
 
     public IRouteListIf getRouteList();
 
-    public IMsoModelIf.ModificationState getRouteListState(IRouteIf anIRouteIf);
+    public IData.DataOrigin getRouteListState(IRouteIf anIRouteIf);
 
     public Collection<IRouteIf> getRouteListItems();
 
     public ISearchAreaListIf getSearchAreaList();
 
-    public IMsoModelIf.ModificationState getSearchAreaListState(ISearchAreaIf anISearchAreaIf);
+    public IData.DataOrigin getSearchAreaListState(ISearchAreaIf anISearchAreaIf);
 
     public Collection<ISearchAreaIf> getSearchAreaListItems();
 
     public ISketchListIf getSketchList();
 
-    public IMsoModelIf.ModificationState getSketchListState(ISketchIf anISketchIf);
+    public IData.DataOrigin getSketchListState(ISketchIf anISketchIf);
 
     public Collection<ISketchIf> getSketchListItems();
 
     public ISubjectListIf getSubjectList();
 
-    public IMsoModelIf.ModificationState getSubjectListState(ISubjectIf anISubjectIf);
+    public IData.DataOrigin getSubjectListState(ISubjectIf anISubjectIf);
 
     public Collection<ISubjectIf> getSubjectListItems();
 
     public ITaskListIf getTaskList();
 
-    public IMsoModelIf.ModificationState getTaskListState(ITaskIf anITaskIf);
+    public IData.DataOrigin getTaskListState(ITaskIf anITaskIf);
 
     public Collection<ITaskIf> getTaskListItems();
 
     public ITrackListIf getTrackList();
 
-    public IMsoModelIf.ModificationState getTrackListState(ITrackIf anITrackIf);
+    public IData.DataOrigin getTrackListState(ITrackIf anITrackIf);
 
     public Collection<ITrackIf> getTrackListItems();
 
     public IUnitListIf getUnitList();
 
-    public IMsoModelIf.ModificationState getUnitListState(IUnitIf anIUnitIf);
+    public IData.DataOrigin getUnitListState(IUnitIf anIUnitIf);
 
     public Collection<IUnitIf> getUnitListItems();
 
@@ -249,7 +250,7 @@ public interface ICmdPostIf extends IMsoObjectIf
     
     public ICommunicatorIf getCommunicator();
     
-    public AbstractDerivedList<ICommunicatorIf> getCommunicatorList();
+    public AbstractCoList<ICommunicatorIf> getCommunicatorList();
 
     public List<ICommunicatorIf> getActiveCommunicators();
 

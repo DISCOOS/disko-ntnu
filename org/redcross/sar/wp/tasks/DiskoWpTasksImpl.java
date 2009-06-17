@@ -21,6 +21,7 @@ import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskListIf;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.TransactionException;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.WorkPool;
 import org.redcross.sar.wp.AbstractDiskoWpModule;
 import org.redcross.sar.wp.IDiskoWpModule;
@@ -424,7 +425,7 @@ public class DiskoWpTasksImpl extends AbstractDiskoWpModule implements IDiskoWpT
 		}
 
 		@Override
-		public Boolean doWork() {
+		public Boolean doWork(IWorkLoop loop) {
 			try {
 				
                 ICmdPostIf cmdPost = getCmdPost();

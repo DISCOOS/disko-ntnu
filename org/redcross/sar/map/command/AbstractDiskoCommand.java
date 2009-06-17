@@ -20,6 +20,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
 import org.redcross.sar.work.AbstractWork;
+import org.redcross.sar.work.IWorkLoop;
 import org.redcross.sar.work.event.IFlowListener;
 import org.redcross.sar.work.event.FlowEvent;
 
@@ -248,7 +249,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 		// get mso object
 		IMsoObjectIf msoObj = msoFeature.getMsoObject();
 		// get class code
-		IMsoManagerIf.MsoClassCode classCode = msoObj.getMsoClassCode();
+		IMsoManagerIf.MsoClassCode classCode = msoObj.getClassCode();
 		// dispatch
 		if(classCode == IMsoManagerIf.MsoClassCode.CLASSCODE_POI) {
 			IPOIIf msoPOI = (IPOIIf)msoObj;
@@ -332,11 +333,11 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	}
 
 	protected void suspendUpdate() {
-		Application.getInstance().getMsoModel().suspendClientUpdate();
+		Application.getInstance().getMsoModel().suspendUpdate();
 	}
 
 	protected void resumeUpdate() {
-		Application.getInstance().getMsoModel().resumeClientUpdate(true);
+		Application.getInstance().getMsoModel().resumeUpdate();
 	}
 
 	public Object getAttribute(String attribute) {
@@ -383,7 +384,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 
 		public AbstractToolWork(boolean notify) throws Exception {
 			// forward
-			super(HIGH_PRIORITY,false,true,ThreadType.WORK_ON_SAFE,"Vent litt",100,notify,false);
+			super(HIGH_PRIORITY,false,true,WorkerType.SAFE,"Vent litt",100,notify,false);
 		}
 
 		@Override
@@ -395,7 +396,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 		}
 
 		@Override
-		public abstract T doWork();
+		public abstract T doWork(IWorkLoop loop);
 
 		/**
 		 * done

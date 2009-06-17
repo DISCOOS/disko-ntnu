@@ -1,6 +1,8 @@
 package org.redcross.sar.gui.field;
 
 import org.apache.log4j.Logger;
+import org.redcross.sar.data.IData.DataOrigin;
+import org.redcross.sar.data.IData.DataState;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
@@ -41,7 +43,7 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 
 	@Override
 	public V getLocalValue() {
-		if(!isOrigin(DataOrigin.ORIGIN_NOSOURCE)) {
+		if(!isOrigin(DataOrigin.NONE)) {
 			return m_attr.getLocalValue();
 		}
 		return null;
@@ -49,7 +51,7 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 
 	@Override
 	public V getRemoteValue() {
-		if(!isOrigin(DataOrigin.ORIGIN_NOSOURCE)) {
+		if(!isOrigin(DataOrigin.NONE)) {
 			return m_attr.getRemoteValue();
 		}
 		return null;
@@ -57,14 +59,14 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 
 	@Override
 	public void setLocalValue(V value){
-		if(!isOrigin(DataOrigin.ORIGIN_NOSOURCE)) {
+		if(!isOrigin(DataOrigin.NONE)) {
 			m_attr.set(value);
 		}
 	}
 
 	@Override
 	public boolean acceptLocalValue() {
-		if(!isOrigin(DataOrigin.ORIGIN_NOSOURCE)) {
+		if(!isOrigin(DataOrigin.NONE)) {
 			return m_attr.acceptLocalValue();
 		}
 		return false;
@@ -72,7 +74,7 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 
 	@Override
 	public boolean acceptRemoteValue() {
-		if(!isOrigin(DataOrigin.ORIGIN_NOSOURCE)) {
+		if(!isOrigin(DataOrigin.NONE)) {
 			return m_attr.acceptRemoteValue();
 		}
 		return false;
@@ -80,12 +82,12 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 	
 	@Override
 	public IMsoAttributeIf<V> getSource() {
-		return !isOrigin(DataOrigin.ORIGIN_NOSOURCE)?m_attr:null;
+		return !isOrigin(DataOrigin.NONE)?m_attr:null;
 	}
 	
 	@Override
 	public boolean isBoundTo(Object source) {
-		return isEqual(m_attr.getOwner(),source);
+		return isEqual(m_attr.getOwnerObject(),source);
 	}	
 	
 	/**
@@ -98,7 +100,7 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 	}
 	
 	public boolean commit() {
-		if(!isOrigin(DataOrigin.ORIGIN_NOSOURCE)) {
+		if(!isOrigin(DataOrigin.NONE)) {
 			try {
 				
 				return m_attr.commit();
@@ -112,7 +114,7 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 	}
 	
 	public boolean rollback() {
-		if(!isOrigin(DataOrigin.ORIGIN_NOSOURCE)) {
+		if(!isOrigin(DataOrigin.NONE)) {
 
 			return m_attr.rollback();
 			
@@ -132,35 +134,25 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 	@Override
 	protected DataState translateState() {
 		if(m_attr!=null) {
-			IMsoObjectIf msoObj = m_attr.getOwner();
+			IMsoObjectIf msoObj = m_attr.getOwnerObject();
 			IMsoModelIf msoModel = msoObj.getModel();
-			if(m_attr.isChanged())
-				return DataState.STATE_CHANGED;
-			else if(m_attr.isRemoteState() || m_attr.isLoopbackMode())
-				return DataState.STATE_LOOPBACK;
-			else if(m_attr.isRollbackMode())
-				return DataState.STATE_ROLLBACK;
-			else if(m_attr.isConflictState())
-				return DataState.STATE_CONFLICT;			
-			else if(msoObj.isDeleted() && msoModel.getMsoManager().operationExists())
-				return DataState.STATE_DELETED;
+			if(msoModel.exists())
+			{
+				return m_attr.getState();
+			}
 		}
 		// attribute source does not exist
-		return DataState.STATE_NOSOURCE;
+		return DataState.NONE;
 	}
 	
 	@Override
 	protected DataOrigin translateOrigin() {
-		if(m_attr!=null) {
-			if(m_attr.isLocalState())
-				return DataOrigin.ORIGIN_LOCAL;
-			else if(m_attr.isRemoteState())
-				return DataOrigin.ORIGIN_REMOTE;
-			else if(m_attr.isConflictState())
-				return DataOrigin.ORIGIN_CONFLICT;
+		if(m_attr!=null) 
+		{
+			return m_attr.getOrigin();
 		}
 		// attribute does not exist
-		return DataOrigin.ORIGIN_NOSOURCE;
+		return DataOrigin.NONE;
 	}
 	
 }

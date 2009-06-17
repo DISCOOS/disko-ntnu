@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
@@ -28,7 +29,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     private final AttributeImpl.MsoEnum<PersonnelType> m_type = new AttributeImpl.MsoEnum<PersonnelType>(this, "Type", 1, PersonnelType.VOLUNTEER);
     private final AttributeImpl.MsoEnum<PersonnelImportStatus> m_importStatus = new AttributeImpl.MsoEnum<PersonnelImportStatus>(this, "ImportStatus", 1, PersonnelImportStatus.UPDATED);
 
-    private final MsoReferenceImpl<IPersonnelIf> m_nextOccurrence = new MsoReferenceImpl<IPersonnelIf>(this,"NextOccurence", 0, true);
+    private final MsoRelationImpl<IPersonnelIf> m_nextOccurrence = new MsoRelationImpl<IPersonnelIf>(this,"NextOccurence", 0, true, null);
 
     public PersonnelImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
@@ -89,9 +90,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_arrived.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getArrivedState()
+    public IData.DataOrigin getArrivedState()
     {
-        return m_arrived.getState();
+        return m_arrived.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getArrivedAttribute()
@@ -109,9 +110,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_callOut.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getCallOutState()
+    public IData.DataOrigin getCallOutState()
     {
-        return m_callOut.getState();
+        return m_callOut.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getCallOutAttribute()
@@ -129,9 +130,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_dataSourceID.getString();
     }
 
-    public IMsoModelIf.ModificationState getDataSourceIDState()
+    public IData.DataOrigin getDataSourceIDState()
     {
-        return m_dataSourceID.getState();
+        return m_dataSourceID.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getDataSourceIDAttribute()
@@ -149,9 +150,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_dataSourceName.getString();
     }
 
-    public IMsoModelIf.ModificationState getDataSourceNameState()
+    public IData.DataOrigin getDataSourceNameState()
     {
-        return m_dataSourceName.getState();
+        return m_dataSourceName.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getDataSourceNameAttribute()
@@ -169,9 +170,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_estimatedArrival.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getEstimatedArrivalState()
+    public IData.DataOrigin getEstimatedArrivalState()
     {
-        return m_estimatedArrival.getState();
+        return m_estimatedArrival.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getEstimatedArrivalAttribute()
@@ -189,9 +190,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_released.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getReleasedState()
+    public IData.DataOrigin getReleasedState()
     {
-        return m_released.getState();
+        return m_released.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getReleasedAttribute()
@@ -209,9 +210,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_remarks.getString();
     }
 
-    public IMsoModelIf.ModificationState getRemarksState()
+    public IData.DataOrigin getRemarksState()
     {
-        return m_remarks.getState();
+        return m_remarks.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
@@ -229,9 +230,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_organization.getString();
     }
 
-    public IMsoModelIf.ModificationState getOrganizationState()
+    public IData.DataOrigin getOrganizationState()
     {
-        return m_organization.getState();
+        return m_organization.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute()
@@ -249,9 +250,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 		return m_division.getString();
 	}
 
-	public IMsoModelIf.ModificationState getDivisionState()
+	public IData.DataOrigin getDivisionState()
 	{
-		return m_division.getState();
+		return m_division.getOrigin();
 	}
 
     public IMsoAttributeIf.IMsoStringIf getDivisionAttribute()
@@ -269,9 +270,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_department.getString();
     }
 
-    public IMsoModelIf.ModificationState getDepartmentState()
+    public IData.DataOrigin getDepartmentState()
     {
-        return m_department.getState();
+        return m_department.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getDepartmentAttribute()
@@ -294,9 +295,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_status.getValue();
     }
 
-    public IMsoModelIf.ModificationState getStatusState()
+    public IData.DataOrigin getStatusState()
     {
-        return m_status.getState();
+        return m_status.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<PersonnelStatus> getStatusAttribute()
@@ -324,9 +325,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_type.getValue();
     }
 
-    public IMsoModelIf.ModificationState getTypeState()
+    public IData.DataOrigin getTypeState()
     {
-        return m_type.getState();
+        return m_type.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<PersonnelType> getTypeAttribute()
@@ -364,9 +365,9 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
         return m_importStatus.getInternationalName();
     }
 
-    public IMsoModelIf.ModificationState getImportStatusState()
+    public IData.DataOrigin getImportStatusState()
     {
-    	return m_importStatus.getState();
+    	return m_importStatus.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<PersonnelImportStatus> getImportStatusAttribute()
@@ -380,30 +381,30 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 	}
 	
 	public IPersonnelIf getPreviousOccurrence() {
-    	return (IPersonnelIf)m_owningMainList.selectSingleItem(new OccurrenceSelector(this,true));
+    	return (IPersonnelIf)m_mainList.selectSingleItem(new OccurrenceSelector(this,true));
     }
     
 	public List<IPersonnelIf> getPreviousOccurrences()
     {    	
-        return new Vector<IPersonnelIf>(m_owningMainList.selectItems(new OccurrenceSelector(this,true)));
+        return new Vector<IPersonnelIf>(m_mainList.selectItems(new OccurrenceSelector(this,true)));
     }
 
     public void setNextOccurrence(IPersonnelIf aPersonnel)
     {
-        m_nextOccurrence.setReference(aPersonnel);
+        m_nextOccurrence.set(aPersonnel);
     }
 
     public IPersonnelIf getNextOccurrence()
     {
-        return m_nextOccurrence.getReference();
+        return m_nextOccurrence.get();
     }
 
-    public IMsoModelIf.ModificationState getNextOccurrenceState()
+    public IData.DataOrigin getNextOccurrenceState()
     {
-        return m_nextOccurrence.getState();
+        return m_nextOccurrence.getOrigin();
     }
 
-    public IMsoReferenceIf<IPersonnelIf> getNextOccurrenceAttribute()
+    public IMsoRelationIf<IPersonnelIf> getNextOccurrenceAttribute()
     {
         return m_nextOccurrence;
     }
@@ -411,7 +412,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     @SuppressWarnings("unchecked")
 	public List<IPersonnelIf> getNextOccurrences()
     {    	
-        return new Vector<IPersonnelIf>(m_owningMainList.selectItems(new OccurrenceSelector(this,false)));
+        return new Vector<IPersonnelIf>(m_mainList.selectItems(new OccurrenceSelector(this,false)));
     }
     
 	public IPersonnelIf getLastOccurrence() {
@@ -419,7 +420,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 		return (list.size()>0?list.get(list.size()-1):this);
 	}
 	
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_PERSONNEL;
     }
@@ -432,7 +433,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     public IUnitIf getOwningUnit()
     {
         owningUnitSelector.setSelfObject(this);
-        ICmdPostIf cmdPost = m_msoModel.getMsoManager().getCmdPost();
+        ICmdPostIf cmdPost = m_model.getMsoManager().getCmdPost();
         return cmdPost != null ? cmdPost.getUnitList().selectSingleItem(owningUnitSelector) : null;
     }
 

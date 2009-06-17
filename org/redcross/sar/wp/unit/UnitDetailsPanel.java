@@ -109,8 +109,8 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         initialize();
         // add listeners
         wp.addTickEventListener(this);
-        wp.getMsoEventManager().addClientUpdateListener(this);
-        wp.getMsoEventManager().addClientUpdateListener(getInfoPanel());
+        wp.getMsoEventManager().addLocalUpdateListener(this);
+        wp.getMsoEventManager().addLocalUpdateListener(getInfoPanel());
         getInfoPanel().addFlowListener(wp);
     }
 
@@ -330,7 +330,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 					}
 					if(m_currentUnit!=null) {
 						m_associationTextField.setChangeable(false);
-						m_currentUnit.suspendClientUpdate();
+						m_currentUnit.suspendUpdate();
 						if(items!=null) {
 							m_currentUnit.setOrganization(items[0].getName(1));
 							m_currentUnit.setDivision(items[0].getName(2));
@@ -340,7 +340,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 							m_currentUnit.setDivision(null);
 							m_currentUnit.setDepartment(null);
 						}
-						m_currentUnit.resumeClientUpdate(false);
+						m_currentUnit.resumeUpdate(false);
 						m_associationTextField.setChangeable(true);
 						m_wp.onFlowPerformed(new FlowEvent(this,m_currentUnit,FlowEvent.EVENT_CHANGE));
 					}
@@ -615,7 +615,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
     /**
      * Update field contents if MSO object changes
      */
-	public void handleMsoUpdateEvent(MsoEvent.UpdateList events) {
+	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 
 		if(events.isClearAllEvent()) {
     		setUnit(null);
@@ -624,7 +624,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 		else
 		{
 			// loop over all events
-			for(MsoEvent.Update e : events.getEvents(MsoClassCode.CLASSCODE_UNIT))
+			for(MsoEvent.Change e : events.getEvents(MsoClassCode.CLASSCODE_UNIT))
 			{
 				// consume loopback updates
 				if(!e.isLoopbackMode())
@@ -634,7 +634,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 			        IUnitIf unit = (IUnitIf)e.getSource();
 
 					// is object modified?
-					if (e.isChangeReferenceEvent()) {
+					if (e.isModifiedReferenceEvent()) {
 						updateFieldContents();
 						updateUnitPersonnel();
 					}

@@ -49,7 +49,7 @@ public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
 
     public int getNextSequenceNumber() {
     	int retVal=-1;
-    	for(IPOIIf poi : getItems(m_exits.values())) {
+    	for(IPOIIf poi : getItems(m_created.values())) {
 			retVal = Math.max(poi.getAreaSequenceNumber(), retVal);
     	}
     	return retVal + 1;
@@ -60,7 +60,7 @@ public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
     		return getNextSequenceNumber();
     	else {
 	    	int retVal=-1;
-	    	for(IPOIIf poi : getItems(m_exits.values())) {
+	    	for(IPOIIf poi : getItems(m_created.values())) {
 	    		if(poi.getType().equals(type)) {
 	    			retVal = Math.max(poi.getAreaSequenceNumber(), retVal);
 	    		}

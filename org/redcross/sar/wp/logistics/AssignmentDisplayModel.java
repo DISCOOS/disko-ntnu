@@ -40,8 +40,6 @@ public class AssignmentDisplayModel implements ComponentListener
     private AssignmentTilesPanel m_selectableAssignments;
     private AssignmentTilesPanel m_priAssignments;
 
-    //private IAssignmentListIf m_AssignmentList;
-
     /**
      * Initial value for selection
      */

@@ -6,8 +6,8 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.except.IllegalOperationException;
 
@@ -52,7 +52,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public AssignmentType getType();
 
-    public IMsoModelIf.ModificationState getTypeState();
+    public IData.DataOrigin getTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<AssignmentType> getTypeAttribute();
 
@@ -66,7 +66,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public String getRemarks();
 
-    public IMsoModelIf.ModificationState getRemarksState();
+    public IData.DataOrigin getRemarksState();
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute();
 
@@ -74,7 +74,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public int getPrioritySequence();
 
-    public IMsoModelIf.ModificationState getPrioritySequenceState();
+    public IData.DataOrigin getPrioritySequenceState();
 
     public IMsoAttributeIf.IMsoIntegerIf getPrioritySequenceAttribute();
 
@@ -82,7 +82,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public Calendar getTimeEstimatedFinished();
 
-    public IMsoModelIf.ModificationState getTimeEstimatedFinishedState();
+    public IData.DataOrigin getTimeEstimatedFinishedState();
 
     public IMsoAttributeIf.IMsoCalendarIf getTimeEstimatedFinishedAttribute();
 
@@ -95,7 +95,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IEquipmentListIf getAssignmentEquipment();
 
-    public IMsoModelIf.ModificationState getAssignmentEquipmentState(IEquipmentIf anIEquipmentIf);
+    public IData.DataOrigin getAssignmentEquipmentState(IEquipmentIf anIEquipmentIf);
 
     public Collection<IEquipmentIf> getAssignmentEquipmentItems();
 
@@ -103,7 +103,7 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IPOIListIf getAssignmentFindings();
 
-    public IMsoModelIf.ModificationState getAssignmentFindingsState(IPOIIf anIPOIIf);
+    public IData.DataOrigin getAssignmentFindingsState(IPOIIf anIPOIIf);
 
     public Collection<IPOIIf> getAssignmentFindingsItems();
 
@@ -119,9 +119,9 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IBriefingIf getAssignmentBriefing();
 
-    public IMsoModelIf.ModificationState getAssignmentBriefingState();
+    public IData.DataOrigin getAssignmentBriefingState();
 
-    public IMsoReferenceIf<IBriefingIf> getAssignmentBriefingAttribute();
+    public IMsoRelationIf<IBriefingIf> getAssignmentBriefingAttribute();
 
     /**
      * Assign planned area
@@ -133,9 +133,9 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IAreaIf getPlannedArea();
 
-    public IMsoModelIf.ModificationState getPlannedAreaState();
+    public IData.DataOrigin getPlannedAreaState();
 
-    public IMsoReferenceIf<IAreaIf> getPlannedAreaAttribute();
+    public IMsoRelationIf<IAreaIf> getPlannedAreaAttribute();
 
     /**
      * Assign reported area
@@ -147,9 +147,9 @@ public interface IAssignmentIf extends IMsoObjectIf, ISerialNumberedIf, IEnumSta
 
     public IAreaIf getReportedArea();
 
-    public IMsoModelIf.ModificationState getReportedAreaState();
+    public IData.DataOrigin getReportedAreaState();
 
-    public IMsoReferenceIf<IAreaIf> getReportedAreaAttribute();
+    public IMsoRelationIf<IAreaIf> getReportedAreaAttribute();
 
     /*-------------------------------------------------------------------------------------------
     * Other methods

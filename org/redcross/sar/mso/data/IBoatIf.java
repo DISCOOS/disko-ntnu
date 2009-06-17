@@ -1,6 +1,7 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
+
 
 /**
  *
@@ -28,7 +29,7 @@ public interface IBoatIf extends ITransportIf
 
     public BoatSubType getSubType();
 
-    public IMsoModelIf.ModificationState getSubTypeState();
+    public IData.DataOrigin getSubTypeState();
 
     public IMsoAttributeIf.IMsoEnumIf<BoatSubType> getSubTypeAttribute();
 
@@ -42,7 +43,7 @@ public interface IBoatIf extends ITransportIf
 
     public int getCapacity();
 
-    public IMsoModelIf.ModificationState getCapacityState();
+    public IData.DataOrigin getCapacityState();
 
     public IMsoAttributeIf.IMsoIntegerIf getCapacityAttribute();
 
@@ -50,7 +51,7 @@ public interface IBoatIf extends ITransportIf
 
     public int getDepth();
 
-    public IMsoModelIf.ModificationState getDepthState();
+    public IData.DataOrigin getDepthState();
 
     public IMsoAttributeIf.IMsoIntegerIf getDepthAttribute();
 
@@ -58,7 +59,7 @@ public interface IBoatIf extends ITransportIf
 
     public int getFreeboard();
 
-    public IMsoModelIf.ModificationState getFreeboardState();
+    public IData.DataOrigin getFreeboardState();
 
     public IMsoAttributeIf.IMsoIntegerIf getFreeboardAttribute();
 
@@ -66,7 +67,7 @@ public interface IBoatIf extends ITransportIf
 
     public int getHeight();
 
-    public IMsoModelIf.ModificationState getHeightState();
+    public IData.DataOrigin getHeightState();
 
     public IMsoAttributeIf.IMsoIntegerIf getHeightAttribute();
 
@@ -74,7 +75,7 @@ public interface IBoatIf extends ITransportIf
 
     public int getLength();
 
-    public IMsoModelIf.ModificationState getLengthState();
+    public IData.DataOrigin getLengthState();
 
     public IMsoAttributeIf.IMsoIntegerIf getLengthAttribute();
 

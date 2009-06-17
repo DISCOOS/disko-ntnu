@@ -9,7 +9,7 @@ import org.redcross.sar.data.Selector;
 /**
  *
  */
-public interface IMsoDerivedListIf<M extends IMsoObjectIf>
+public interface IMsoCoListIf<M extends IMsoObjectIf>
 {
     /**
      * Get a java.util.Collection of the items in the list.

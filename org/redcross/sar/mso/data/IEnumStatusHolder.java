@@ -1,6 +1,6 @@
 package org.redcross.sar.mso.data;
 
-import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.util.except.IllegalOperationException;
 /**
  * Created by IntelliJ IDEA.
@@ -21,7 +21,7 @@ public interface IEnumStatusHolder<E extends Enum<E>> extends IMsoObjectIf
 
     public E getStatus();
 
-    public IMsoModelIf.ModificationState getStatusState();
+    public IData.DataOrigin getStatusState();
 
     public IMsoAttributeIf.IMsoEnumIf<E> getStatusAttribute();
 

@@ -7,12 +7,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.util.except.IllegalOperationException;
-import org.redcross.sar.util.except.InvalidReferenceException;
+import org.redcross.sar.util.except.InvalidRelationException;
 import org.redcross.sar.util.except.MsoCastException;
 import org.redcross.sar.util.mso.IGeodataIf;
 
@@ -48,7 +49,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     {
     }
 
-    public void addListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException
+    public void addListRelation(IMsoObjectIf anObject, String aReferenceListName) throws InvalidRelationException
     {
         if (anObject instanceof IRouteIf || anObject instanceof ITrackIf)
         {
@@ -67,7 +68,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         }
     }
 
-    public void removeListReference(IMsoObjectIf anObject, String aReferenceListName) throws InvalidReferenceException
+    public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName) throws InvalidRelationException
     {
         if (anObject instanceof IRouteIf || anObject instanceof ITrackIf)
         {
@@ -82,7 +83,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        		POIType type = ((IPOIIf)anObject).getType();
 	        		if(IPOIIf.AREA_SET.contains(type)) {
 	        			// delete object
-	        			if(!anObject.delete(true)) throw new InvalidReferenceException("Reference can not be deleted");
+	        			if(!anObject.delete(true)) throw new InvalidRelationException("Reference can not be deleted");
 	        		}
             	}
                 m_areaPOIs.remove((IPOIIf) anObject);
@@ -112,7 +113,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_AREA;
     }
@@ -128,9 +129,9 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         return m_remarks.getString();
     }
 
-    public IMsoModelIf.ModificationState getRemarksState()
+    public IData.DataOrigin getRemarksState()
     {
-        return m_remarks.getState();
+        return m_remarks.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
@@ -147,7 +148,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     {
         if (isDeletable())
         {
-        	suspendClientUpdate();
+        	suspendUpdate();
         	// is hostile?
         	if(m_hostile) {
 	        	// delete area POIs
@@ -164,7 +165,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        		it.delete(true);
 	        	}
         	}
-        	resumeClientUpdate(true);
+        	resumeUpdate(true);
         	// forward
             return super.delete(deep);
         }
@@ -185,9 +186,9 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         return m_areaPOIs;
     }
 
-    public IMsoModelIf.ModificationState getAreaPOIsState(IPOIIf anIPOIIf)
+    public IData.DataOrigin getAreaPOIsState(IPOIIf anIPOIIf)
     {
-        return m_areaPOIs.getState(anIPOIIf);
+        return m_areaPOIs.getOrigin(anIPOIIf);
     }
 
     public Collection<IPOIIf> getAreaPOIsItems()
@@ -217,7 +218,8 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         {
             m_areaGeodata.add(anMsoObjectIf);
         }
-        registerModifiedData(this,m_msoModel.getUpdateMode(),true,false,false); // in order to generate an event that the map draw tools recognize
+        // in order to generate an event that the map draw tools recognize
+        //registerModifiedData(this,m_msoModel.getUpdateMode(),true,false,false); 
     }
 
     private boolean setAreaSequenceNumber(IMsoObjectIf anMsoObjectIf, int aNr)
@@ -245,9 +247,9 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         return m_areaGeodata;
     }
 
-    public IMsoModelIf.ModificationState getAreaGeodataState(IMsoObjectIf anMsoObjectIf)
+    public IData.DataOrigin getAreaGeodataState(IMsoObjectIf anMsoObjectIf)
     {
-        return m_areaGeodata.getState(anMsoObjectIf);
+        return m_areaGeodata.getOrigin(anMsoObjectIf);
     }
 
     public Collection<IMsoObjectIf> getAreaGeodataItems()
@@ -283,6 +285,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         }
     }
 
+    /*
     private int getNextPOISequenceNumber()
     {
         int retVal = 0;
@@ -295,7 +298,8 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
         }
         return retVal + 1;
     }
-
+	*/
+    
     private int getNextGeodataSequenceNumber()
     {
         int retVal = -1;
@@ -313,27 +317,23 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 
     private int getAreaSequenceNumber(IMsoObjectIf ml)
     {
-        if (ml instanceof IPOIIf)                   // todo sjekk etter endring av GeoCollection
+        if (ml instanceof IPOIIf)                   
         {
-            IPOIIf ml1 = (IPOIIf) ml;
             return ((IPOIIf) ml).getAreaSequenceNumber();
         }
         if (ml instanceof ITrackIf)
         {
-            ITrackIf ml1 = (ITrackIf) ml;
-            return ml1.getAreaSequenceNumber();
+            return ((ITrackIf) ml).getAreaSequenceNumber();
         }
         if (ml instanceof IRouteIf)
         {
-            IRouteIf ml1 = (IRouteIf) ml;
-            return ml1.getAreaSequenceNumber();
+            return ((IRouteIf) ml).getAreaSequenceNumber();
         }
         return 0;
     }
 
     public IMsoObjectIf getGeodataAt(int anIndex)
     {
-        int i = 0;
         for (IMsoObjectIf ml : m_areaGeodata.getObjects())
         {
             if (getAreaSequenceNumber(ml) == anIndex)

@@ -1,7 +1,6 @@
 package org.redcross.sar.mso;
 
 import org.redcross.sar.IApplication;
-import org.redcross.sar.mso.IChangeIf.ChangeType;
 import org.redcross.sar.mso.data.AbstractMsoObject;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoTransactionListenerIf;
@@ -92,27 +91,25 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
     {
         // 
         ITransactionIf wrapper = (ITransactionIf) e.getSource();
-        List<IChangeIf.IChangeObjectIf> objectList = wrapper.getObjects();
-        for (IChangeIf.IChangeObjectIf ico : objectList)
+        List<IChangeRecordIf> objectList = wrapper.getChanges();
+        for (IChangeRecordIf it : objectList)
         {
             //IF created, create SARA object
             //if modified, modify Saraobject.
             //if deleted remove Sara object
         }
 
-        List<IChangeIf.IChangeReferenceIf> attrList = wrapper.getObjectReferences();
-        for (IChangeIf.IChangeReferenceIf ico : attrList)
+        List<IChangeIf.IChangeRelationIf> attrList = wrapper.getObjectRelations();
+        for (IChangeIf.IChangeRelationIf ico : attrList)
         {
-			ChangeType ct = ico.getType(); //CommitManager.CommitType.COMMIT_CREATED/CommitManager.CommitType.COMMIT_DELETED
             String attName = ico.getName();
             IMsoObjectIf owner = ico.getReferringObject();
             IMsoObjectIf attribute = ico.getReferredObject();
         }
 
-        List<IChangeIf.IChangeReferenceIf> listList = wrapper.getListReferences();
-        for (IChangeIf.IChangeReferenceIf ico : listList)
+        List<IChangeIf.IChangeRelationIf> listList = wrapper.getListRelations();
+        for (IChangeIf.IChangeRelationIf ico : listList)
         {
-            ChangeType ct = ico.getType(); 
             String refName = ico.getName();
             IMsoObjectIf owner = ico.getReferringObject();
             IMsoObjectIf ref = ico.getReferredObject();

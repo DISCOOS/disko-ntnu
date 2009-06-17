@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import org.redcross.sar.data.IData;
 import org.redcross.sar.map.MapUtil;
+import org.redcross.sar.mso.data.IMsoDataIf.MsoDataType;
 
 /**
  * Class for holding track information
@@ -40,7 +41,7 @@ public class Track extends AbstractGeodata
      */
     public Track(String anId, String aName)
     {
-        super(anId,aName,GeoClassCode.CLASSCODE_ROUTE);
+        super(anId,aName);
         m_track = new ArrayList<TimePos>();
         m_distance = new Vector<Double>();
     }
@@ -54,11 +55,21 @@ public class Track extends AbstractGeodata
      */
     public Track(String anId, String aName, int aSize)
     {
-        super(anId,aName,GeoClassCode.CLASSCODE_ROUTE);
+        super(anId,aName);
         m_track = new ArrayList<TimePos>(aSize);
         m_distance = new Vector<Double>();
     }
 
+    @Override
+	public MsoDataType getDataType() {
+		return MsoDataType.ROUTE;
+	}
+
+	@Override
+	public GeoClassCode getClassCode() {
+		return GeoClassCode.CLASSCODE_ROUTE;
+	}
+	
     /**
      * Add a new point to the track.
      * After adding, the collection is sorted according to time.

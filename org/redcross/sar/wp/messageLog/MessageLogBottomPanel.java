@@ -49,7 +49,7 @@ import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
-import org.redcross.sar.mso.event.MsoEvent.Update;
+import org.redcross.sar.mso.event.MsoEvent.Change;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.DTG;
@@ -627,9 +627,9 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	}
 
 	/**
-	 * {@link IMsoUpdateListenerIf#handleMsoUpdateEvent(Update)}
+	 * {@link IMsoUpdateListenerIf#handleMsoChangeEvent(Change)}
 	 */
-	public void handleMsoUpdateEvent(Update e)
+	public void handleMsoUpdateEvent(Change e)
 	{
 		updateMessageGUI();
 	}
@@ -1264,10 +1264,10 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	{
 		if(m_currentMessage == null && create)
 		{
-			m_wp.getMsoModel().suspendClientUpdate();
+			m_wp.getMsoModel().suspendUpdate();
 			m_currentMessage = m_wp.getMsoManager().createMessage();
 			m_currentMessage.setBroadcast(isBroadcast);
-			m_wp.getMsoModel().resumeClientUpdate(true);
+			m_wp.getMsoModel().resumeUpdate();
 			m_newMessage = true;
 			m_messageDirty = false;
 			updateMessageGUI();
@@ -1397,7 +1397,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		if(m_currentMessage != null && !m_currentMessage.isBroadcast())
 		{
 			// suspend updates
-			Application.getInstance().getMsoModel().suspendClientUpdate();
+			Application.getInstance().getMsoModel().suspendUpdate();
 
 			// initialize
 			List<IMessageLineIf> lines = new LinkedList<IMessageLineIf>();
@@ -1454,7 +1454,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 			AbstractAssignmentPanel.removeAddedLines(null,false);
 
 			// resume updates
-			Application.getInstance().getMsoModel().resumeClientUpdate(true);
+			Application.getInstance().getMsoModel().resumeUpdate();
 
 		}
 	}

@@ -1,15 +1,14 @@
 package org.redcross.sar.mso.data;
 
 import org.redcross.sar.Application;
+import org.redcross.sar.data.IData;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
-import org.redcross.sar.mso.IMsoModelIf.ModificationState;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.except.IllegalOperationException;
-import org.redcross.sar.util.except.MsoRuntimeException;
 import org.redcross.sar.util.mso.Position;
 import org.redcross.sar.util.mso.TimePos;
 import org.redcross.sar.util.mso.Track;
@@ -26,6 +25,7 @@ import java.util.Vector;
 /**
  * Search or rescue unit.
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 {
 	private final AttributeImpl.MsoString m_name = new AttributeImpl.MsoString(this, "Name",0,0,"");
@@ -44,9 +44,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	private final AssignmentListImpl m_unitAssignments = new AssignmentListImpl(this, "UnitAssignments", false);
 	private final PersonnelListImpl m_unitPersonnel = new PersonnelListImpl(this, "UnitPersonnel", false);
 
-	private final MsoReferenceImpl<IHierarchicalUnitIf> m_superiorUnit = new MsoReferenceImpl<IHierarchicalUnitIf>(this, "SuperiorUnit", 0, false);
-	private final MsoReferenceImpl<IPersonnelIf> m_unitLeader = new MsoReferenceImpl<IPersonnelIf>(this, "UnitLeader", 0, true);
-	private final MsoReferenceImpl<ITrackIf> m_track = new MsoReferenceImpl<ITrackIf>(this, "Track", 0, true);
+	private final MsoRelationImpl<IHierarchicalUnitIf> m_superiorUnit = new MsoRelationImpl<IHierarchicalUnitIf>(this, "SuperiorUnit", 0, false, null);
+	private final MsoRelationImpl<IPersonnelIf> m_unitLeader = new MsoRelationImpl<IPersonnelIf>(this, "UnitLeader", 0, true, null);
+	private final MsoRelationImpl<ITrackIf> m_track = new MsoRelationImpl<ITrackIf>(this, "Track", 0, true, null);
 
 	private final static SelfSelector<IUnitIf, IMessageIf> simpleReferringMesssageSelector = new SelfSelector<IUnitIf, IMessageIf>()
 	{
@@ -96,7 +96,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		setType(getTypeBySubclass());
 	}
 
-	public IMsoManagerIf.MsoClassCode getMsoClassCode()
+	public IMsoManagerIf.MsoClassCode getClassCode()
 	{
 		return IMsoManagerIf.MsoClassCode.CLASSCODE_UNIT;
 	}
@@ -135,7 +135,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		addObject(m_track);
 	}
 
-	public void addListReference(IMsoObjectIf anObject, String aReferenceListName)
+	public void addListRelation(IMsoObjectIf anObject, String aReferenceListName)
 	{
 		if (anObject instanceof IAssignmentIf)
 		{
@@ -147,7 +147,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 	}
 
-	public void removeListReference(IMsoObjectIf anObject, String aReferenceListName)
+	public void removeListRelation(IMsoObjectIf anObject, String aReferenceListName)
 	{
 		if (anObject instanceof IAssignmentIf)
 		{
@@ -169,13 +169,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	 * Renumber duplicate numbers
 	 */
 	@Override
-	protected void registerModifiedData(IMsoDataStateIf source, UpdateMode aMode, boolean notifyServer, boolean isLoopback, boolean isRollback)
+	protected void registerModifiedData(IChangeIf aChange, boolean notifyServer)
 	{
 		if (getType() != getTypeBySubclass())
 		{
 			setType(getTypeBySubclass());
 		}
-		super.registerModifiedData(source,aMode,notifyServer,isLoopback,isRollback);
+		super.registerModifiedData(aChange,notifyServer);
 	}
 
 	/*-------------------------------------------------------------------------------------------
@@ -202,9 +202,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_type.getValue();
 	}
 
-	public IMsoModelIf.ModificationState getTypeState()
+	public IData.DataOrigin getTypeState()
 	{
-		return m_type.getState();
+		return m_type.getOrigin();
 	}
 
 	public IMsoAttributeIf.IMsoEnumIf<UnitType> getTypeAttribute()
@@ -254,9 +254,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		m_status.set(aStatus);
 	}
 
-	public IMsoModelIf.ModificationState getStatusState()
+	public IData.DataOrigin getStatusState()
 	{
-		return m_status.getState();
+		return m_status.getOrigin();
 	}
 
 	public IMsoAttributeIf.IMsoEnumIf<UnitStatus> getStatusAttribute()
@@ -279,9 +279,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         return m_organization.getString();
     }
 
-    public IMsoModelIf.ModificationState getOrganizationState()
+    public IData.DataOrigin getOrganizationState()
     {
-        return m_organization.getState();
+        return m_organization.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getOrganizationAttribute()
@@ -299,9 +299,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_division.getString();
 	}
 
-	public IMsoModelIf.ModificationState getDivisionState()
+	public IData.DataOrigin getDivisionState()
 	{
-		return m_division.getState();
+		return m_division.getOrigin();
 	}
 
     public IMsoAttributeIf.IMsoStringIf getDivisionAttribute()
@@ -319,9 +319,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         return m_department.getString();
     }
 
-    public IMsoModelIf.ModificationState getDepartmentState()
+    public IData.DataOrigin getDepartmentState()
     {
-        return m_department.getState();
+        return m_department.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getDepartmentAttribute()
@@ -343,9 +343,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         return m_name.getString();
     }
 
-    public IMsoModelIf.ModificationState getNameState()
+    public IData.DataOrigin getNameState()
     {
-        return m_name.getState();
+        return m_name.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getNameAttribute()
@@ -363,9 +363,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_callSign.getString();
 	}
 
-	public IMsoModelIf.ModificationState getCallSignState()
+	public IData.DataOrigin getCallSignState()
 	{
-		return m_callSign.getState();
+		return m_callSign.getOrigin();
 	}
 
 	public IMsoAttributeIf.IMsoStringIf getCallSignAttribute()
@@ -383,9 +383,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_toneId.getString();
 	}
 
-	public IMsoModelIf.ModificationState getToneIDState()
+	public IData.DataOrigin getToneIDState()
 	{
-		return m_toneId.getState();
+		return m_toneId.getOrigin();
 	}
 
 	public IMsoAttributeIf.IMsoStringIf getToneIDAttribute()
@@ -403,9 +403,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_trackingId.getString();
 	}
 
-	public IMsoModelIf.ModificationState getTrackingIDState()
+	public IData.DataOrigin getTrackingIDState()
 	{
-		return m_trackingId.getState();
+		return m_trackingId.getOrigin();
 	}
 
 	public IMsoAttributeIf.IMsoStringIf getTrackingIDAttribute()
@@ -426,9 +426,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_position.getPosition();
 	}
 
-	public IMsoModelIf.ModificationState getPositionState()
+	public IData.DataOrigin getPositionState()
 	{
-		return m_position.getState();
+		return m_position.getOrigin();
 	}
 
 	public IMsoAttributeIf.IMsoPositionIf getPositionAttribute()
@@ -446,9 +446,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_remarks.getString();
 	}
 
-	public IMsoModelIf.ModificationState getRemarksState()
+	public IData.DataOrigin getRemarksState()
 	{
-		return m_remarks.getState();
+		return m_remarks.getOrigin();
 	}
 
 	public IMsoAttributeIf.IMsoStringIf getRemarksAttribute()
@@ -467,9 +467,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_number.intValue();
 	}
 
-	public IMsoModelIf.ModificationState getNumberState()
+	public IData.DataOrigin getNumberState()
 	{
-		return m_number.getState();
+		return m_number.getOrigin();
 	}
 
 	public IMsoAttributeIf.IMsoIntegerIf getNumberAttribute()
@@ -486,9 +486,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_unitAssignments;
 	}
 
-	public IMsoModelIf.ModificationState getUnitAssignmentsState(IAssignmentIf anAssignment)
+	public IData.DataOrigin getUnitAssignmentsState(IAssignmentIf anAssignment)
 	{
-		return m_unitAssignments.getState(anAssignment);
+		return m_unitAssignments.getOrigin(anAssignment);
 	}
 
 	public Collection<IAssignmentIf> getUnitAssignmentsItems()
@@ -498,19 +498,19 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	public void addUnitPersonnel(IPersonnelIf anPersonnel)
 	{
-		suspendClientUpdate();
+		suspendUpdate();
 		m_unitPersonnel.add(anPersonnel);
 		m_status.set(getAutoStatus(isPaused()));
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 
 	}
 
 	public void removeUnitPersonnel(IPersonnelIf anPersonnel)
 	{
-		suspendClientUpdate();
+		suspendUpdate();
 		m_unitPersonnel.remove(anPersonnel);
 		m_status.set(getAutoStatus(isPaused()));
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 	}
 
 	public IPersonnelListIf getUnitPersonnel()
@@ -518,9 +518,9 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return m_unitPersonnel;
 	}
 
-	public IMsoModelIf.ModificationState getUnitPersonnelState(IPersonnelIf anPersonnel)
+	public IData.DataOrigin getUnitPersonnelState(IPersonnelIf anPersonnel)
 	{
-		return m_unitPersonnel.getState(anPersonnel);
+		return m_unitPersonnel.getOrigin(anPersonnel);
 	}
 
 	public Collection<IPersonnelIf> getUnitPersonnelItems()
@@ -543,58 +543,58 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		{
 			return false;
 		}
-		m_superiorUnit.setReference(aSuperior);
+		m_superiorUnit.set(aSuperior);
 		return true;
 	}
 
 	public IHierarchicalUnitIf getSuperiorUnit()
 	{
-		return m_superiorUnit.getReference();
+		return m_superiorUnit.get();
 	}
 
-	public IMsoModelIf.ModificationState getSuperiorUnitState()
+	public IData.DataOrigin getSuperiorUnitState()
 	{
-		return m_superiorUnit.getState();
+		return m_superiorUnit.getOrigin();
 	}
 
-	public IMsoReferenceIf<IHierarchicalUnitIf> getSuperiorUnitAttribute()
+	public IMsoRelationIf<IHierarchicalUnitIf> getSuperiorUnitAttribute()
 	{
 		return m_superiorUnit;
 	}
 
 	public void setUnitLeader(IPersonnelIf aPersonnel)
 	{
-		m_unitLeader.setReference(aPersonnel);
+		m_unitLeader.set(aPersonnel);
 	}
 
 	public IPersonnelIf getUnitLeader()
 	{
-		return m_unitLeader.getReference();
+		return m_unitLeader.get();
 	}
 
-	public IMsoModelIf.ModificationState getUnitLeaderState()
+	public IData.DataOrigin getUnitLeaderState()
 	{
-		return m_unitLeader.getState();
+		return m_unitLeader.getOrigin();
 	}
 
-	public IMsoReferenceIf<IPersonnelIf> getUnitLeaderAttribute()
+	public IMsoRelationIf<IPersonnelIf> getUnitLeaderAttribute()
 	{
 		return m_unitLeader;
 	}
 
 	public void setTrack(ITrackIf aTrack) {
-		m_track.setReference(aTrack);
+		m_track.set(aTrack);
 	}
 
 	public ITrackIf getTrack() {
-		return m_track.getReference();
+		return m_track.get();
 	}
 
-	public ModificationState getTrackState() {
-		return m_track.getState();
+	public IData.DataOrigin getTrackState() {
+		return m_track.getOrigin();
 	}
 
-	public IMsoReferenceIf<ITrackIf> geTrackAttribute() {
+	public IMsoRelationIf<ITrackIf> geTrackAttribute() {
 		return m_track;
 	}
 
@@ -747,7 +747,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 
 		// suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 
 		/*
 		 * the assignment will be added by AssignmentImpl
@@ -783,7 +783,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 
 		// finished
 		return true;
@@ -964,7 +964,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// ensure a time stamp is given
 		if(aTime==null) aTime = Calendar.getInstance();
 		// get MSO track
-		ITrackIf msoTrack = m_track.getReference();
+		ITrackIf msoTrack = m_track.get();
 		// create track?
 		if(msoTrack==null) {
 			// get command post
@@ -974,7 +974,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			// set geodata
 			msoTrack.setGeodata(new Track(null, null, 1));
 			// set track reference in unit
-			m_track.setReference(msoTrack);
+			m_track.set(msoTrack);
 		}
 		// is possible to log position?
 		if(msoTrack!=null) {
@@ -1002,7 +1002,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// initialize
 		TimePos p = null;
 		// get MSO track
-		ITrackIf msoTrack = m_track.getReference();
+		ITrackIf msoTrack = m_track.get();
 		// is possible to log position?
 		if(msoTrack!=null) {
 			p = msoTrack.getTrackStopPoint();
@@ -1028,7 +1028,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public double getBearing()
 	{
 		// get MSO track
-		ITrackIf msoTrack = m_track.getReference();
+		ITrackIf msoTrack = m_track.get();
 		// has track?
 		if(msoTrack!=null) {
         	// initialize
@@ -1058,7 +1058,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public double getSpeed()
 	{
 		// get MSO track
-		ITrackIf msoTrack = m_track.getReference();
+		ITrackIf msoTrack = m_track.get();
 		// has track?
 		if(msoTrack!=null) {
         	// initialize
@@ -1082,7 +1082,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public double getAverageSpeed()
 	{
 		// get MSO track
-		ITrackIf msoTrack = m_track.getReference();
+		ITrackIf msoTrack = m_track.get();
 		// has track?
 		if(msoTrack!=null) {
         	// initialize
@@ -1102,7 +1102,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public double getMaximumSpeed()
 	{
 		// get MSO track
-		ITrackIf msoTrack = m_track.getReference();
+		ITrackIf msoTrack = m_track.get();
 		// has track?
 		if(msoTrack!=null) {
         	// initialize
@@ -1122,7 +1122,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public double getMinimumSpeed()
 	{
 		// get MSO track
-		ITrackIf msoTrack = m_track.getReference();
+		ITrackIf msoTrack = m_track.get();
 		// has track?
 		if(msoTrack!=null) {
         	// initialize
@@ -1172,7 +1172,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	public double getDistance()
 	{
 		// get MSO track
-		ITrackIf msoTrack = m_track.getReference();
+		ITrackIf msoTrack = m_track.get();
 		// has track?
 		if(msoTrack!=null) {
         	// initialize
@@ -1209,13 +1209,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		if(anAssignment!=null) {
 			// suspend MSO update
-			suspendClientUpdate();
+			suspendUpdate();
 			m_unitAssignments.add(anAssignment);
 			rearrangeAsgPrioritiesAfterReferenceChange(anAssignment);
 			m_status.set(getAutoStatus(isPaused()));
 			m_position.set(getAutoPosition(anAssignment));
 			// resume MSO update
-			resumeClientUpdate(true);
+			resumeUpdate(true);
 		}
 	}
 
@@ -1223,12 +1223,12 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		if(anAssignment!=null) {
 			// suspend MSO update
-			suspendClientUpdate();
+			suspendUpdate();
 			m_unitAssignments.remove(anAssignment);
 			rearrangeAsgPrioritiesAfterReferenceChange(anAssignment);
 			getAutoStatus(isPaused());
 			// resume MSO update
-			resumeClientUpdate(true);
+			resumeUpdate(true);
 		}
 	}
 
@@ -1287,12 +1287,12 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	protected void assignmentChanged(IAssignmentIf anAssignment, AssignmentStatus oldStatus, boolean add) throws IllegalOperationException {
 		// suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 		m_status.set(getAutoStatus(isPaused()));
 		m_position.set(getAutoPosition(anAssignment));
 		rearrangeAsgPrioritiesAfterStatusChange(anAssignment, oldStatus);
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 	}
 
 	private void rearrangeAsgPrioritiesAfterStatusChange(IAssignmentIf anAssignment, AssignmentStatus oldStatus)
@@ -1314,7 +1314,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	private void rearrangeAsgPriorities()
 	{
 		// suspend MSO update
-		suspendClientUpdate();
+		suspendUpdate();
 		int actPriSe = 0;
 		for (IAssignmentIf asg : getEnqueuedAssignments()) {
 			if (asg.getPrioritySequence() != actPriSe) {
@@ -1323,7 +1323,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			actPriSe++;
 		}
 		// resume MSO update
-		resumeClientUpdate(true);
+		resumeUpdate(true);
 	}
 
 }

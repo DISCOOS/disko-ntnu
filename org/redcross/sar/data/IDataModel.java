@@ -3,6 +3,8 @@ package org.redcross.sar.data;
 import java.util.Collection;
 import java.util.Comparator;
 
+import org.redcross.sar.data.IData.DataOrigin;
+import org.redcross.sar.data.IData.DataState;
 import org.redcross.sar.data.event.IDataListener;
 
 public interface IDataModel<S,T extends IData> {
@@ -55,10 +57,52 @@ public interface IDataModel<S,T extends IData> {
 	public Object getValueAt(int row, int col);
 	public void setValueAt(Object value, int iRow, int iCol);
 
+	public DataOrigin getOriginAt(int iRow, int iCol);
+	public void setOriginAt(DataOrigin origin, int iRow, int iCol);
+	
+	public DataState getStateAt(int iRow, int iCol);	
+	public void setStateAt(DataState state, int iRow, int iCol);
+	
 	public void addDataListener(IDataListener listener);
 	public void removeDataListener(IDataListener listener);
 
 	public ITranslator<S, IData> getTranslator();
 	public void setTranslator(ITranslator<S, IData> translator);
+	
+	public interface IRow {
+		
+		public DataOrigin getDataOrigin();
+		public void setDataOrigin(DataOrigin origin);
+		
+		public DataState getDataState();		
+		public void setDataState(DataState state);
+		
+		public Object getValue(int index);
+		
+		public void setValue(int index, Object value);
+		
+		public ICell[] getCells();
+		
+		public Object[] getData();
+		
+		public void setData(Object[] values);
+		
+		public ICell getCell(int index);
+		
+	}
+	
+	public interface ICell {
+		
+		public DataOrigin getDataOrigin();
+		public void setDataOrigin(DataOrigin origin);
+		
+		public DataState getDataState();		
+		public void setDataState(DataState state);
+		
+		public Object getValue();		
+		public void setValue(Object value);
+		
+	}
+	
 
 }

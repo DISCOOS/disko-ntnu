@@ -1,5 +1,6 @@
 package org.redcross.sar.mso.data;
 
+import org.redcross.sar.data.IData;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.util.except.MsoCastException;
@@ -15,10 +16,10 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
     private final AttributeImpl.MsoCalendar m_time = new AttributeImpl.MsoCalendar(this, "Time");
     private final AttributeImpl.MsoEnum<IntelligenceStatus> m_status = new AttributeImpl.MsoEnum<IntelligenceStatus>(this, "Status", 1, IntelligenceStatus.UNCONFIRMED);
 
-    private final MsoReferenceImpl<IPOIIf> m_intelligencePOI = new MsoReferenceImpl<IPOIIf>(this, "IntelligencePOI", 0, true);
-    private final MsoReferenceImpl<IRouteIf> m_intelligenceRoute = new MsoReferenceImpl<IRouteIf>(this, "IntelligenceRoute", 0, true);
-    private final MsoReferenceImpl<ISubjectIf> m_intelligenceSubject = new MsoReferenceImpl<ISubjectIf>(this, "IntelligenceSubject", 0, true);
-    private final MsoReferenceImpl<ITrackIf> m_intelligenceTrack = new MsoReferenceImpl<ITrackIf>(this, "IntelligenceTrack", 0, true);
+    private final MsoRelationImpl<IPOIIf> m_intelligencePOI = new MsoRelationImpl<IPOIIf>(this, "IntelligencePOI", 0, true, null);
+    private final MsoRelationImpl<IRouteIf> m_intelligenceRoute = new MsoRelationImpl<IRouteIf>(this, "IntelligenceRoute", 0, true, null);
+    private final MsoRelationImpl<ISubjectIf> m_intelligenceSubject = new MsoRelationImpl<ISubjectIf>(this, "IntelligenceSubject", 0, true, null);
+    private final MsoRelationImpl<ITrackIf> m_intelligenceTrack = new MsoRelationImpl<ITrackIf>(this, "IntelligenceTrack", 0, true, null);
 
     public IntelligenceImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
@@ -67,7 +68,7 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         }
     }
 
-    public IMsoManagerIf.MsoClassCode getMsoClassCode()
+    public IMsoManagerIf.MsoClassCode getClassCode()
     {
         return IMsoManagerIf.MsoClassCode.CLASSCODE_INTELLIGENCE;
     }
@@ -97,9 +98,9 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
 
     }
 
-    public IMsoModelIf.ModificationState getStatusState()
+    public IData.DataOrigin getStatusState()
     {
-        return m_status.getState();
+        return m_status.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoEnumIf<IntelligenceStatus> getStatusAttribute()
@@ -121,9 +122,9 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_description.getString();
     }
 
-    public IMsoModelIf.ModificationState getDescriptionState()
+    public IData.DataOrigin getDescriptionState()
     {
-        return m_description.getState();
+        return m_description.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getDescriptionAttribute()
@@ -141,9 +142,9 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_priority.intValue();
     }
 
-    public IMsoModelIf.ModificationState getPriorityState()
+    public IData.DataOrigin getPriorityState()
     {
-        return m_priority.getState();
+        return m_priority.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoIntegerIf getPriorityAttribute()
@@ -161,9 +162,9 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_source.getString();
     }
 
-    public IMsoModelIf.ModificationState getSourceState()
+    public IData.DataOrigin getSourceState()
     {
-        return m_source.getState();
+        return m_source.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoStringIf getSourceAttribute()
@@ -181,9 +182,9 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
         return m_time.getCalendar();
     }
 
-    public IMsoModelIf.ModificationState getTimeState()
+    public IData.DataOrigin getTimeState()
     {
-        return m_time.getState();
+        return m_time.getOrigin();
     }
 
     public IMsoAttributeIf.IMsoCalendarIf getTimeAttribute()
@@ -196,80 +197,80 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
     *-------------------------------------------------------------------------------------------*/
     public void setIntelligencePOI(IPOIIf aPOI)
     {
-        m_intelligencePOI.setReference(aPOI);
+        m_intelligencePOI.set(aPOI);
     }
 
     public IPOIIf getIntelligencePOI()
     {
-        return m_intelligencePOI.getReference();
+        return m_intelligencePOI.get();
     }
 
-    public IMsoModelIf.ModificationState getIntelligencePOIState()
+    public IData.DataOrigin getIntelligencePOIState()
     {
-        return m_intelligencePOI.getState();
+        return m_intelligencePOI.getOrigin();
     }
 
-    public IMsoReferenceIf<IPOIIf> getIntelligencePOIAttribute()
+    public IMsoRelationIf<IPOIIf> getIntelligencePOIAttribute()
     {
         return m_intelligencePOI;
     }
 
     public void setIntelligenceRoute(IRouteIf aRoute)
     {
-        m_intelligenceRoute.setReference(aRoute);
+        m_intelligenceRoute.set(aRoute);
     }
 
     public IRouteIf getIntelligenceRoute()
     {
-        return m_intelligenceRoute.getReference();
+        return m_intelligenceRoute.get();
     }
 
-    public IMsoModelIf.ModificationState getIntelligenceRouteState()
+    public IData.DataOrigin getIntelligenceRouteState()
     {
-        return m_intelligenceRoute.getState();
+        return m_intelligenceRoute.getOrigin();
     }
 
-    public IMsoReferenceIf<IRouteIf> getIntelligenceRouteAttribute()
+    public IMsoRelationIf<IRouteIf> getIntelligenceRouteAttribute()
     {
         return m_intelligenceRoute;
     }
 
     public void setIntelligenceSubject(ISubjectIf aSubject)
     {
-        m_intelligenceSubject.setReference(aSubject);
+        m_intelligenceSubject.set(aSubject);
     }
 
     public ISubjectIf getIntelligenceSubject()
     {
-        return m_intelligenceSubject.getReference();
+        return m_intelligenceSubject.get();
     }
 
-    public IMsoModelIf.ModificationState getIntelligenceSubjectState()
+    public IData.DataOrigin getIntelligenceSubjectState()
     {
-        return m_intelligenceSubject.getState();
+        return m_intelligenceSubject.getOrigin();
     }
 
-    public IMsoReferenceIf<ISubjectIf> getIntelligenceSubjectAttribute()
+    public IMsoRelationIf<ISubjectIf> getIntelligenceSubjectAttribute()
     {
         return m_intelligenceSubject;
     }
 
     public void setIntelligenceTrack(ITrackIf aTrack)
     {
-        m_intelligenceTrack.setReference(aTrack);
+        m_intelligenceTrack.set(aTrack);
     }
 
     public ITrackIf getIntelligenceTrack()
     {
-        return m_intelligenceTrack.getReference();
+        return m_intelligenceTrack.get();
     }
 
-    public IMsoModelIf.ModificationState getIntelligenceTrackState()
+    public IData.DataOrigin getIntelligenceTrackState()
     {
-        return m_intelligenceTrack.getState();
+        return m_intelligenceTrack.getOrigin();
     }
 
-    public IMsoReferenceIf<ITrackIf> getIntelligenceTrackAttribute()
+    public IMsoRelationIf<ITrackIf> getIntelligenceTrackAttribute()
     {
         return m_intelligenceTrack;
     }
