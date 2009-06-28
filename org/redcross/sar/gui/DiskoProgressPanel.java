@@ -52,7 +52,7 @@ public class DiskoProgressPanel extends JPanel {
 	 * @return void
 	 */
 	private void initialize() {
-		// create the label
+		// prepare
 		m_labelMessage = new JLabel();
 		m_labelMessage.setOpaque(false);
 		m_labelMessage.setHorizontalAlignment(SwingConstants.CENTER);

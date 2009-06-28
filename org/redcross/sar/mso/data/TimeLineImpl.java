@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.redcross.sar.mso.IMsoModelIf;
+
 public class TimeLineImpl extends AbstractCoList<ITimeItemIf> implements ITimeLineIf
 {
-    final List<ITimeItemIf> m_timeItems = new ArrayList<ITimeItemIf>();
+	final List<ITimeItemIf> m_timeItems = new ArrayList<ITimeItemIf>();
 
-    // todo Sorting can be optimized by using a sorting algorithm that takes into account that only one object has been added/changed
-
-    public TimeLineImpl()
-    {
-        super();
-    }
+    public TimeLineImpl(IMsoModelIf msoModel) {
+		super(msoModel);
+	}
 
     public List<ITimeItemIf> getTimeItems()
     {

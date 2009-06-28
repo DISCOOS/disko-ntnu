@@ -104,7 +104,7 @@ public class EditManager {
 			for(FlowEvent it : stack) 
 			{
 				// get uncommitted changes from flow event
-				Map<IMsoModelIf,List<IChangeRecordIf>> map = it.getUncommittedChanges();
+				Map<IMsoModelIf,List<IChangeRecordIf>> map = it.getChanges();
 				// append uncommitted changes gathered from flow event to map 
 				for(IMsoModelIf model : map.keySet()) {
 					List<IChangeRecordIf> list = changes.get(model);

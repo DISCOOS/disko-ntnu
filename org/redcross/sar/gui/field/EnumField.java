@@ -253,7 +253,7 @@ public class EnumField extends AbstractField<Enum<?>,JFormattedTextField,JTextFi
 
 	@SuppressWarnings("unchecked")
 	private static Enum[] getAllEnumValues(MsoEnum attribute) {
-		Enum value = attribute.getValue();
+		Enum value = (Enum)attribute.get();
 		if(value!=null) {
 			EnumSet set = EnumSet.allOf(value.getClass());
 			Enum[] values = new Enum[set.size()];

@@ -20,23 +20,26 @@ import org.redcross.sar.work.event.IWorkLoopListener;
 import org.redcross.sar.work.event.WorkLoopEvent;
 
 /**
- * Singleton DISKO work pool class. Ensures that work can be executed in
- * on several threads in a MSO and Swing safe manner. Work that is indicated not
- * thread safe, is executed on either the EDT or SAFE thread . DISKO only supports
- * ONE SAFE thread in addition to the EDT thread. The work pool ensures that work on
- * these threads are executed synchronously.
+ * Singleton DISKO work pool class implementing the IWorkPool interface. </p>
+ * 
+ * This class ensures that work can be executed in on several threads in a MSO 
+ * and Swing safe manner. Work that is indicated not thread safe, is executed on 
+ * either the EDT or SAFE thread . DISKO only supports ONE SAFE thread in 
+ * addition to the EDT thread. The work pool ensures that work on these threads 
+ * are executed synchronously.
  *
- * <b>IMPORTANT</b>: The first invocation of getInstance() MUST be done from the EDT thread!
+ * <b>IMPORTANT</b>: The first invocation of getInstance() MUST be done from 
+ * the EDT thread!
  *
- * @author kennetgu
+ * @author kenneth
  *
  */
-public class WorkPool {
+public class WorkPool implements IWorkPool {
 
 	private static WorkPool m_this;
 
 	private long m_safeID = 0;
-	private long[] m_unsafeIDs = new long[]{0,0,0};
+	private long[] m_unsafeIDs = new long[]{0};
 	private long m_nextID = 0;
 
 	private boolean m_isSuspended = false;
@@ -63,8 +66,8 @@ public class WorkPool {
 		// create default work loops
 		m_safeID = add(new WorkLoop(WorkerType.SAFE,100,0.1));          	// fast loop, 50 % requested utilization 
 		m_unsafeIDs[0] = add(new WorkLoop(WorkerType.UNSAFE,100,0.1));  	// fast loop, 50 % requested utilization
-		m_unsafeIDs[1] = add(new WorkLoop(WorkerType.UNSAFE,500,0.1)); 		// medium loop, 10 % requested utilization
-		m_unsafeIDs[2] = add(new WorkLoop(WorkerType.UNSAFE,1000,0.05)); 	// slow loop, 5 % requested utilization
+		//m_unsafeIDs[1] = add(new WorkLoop(WorkerType.UNSAFE,500,0.1)); 		// medium loop, 10 % requested utilization
+		//m_unsafeIDs[2] = add(new WorkLoop(WorkerType.UNSAFE,1000,0.05)); 	// slow loop, 5 % requested utilization
 	}
 
   	/*========================================================

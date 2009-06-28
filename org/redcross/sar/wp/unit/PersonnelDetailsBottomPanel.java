@@ -23,7 +23,7 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelType;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.mso.DTG;
@@ -35,7 +35,7 @@ import org.redcross.sar.util.mso.DTG;
  *
  * @author thomasl
  */
-public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateListenerIf, ITickEventListenerIf
+public class PersonnelDetailsBottomPanel extends JPanel implements IMsoChangeListenerIf, ITickEventListenerIf
 {
     private static final long serialVersionUID = 1L;
 
@@ -66,7 +66,7 @@ public class PersonnelDetailsBottomPanel extends JPanel implements IMsoUpdateLis
     	// initialize GUI
         initialize();
         // add listeners
-        wp.getMsoEventManager().addLocalUpdateListener(this);
+        wp.getMsoEventManager().addChangeListener(this);
     }
 
     private void initialize()

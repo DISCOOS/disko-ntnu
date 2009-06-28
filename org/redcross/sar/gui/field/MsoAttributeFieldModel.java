@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.redcross.sar.data.IData.DataOrigin;
 import org.redcross.sar.data.IData.DataState;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.util.except.TransactionException;
@@ -42,11 +43,45 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 	 * ================================================================== */
 
 	@Override
+	public void setOrigin(DataOrigin origin) {
+		throw new UnsupportedOperationException("Not supported");
+	}
+
+	@Override
+	public void setState(DataState state) {
+		throw new UnsupportedOperationException("Not supported");
+	}	
+	
+	@Override
+	public V getValue() {
+		if(m_attr!=null)
+		{
+			return m_attr.get();
+		}
+		return null;
+	}	
+	
+	@Override
+	public boolean setValue(V value) {
+		if(m_attr!=null)
+		{
+			m_attr.set(value);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
 	public V getLocalValue() {
 		if(!isOrigin(DataOrigin.NONE)) {
 			return m_attr.getLocalValue();
 		}
 		return null;
+	}
+
+	@Override
+	public boolean setLocalValue(V value){
+		throw new UnsupportedOperationException("Not supported");
 	}
 
 	@Override
@@ -58,12 +93,10 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 	}
 
 	@Override
-	public void setLocalValue(V value){
-		if(!isOrigin(DataOrigin.NONE)) {
-			m_attr.set(value);
-		}
+	public boolean setRemoteValue(V value){
+		throw new UnsupportedOperationException("Not supported");
 	}
-
+	
 	@Override
 	public boolean acceptLocalValue() {
 		if(!isOrigin(DataOrigin.NONE)) {
@@ -89,6 +122,10 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 	public boolean isBoundTo(Object source) {
 		return isEqual(m_attr.getOwnerObject(),source);
 	}	
+	
+	public IChangeAttributeIf getChange() {
+		return m_attr!=null ? m_attr.getChange() : null;
+	}
 	
 	/**
 	 * Get IMsoAttributeIf instance.
@@ -149,10 +186,15 @@ public class MsoAttributeFieldModel<V> extends AbstractFieldModel<V> {
 	protected DataOrigin translateOrigin() {
 		if(m_attr!=null) 
 		{
-			return m_attr.getOrigin();
+			IMsoObjectIf msoObj = m_attr.getOwnerObject();
+			IMsoModelIf msoModel = msoObj.getModel();
+			if(msoModel.exists())
+			{
+				return m_attr.getOrigin();
+			}
 		}
 		// attribute does not exist
 		return DataOrigin.NONE;
 	}
-	
+
 }

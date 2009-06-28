@@ -313,7 +313,7 @@ public class AdvisorPanel extends JPanel
     }
 
     private String getActiveOprID() {
-    	return m_model.getDispatcher().getActiveOperationID();
+    	return m_model.getDispatcher().getCurrentOperationID();
     }
 
     public void connect() {

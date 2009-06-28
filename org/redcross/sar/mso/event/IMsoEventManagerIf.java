@@ -14,80 +14,81 @@ import org.redcross.sar.util.except.TransactionException;
 public interface IMsoEventManagerIf
 {
     /**
-     * Add a listener in the local update listeners queue.
+     * Add a listener in the (slave) change listeners queue.
      *
      * @param aListener The listener
      */
-    public void addLocalUpdateListener(IMsoUpdateListenerIf aListener);
+    public void addChangeListener(IMsoChangeListenerIf aListener);
 
     /**
-     * Remove a listener in the local update listeners queue.
+     * Remove a listener in the (slave) change listeners queue.
      *
      * @param aListener The listener
      */
-    public void removeLocalUpdateListener(IMsoUpdateListenerIf aListener);
+    public void removeChangeListener(IMsoChangeListenerIf aListener);
 
     /**
-     * Notify a local update.
+     * Notify a that a (slave) change has occurred.
      *
      * @param aChange - the change record
      */
-    public void notifyLocalUpdate(IChangeRecordIf aChange);
+    public void notifyChange(IChangeRecordIf aChange);
 
     /**
-     * Notify a client clear all update.
+     * Notify that a clear all change has occurred on 
+     * given MSO object. 
      *
      */
     public void notifyClearAll(IMsoObjectIf root);
 
     /**
-     * Add a listener in the remote update listeners queue.
+     * Add a listener to the (master) update listeners queue.
      *
      * @param aListener The listener
      */
-    public void addRemoteUpdateListener(IMsoUpdateListenerIf aListener);
+    public void addUpdateListener(IMsoUpdateListenerIf aListener);
 
     /**
-     * Remove a listener in the remote update listeners queue.
+     * Remove a listener from the (master) update listeners queue.
      *
      * @param aListener The listener
      */
-    public void removeRemoteUpdateListener(IMsoUpdateListenerIf aListener);
+    public void removeUpdateListener(IMsoUpdateListenerIf aListener);
 
     /**
-     * Notify a server update.
+     * Notify that a (master) update is required.
      *
      * @param aChange - the change record
      */
-    public void notifyRemoteUpdate(IChangeRecordIf aChange);
+    public void notifyUpdate(IChangeRecordIf aChange);
 
     /**
-     * Add a listener in the Commit Listeners queue.
+     * Add a listener in the transaction listeners queue.
      *
      * @param aListener The listener
      */
-    public void addCommitListener(IMsoTransactionListenerIf aListener);
+    public void addTransactionListener(IMsoTransactionListenerIf aListener);
 
     /**
-     * Remove a listener in the Commit Listeners queue.
+     * Remove a listener in the transaction listeners queue.
      *
      * @param aListener The listener
      */
-    public void removeCommitListener(IMsoTransactionListenerIf aListener);
+    public void removeTransactionListener(IMsoTransactionListenerIf aListener);
 
     /**
-     * Notify a commit.
+     * Notify a transaction.
      *
-     * @param aSource The {@link TransactionImpl} that contains the committable objects and relations
-     * @throws org.redcross.sar.util.except.TransactionException when the commit fails.
+     * @param aSource The {@link TransactionImpl} that contains the changes
+     * @throws {@link org.redcross.sar.util.except.TransactionException} when the transaction fails.
      */
     public void notifyCommit(ITransactionIf aSource) throws TransactionException;
 
-    public void addCoUpdateListener(IMsoCoUpdateListenerIf aListener);
+    public void addCoChangeListener(IMsoCoChangeListenerIf aListener);
 
-    public void removeCoUpdateListener(IMsoCoUpdateListenerIf aListener);
+    public void removeCoUpdateListener(IMsoCoChangeListenerIf aListener);
 
-    public void notifyCoUpdate(IChangeRecordIf aChange);
+    public void notifyCoChange(IChangeRecordIf aChange);
 
     /**
      * Notify that a resume operation is begun.</p>

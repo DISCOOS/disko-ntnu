@@ -24,7 +24,7 @@ public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
     public IPOIIf createPOI()
     {
         checkCreateOp();
-        return createdUniqueItem(new POIImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new POIImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public IPOIIf createPOI(IMsoObjectIf.IObjectIdIf anObjectId)
@@ -37,7 +37,7 @@ public class POIListImpl extends MsoListImpl<IPOIIf> implements IPOIListIf
     public IPOIIf createPOI(IPOIIf.POIType aType, Position aPosition)
     {
         checkCreateOp();
-        return createdUniqueItem(new POIImpl(getOwner().getModel(), makeUniqueId(), aType, aPosition));
+        return createdUniqueItem(new POIImpl(getOwner().getModel(), createUniqueId(), aType, aPosition));
     }
 
     public IPOIIf createPOI(IMsoObjectIf.IObjectIdIf anObjectId, IPOIIf.POIType aType, Position aPosition)

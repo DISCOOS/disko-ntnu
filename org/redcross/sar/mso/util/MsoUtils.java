@@ -545,6 +545,8 @@ public class MsoUtils {
 		return null;
 	}
 	
+	public static String FULLNAME_FORMAT = DiskoStringFactory.getText("FULLNAME_FORMAT");
+	
 	public static String getAssignmentName(IAssignmentIf assignment, int options) {
 		String name = "<Unknown>";
 		if(assignment!=null) {
@@ -613,7 +615,7 @@ public class MsoUtils {
 	public static String getPersonnelName(IPersonnelIf personnel, boolean include) {
 		String name = "<Unknown>";
 		if(personnel!=null) {
-			name = personnel.getFirstName() + " " + personnel.getLastName();
+			name = String.format(FULLNAME_FORMAT,personnel.getFirstName(),personnel.getLastName());
 			// include status text?
 			if(include)
 				name += " (" + (DiskoEnumFactory.getText(personnel.getStatus())) + ")";			

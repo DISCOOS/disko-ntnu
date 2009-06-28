@@ -169,13 +169,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	 * Renumber duplicate numbers
 	 */
 	@Override
-	protected void registerModifiedData(IChangeIf aChange, boolean notifyServer)
+	protected void registerModifiedData(IChangeIf aChange)
 	{
 		if (getType() != getTypeBySubclass())
 		{
 			setType(getTypeBySubclass());
 		}
-		super.registerModifiedData(aChange,notifyServer);
+		super.registerModifiedData(aChange);
 	}
 
 	/*-------------------------------------------------------------------------------------------
@@ -194,12 +194,12 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	protected void setType(UnitType aType)
 	{
-		m_type.setValue(aType);
+		m_type.set(aType);
 	}
 
 	public UnitType getType()
 	{
-		return m_type.getValue();
+		return m_type.get();
 	}
 
 	public IData.DataOrigin getTypeState()
@@ -214,7 +214,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	public String getTypeName()
 	{
-		return m_type.getValueName();
+		return m_type.getEnumName();
 	}
 
 	public String getInternationalTypeName()
@@ -224,7 +224,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	public UnitStatus getStatus()
 	{
-		return m_status.getValue();
+		return m_status.get();
 	}
 
 	public void setStatus(String aStatus) throws IllegalOperationException
@@ -417,13 +417,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 
 		// update position
-		m_position.setValue(aPosition);
+		m_position.set(aPosition);
 
 	}
 
 	public Position getPosition()
 	{
-		return m_position.getPosition();
+		return m_position.get();
 	}
 
 	public IData.DataOrigin getPositionState()
@@ -498,19 +498,19 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	public void addUnitPersonnel(IPersonnelIf anPersonnel)
 	{
-		suspendUpdate();
+		suspendChange();
 		m_unitPersonnel.add(anPersonnel);
 		m_status.set(getAutoStatus(isPaused()));
-		resumeUpdate(true);
+		resumeChange(true);
 
 	}
 
 	public void removeUnitPersonnel(IPersonnelIf anPersonnel)
 	{
-		suspendUpdate();
+		suspendChange();
 		m_unitPersonnel.remove(anPersonnel);
 		m_status.set(getAutoStatus(isPaused()));
-		resumeUpdate(true);
+		resumeChange(true);
 	}
 
 	public IPersonnelListIf getUnitPersonnel()
@@ -674,7 +674,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		return UnitStatus.PAUSED.equals(m_status.getAttrValue());
 	}
 
-	public UnitStatus pause() throws IllegalOperationException {
+	public IChangeIf pause() throws IllegalOperationException {
 		// get current status
 		UnitStatus status = getStatus();
 		// verify valid state
@@ -686,10 +686,10 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// forward
 		m_status.set(UnitStatus.PAUSED);
 		// finished
-		return status;
+		return m_status.getChange();
 	}
 
-	public void resume() throws IllegalOperationException {
+	public IChangeIf resume() throws IllegalOperationException {
 		UnitStatus status = getStatus();
 		// verify valid state
 		if(!UnitStatus.PAUSED.equals(status)) {
@@ -698,6 +698,8 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 		// forward
 		m_status.set(getAutoStatus(false));
+		// finished
+		return m_status.getChange();
 	}
 
 	public IAssignmentIf getActiveAssignment()
@@ -747,7 +749,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 
 		// suspend MSO update
-		suspendUpdate();
+		suspendChange();
 
 		/*
 		 * the assignment will be added by AssignmentImpl
@@ -783,7 +785,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		}
 
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 
 		// finished
 		return true;
@@ -979,7 +981,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 		// is possible to log position?
 		if(msoTrack!=null) {
 			// get current position
-			Point2D.Double p = m_position.getPosition().getPosition();
+			Point2D.Double p = m_position.get().getPosition();
 			// create time position
 			TimePos tp = new TimePos(p,aTime);
 			// add to track
@@ -1038,7 +1040,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
         	if(count>0)
         	{
         		// get current position
-            	Position p = m_position.getPosition();
+            	Position p = m_position.get();
             	if(p!=null)
             	{
             		// current bearing
@@ -1209,13 +1211,13 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		if(anAssignment!=null) {
 			// suspend MSO update
-			suspendUpdate();
+			suspendChange();
 			m_unitAssignments.add(anAssignment);
 			rearrangeAsgPrioritiesAfterReferenceChange(anAssignment);
 			m_status.set(getAutoStatus(isPaused()));
 			m_position.set(getAutoPosition(anAssignment));
 			// resume MSO update
-			resumeUpdate(true);
+			resumeChange(true);
 		}
 	}
 
@@ -1223,12 +1225,12 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	{
 		if(anAssignment!=null) {
 			// suspend MSO update
-			suspendUpdate();
+			suspendChange();
 			m_unitAssignments.remove(anAssignment);
 			rearrangeAsgPrioritiesAfterReferenceChange(anAssignment);
 			getAutoStatus(isPaused());
 			// resume MSO update
-			resumeUpdate(true);
+			resumeChange(true);
 		}
 	}
 
@@ -1287,12 +1289,12 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 
 	protected void assignmentChanged(IAssignmentIf anAssignment, AssignmentStatus oldStatus, boolean add) throws IllegalOperationException {
 		// suspend MSO update
-		suspendUpdate();
+		suspendChange();
 		m_status.set(getAutoStatus(isPaused()));
 		m_position.set(getAutoPosition(anAssignment));
 		rearrangeAsgPrioritiesAfterStatusChange(anAssignment, oldStatus);
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 	}
 
 	private void rearrangeAsgPrioritiesAfterStatusChange(IAssignmentIf anAssignment, AssignmentStatus oldStatus)
@@ -1314,7 +1316,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 	private void rearrangeAsgPriorities()
 	{
 		// suspend MSO update
-		suspendUpdate();
+		suspendChange();
 		int actPriSe = 0;
 		for (IAssignmentIf asg : getEnqueuedAssignments()) {
 			if (asg.getPrioritySequence() != actPriSe) {
@@ -1323,7 +1325,7 @@ public abstract class AbstractUnit extends AbstractMsoObject implements IUnitIf
 			actPriSe++;
 		}
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 	}
 
 }

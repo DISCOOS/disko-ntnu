@@ -55,7 +55,6 @@ public class RouteLayer extends AbstractMsoFeatureLayer {
  		RouteFeature msoFeature = new RouteFeature();
  		msoFeature.setSpatialReference(srs);
  		msoFeature.setMsoObject(msoObject);
- 		System.out.println("Created RouteFeature " + msoObject);
  		return msoFeature;
  	}
 

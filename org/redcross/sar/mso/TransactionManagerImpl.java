@@ -1,5 +1,6 @@
 package org.redcross.sar.mso;
 
+import org.redcross.sar.mso.IChangeRecordIf.ISeqNoGenIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.ITransactionIf.TransactionType;
@@ -9,7 +10,6 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IMsoRelationIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEventManagerImpl;
 import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 import org.redcross.sar.util.except.TransactionException;
 
@@ -33,7 +33,6 @@ import java.util.Vector;
 @SuppressWarnings("unchecked")
 public class TransactionManagerImpl implements IMsoTransactionManagerIf
 {
-
     /**
      * Reference to the owning MSO Model
      */
@@ -47,12 +46,22 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
     /**
      * Vector for accumulating {@link ChangeRecord} objects that is updated.
      */
-    private final Map<IMsoObjectIf,IChangeRecordIf> m_changes = new HashMap<IMsoObjectIf,IChangeRecordIf>();
+    private final Map<String,IChangeRecordIf> m_map = new HashMap<String,IChangeRecordIf>();
     
     /**
      * Set of all MSO objects types. Is used to indicate interests in all change notifications
      */
     private final static EnumSet<MsoClassCode> m_interests = EnumSet.allOf(MsoClassCode.class);
+    
+    /**
+     * Change sequence generator common for all change records
+     */
+    private final ISeqNoGenIf m_seqNoGen = new ChangeRecordImpl.SeqNoGen(0);
+    
+    /**
+     * DEBUG:::
+     */
+    private int changeCount;
 
     /**
      * @param theModel Reference to the singleton MSO model object holding the MsoModel object.
@@ -61,7 +70,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
     {
         m_msoModel = theModel;
         m_msoEventManager = (MsoEventManagerImpl)m_msoModel.getEventManager();
-        m_msoEventManager.addRemoteUpdateListener(new IMsoUpdateListenerIf()
+        m_msoEventManager.addUpdateListener(new IMsoUpdateListenerIf()
         {
 
 			public EnumSet<MsoClassCode> getInterests()
@@ -69,7 +78,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
 				return m_interests;
 			}
 
-			public void handleMsoChangeEvent(ChangeList events)
+			public void handleMsoUpdateEvent(ChangeList events)
             {
 				for(MsoEvent.Change e : events.getEvents())
 				{
@@ -86,8 +95,8 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      */
     public List<IChangeRecordIf> getChanges()
     {
-    	List<IChangeRecordIf> changes = new ArrayList<IChangeRecordIf>(m_changes.size());
-    	for(IChangeRecordIf it : m_changes.values()) {
+    	List<IChangeRecordIf> changes = new ArrayList<IChangeRecordIf>(m_map.size());
+    	for(IChangeRecordIf it : m_map.values()) {
     		changes.add(new ChangeRecordImpl((ChangeRecordImpl)it));
     	}
     	return changes;
@@ -106,8 +115,8 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * <p/>
      */
     public List<IChangeRecordIf> getChanges(Set<MsoClassCode> of) {
-    	List<IChangeRecordIf> updates = new ArrayList<IChangeRecordIf>(m_changes.size());
-    	for (IChangeRecordIf it : m_changes.values())
+    	List<IChangeRecordIf> updates = new ArrayList<IChangeRecordIf>(m_map.size());
+    	for (IChangeRecordIf it : m_map.values())
         {
     		// add to updates?
     		if(of.contains(it.getMsoObject().getClassCode())) {
@@ -135,11 +144,11 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      */
     public List<IChangeRecordIf> getChanges(List<IMsoObjectIf> of)
     {
-    	List<IChangeRecordIf> updates = new ArrayList<IChangeRecordIf>(m_changes.size());
+    	List<IChangeRecordIf> updates = new ArrayList<IChangeRecordIf>(m_map.size());
     	for (IMsoObjectIf msoObj : of)
         {
     		// try to get change record
-    		IChangeRecordIf it = m_changes.get(msoObj);
+    		IChangeRecordIf it = m_map.get(msoObj.getObjectId());
     		// add to updates?
     		if(it!=null) 
     		{
@@ -159,7 +168,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      */
     public void commit() throws TransactionException
     {
-        m_msoEventManager.notifyCommit(create(TransactionType.COMMIT,m_changes.values()));
+        m_msoEventManager.notifyCommit(create(TransactionType.COMMIT,m_map.values()));
     }
 
     /**
@@ -202,7 +211,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      */
     public void rollback() throws TransactionException
     {
-        rollback(new Vector<IChangeRecordIf>(m_changes.values()));
+        rollback(new Vector<IChangeRecordIf>(m_map.values()));
     }
 
     /**
@@ -226,14 +235,15 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      * @throws org.redcross.sar.util.except.TransactionException when the commit fails
      */
     public void rollback(List<IChangeRecordIf> changes) throws TransactionException {
+    	// create transaction
     	ITransactionIf transaction = create(TransactionType.ROLLBACK,changes);
         // loop over all references first
-        for(IChangeRecordIf rs : transaction.getChanges()) 
+        for(IChangeRecordIf rs : transaction.getRecords()) 
         {
         	if(rs.isFiltered()) 
         	{
         		// prepare to rollback
-                m_msoModel.suspendUpdate();
+                m_msoModel.suspendChange();
                 m_msoModel.setLocalUpdateMode();
         		// only roll back changed attributes and references
         		for(IChangeIf it : rs.getFilters())
@@ -266,7 +276,7 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
      */
     public boolean isChanged()
     {
-        return m_changes.size() > 0;
+        return m_map.size() > 0;
     }
 
     public boolean isChanged(MsoClassCode code) {
@@ -287,22 +297,27 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
     	IMsoObjectIf msoObj = e.getSource();
 
     	// get change record associated with object 
-    	IChangeRecordIf it = m_changes.get(msoObj);
+    	IChangeRecordIf it = m_map.get(msoObj.getObjectId());
     	
     	// record does not exists?
     	if(it == null)
     	{
-    		it = new ChangeRecordImpl(msoObj,UpdateMode.LOCAL_UPDATE_MODE);
-    		m_changes.put(msoObj,it);
+    		it = new ChangeRecordImpl(msoObj,UpdateMode.LOCAL_UPDATE_MODE,m_seqNoGen);
+    		m_map.put(msoObj.getObjectId(),it);
+    		
+    		changeCount++;
+    		System.out.println("Created change record "  + "(" + changeCount + ") for " + msoObj);
     	}
 
-    	// register change
-    	it.union(e.getChange());
+    	// register change, remove changes on loopbacks and rollbacks.
+    	it.union(e.getChange(), true);
     	
     	// remove record?
     	if(!it.isChanged())
     	{
-    		m_changes.remove(msoObj);
+    		m_map.remove(msoObj.getObjectId());
+    		changeCount--;
+    		System.out.println("Destroyed change record "  + "(" + changeCount + ") for " + msoObj);
     	}
     	
     }
@@ -314,19 +329,23 @@ public class TransactionManagerImpl implements IMsoTransactionManagerIf
     	
     	// loop over all records
         for (IChangeRecordIf it : records)
-        {
-        	
+        {        	
         	// get IMsoObjectIf
         	IMsoObjectIf msoObj = it.getMsoObject();
         	
         	// get changes recorded by transaction manager
-        	IChangeRecordIf rs = m_changes.get(msoObj);
+        	IChangeRecordIf rs = m_map.get(msoObj.getObjectId());
         	
-        	// check if change is recorded by transaction manager
-        	if(rs!=null)
+        	// check if records are the same
+        	if(rs==it)
         	{
-	        	// add record to transaction
-	    		transaction.add(it);
+	        	// add cloned record to transaction
+	    		transaction.add(new ChangeRecordImpl((ChangeRecordImpl)it));
+        	}
+        	else if(rs!=null)
+        	{
+	        	// add passed transaction to transaction
+	    		transaction.add(it);        		
         	}
         }
         

@@ -45,7 +45,7 @@ import org.redcross.sar.gui.PopupAdapter;
 import org.redcross.sar.gui.dnd.DiskoDragSourceAdapter;
 import org.redcross.sar.gui.dnd.DiskoDropTargetAdapter;
 import org.redcross.sar.gui.dnd.IconDragGestureListener;
-import org.redcross.sar.gui.dnd.TransferableMsoObject;
+import org.redcross.sar.gui.dnd.TransferableObject;
 import org.redcross.sar.gui.model.AbstractMsoTableModel;
 import org.redcross.sar.gui.renderer.ObjectIcon;
 import org.redcross.sar.gui.renderer.ObjectIcon.AssignmentIcon;
@@ -918,10 +918,13 @@ public class UnitTableModel extends AbstractMsoTableModel<IUnitIf>
 	            if (value instanceof AssignmentIcon){
 	            	// get icon
 	            	AssignmentIcon icon = (AssignmentIcon)value;
+	            	// get object
+        			IMsoObjectIf msoObj = icon.getMsoObject();
 	            	// return new object?
-	            	if(icon.getMsoObject()!=null) {
-	            		// return data
-	            		return new TransferableMsoObject<IAssignmentIf>(icon.getMsoObject());
+	            	if(msoObj!=null) {
+	        			Class<?> c = msoObj.getClass();
+	        			String canonicalName = c.getInterfaces()[0].getCanonicalName(); 
+	        			return new TransferableObject(msoObj,canonicalName);
 	            	}
 	            }
 

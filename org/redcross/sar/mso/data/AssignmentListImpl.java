@@ -19,7 +19,7 @@ public class AssignmentListImpl extends MsoListImpl<IAssignmentIf> implements IA
     public IAssignmentIf createAssignment()
     {
         checkCreateOp();
-        return createdUniqueItem(new AssignmentImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber(AssignmentType.GENERAL)));
+        return createdUniqueItem(new AssignmentImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber(AssignmentType.GENERAL)));
     }
 
     public IAssignmentIf createAssignment(IMsoObjectIf.IObjectIdIf anObjectId)
@@ -32,13 +32,13 @@ public class AssignmentListImpl extends MsoListImpl<IAssignmentIf> implements IA
     public ISearchIf createSearch()
     {
         checkCreateOp();
-        return (ISearchIf) createdUniqueItem(new SearchImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber(SearchSubType.PATROL)));
+        return (ISearchIf) createdUniqueItem(new SearchImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber(SearchSubType.PATROL)));
     }
 
     public ISearchIf createSearch(SearchSubType type)
     {
         checkCreateOp();
-        return (ISearchIf) createdUniqueItem(new SearchImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber(type), type));
+        return (ISearchIf) createdUniqueItem(new SearchImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber(type), type));
     }
 
     public ISearchIf createSearch(IMsoObjectIf.IObjectIdIf anObjectId)
@@ -51,7 +51,7 @@ public class AssignmentListImpl extends MsoListImpl<IAssignmentIf> implements IA
     public IAssistanceIf createAssistance()
     {
         checkCreateOp();
-        return (IAssistanceIf) createdUniqueItem(new AssistanceImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber(AssignmentType.ASSISTANCE)));
+        return (IAssistanceIf) createdUniqueItem(new AssistanceImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber(AssignmentType.ASSISTANCE)));
     }
 
     public IAssistanceIf createAssistance(IMsoObjectIf.IObjectIdIf anObjectId)

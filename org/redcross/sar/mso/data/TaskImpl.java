@@ -166,17 +166,17 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public void setType(TaskType aType)
     {
-        m_type.setValue(aType);
+        m_type.set(aType);
     }
 
     public void setType(String aType)
     {
-        m_type.setValue(aType);
+        m_type.set(aType);
     }
 
     public TaskType getType()
     {
-        return m_type.getValue();
+        return m_type.get();
     }
 
     public IData.DataOrigin getTypeState()
@@ -261,7 +261,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public void setAlert(Calendar aAlert)
     {
-        m_alert.setValue(aAlert);
+        m_alert.set(aAlert);
     }
 
     public Calendar getAlert()
@@ -281,7 +281,7 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public void setCreated(Calendar aCreated)
     {
-        m_created.setValue(aCreated);
+        m_created.set(aCreated);
     }
 
     public Calendar getCreated()
@@ -301,17 +301,17 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public void setPriority(TaskPriority aPriority)
     {
-        m_priority.setValue(aPriority);
+        m_priority.set(aPriority);
     }
 
     public void setPriority(String aPriority)
     {
-        m_priority.setValue(aPriority);
+        m_priority.set(aPriority);
     }
 
     public TaskPriority getPriority()
     {
-        return m_priority.getValue();
+        return m_priority.get();
     }
 
     public IData.DataOrigin getPriorityState()
@@ -336,17 +336,17 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public void setStatus(TaskStatus aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public void setStatus(String aStatus) throws IllegalOperationException
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public TaskStatus getStatus()
     {
-        return m_status.getValue();
+        return m_status.get();
     }
 
     public String getStatusText()
@@ -366,22 +366,22 @@ public class TaskImpl extends AbstractTimeItem implements ITaskIf
 
     public void setSourceClass(IMsoManagerIf.MsoClassCode aSourceClass)
     {
-        m_sourceClass.setValue(aSourceClass);
+        m_sourceClass.set(aSourceClass);
     }
 
     public void setSourceClass(String aSourceClass)
     {
-        m_sourceClass.setValue(aSourceClass);
+        m_sourceClass.set(aSourceClass);
     }
 
     public IMsoManagerIf.MsoClassCode getSourceClass()
     {
-        return m_sourceClass.getValue();
+        return m_sourceClass.get();
     }
 
     public String getSourceClassText()
     {
-        return MsoManagerImpl.getClassCodeText(m_sourceClass.getValue());
+        return MsoManagerImpl.getClassCodeText(m_sourceClass.get());
     }
 
     public IData.DataOrigin getSourceClassState()

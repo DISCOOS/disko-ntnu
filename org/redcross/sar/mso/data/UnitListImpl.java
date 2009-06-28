@@ -41,7 +41,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IVehicleIf createVehicle(String anIdentifier)
     {
         checkCreateOp();
-        return (VehicleImpl) createdUniqueItem(new VehicleImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(VehicleImpl.class), anIdentifier));
+        return (VehicleImpl) createdUniqueItem(new VehicleImpl(getOwner().getModel(), createUniqueId(), makeUnitSerialNumber(VehicleImpl.class), anIdentifier));
     }
 
     public IVehicleIf createVehicle(IMsoObjectIf.IObjectIdIf anObjectId)
@@ -54,7 +54,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IBoatIf createBoat(String anIdentifier)
     {
         checkCreateOp();
-        return (BoatImpl) createdUniqueItem(new BoatImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(BoatImpl.class), anIdentifier));
+        return (BoatImpl) createdUniqueItem(new BoatImpl(getOwner().getModel(), createUniqueId(), makeUnitSerialNumber(BoatImpl.class), anIdentifier));
     }
 
     public IBoatIf createBoat(IMsoObjectIf.IObjectIdIf anObjectId)
@@ -67,7 +67,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IDogIf createDog(String anIdentifier)
     {
         checkCreateOp();
-        return (IDogIf) createdUniqueItem(new DogImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(DogImpl.class)));
+        return (IDogIf) createdUniqueItem(new DogImpl(getOwner().getModel(), createUniqueId(), makeUnitSerialNumber(DogImpl.class)));
     }
 
     public IDogIf createDog(IObjectIdIf objectId)
@@ -80,7 +80,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public IAircraftIf createAircraft(String anIdentifier)
     {
         checkCreateOp();
-        return (IAircraftIf) createdUniqueItem(new AircraftImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(AircraftImpl.class), anIdentifier));
+        return (IAircraftIf) createdUniqueItem(new AircraftImpl(getOwner().getModel(), createUniqueId(), makeUnitSerialNumber(AircraftImpl.class), anIdentifier));
     }
 
     public IAircraftIf createAircraft(IObjectIdIf objectId)
@@ -93,7 +93,7 @@ public class UnitListImpl extends MsoListImpl<IUnitIf> implements IUnitListIf
     public ITeamIf createTeam(String anIdentifier)
     {
         checkCreateOp();
-        return (ITeamIf) createdUniqueItem(new TeamImpl(getOwner().getModel(), makeUniqueId(), makeUnitSerialNumber(TeamImpl.class)));
+        return (ITeamIf) createdUniqueItem(new TeamImpl(getOwner().getModel(), createUniqueId(), makeUnitSerialNumber(TeamImpl.class)));
     }
 
     public ITeamIf createTeam(IObjectIdIf objectId)

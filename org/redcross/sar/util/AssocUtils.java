@@ -365,16 +365,19 @@ public class AssocUtils {
 	 */
 	public static Association[] parse(String association, boolean isStrict, boolean isCaseSensitive) {
 		List<Association> list = new Vector<Association>(); 
-		String pattern = (isStrict ? association : association + ".*");
-		pattern = isCaseSensitive? pattern : pattern.toLowerCase();
-		Association[] items = getAssociations();
-		// loop over all associations
-		for(Association it : items) {
-			String s = isCaseSensitive?it.format():it.format().toLowerCase();
-			if(s.matches(pattern)) {
-				list.add(it);
-			}
-		}		
+		if(association!=null && !association.isEmpty())
+		{
+			String pattern = (isStrict ? association : association + ".*");
+			pattern = isCaseSensitive? pattern : pattern.toLowerCase();
+			Association[] items = getAssociations();
+			// loop over all associations
+			for(Association it : items) {
+				String s = isCaseSensitive?it.format():it.format().toLowerCase();
+				if(s.matches(pattern)) {
+					list.add(it);
+				}
+			}		
+		}
 		// finished
 		return list.size()>0?list.toArray(new Association[list.size()]):null;
 	}	
@@ -556,9 +559,12 @@ public class AssocUtils {
 	
 	public static void main(String[] args) {
 		Association[] items = parse("Oslo",false,false);
-		for(String it : format("Org:{3:n},{2:n},{1:n}",items)) {
-			System.out.println(it);
-		}		
+		if(items!=null)
+		{
+			for(String it : format("Org:{3:n},{2:n},{1:n}",items)) {
+				System.out.println(it);
+			}
+		}
 	}
 	
 }

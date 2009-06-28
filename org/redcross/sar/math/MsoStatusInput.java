@@ -49,7 +49,7 @@ public class MsoStatusInput<T extends IMsoObjectIf, E extends Enum<E>> extends A
 			// only use server values
 			if(attr.isOrigin(IData.DataOrigin.REMOTE)) {
 				// get status
-				E status = attr.getValue();
+				E status = attr.get();
 				// get flags
 				boolean exists = m_count.contains(it);
 				boolean isReady = it.isDeleted() ? false : m_status.equals(status);

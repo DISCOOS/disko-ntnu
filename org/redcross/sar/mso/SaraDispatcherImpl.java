@@ -1,6 +1,8 @@
 package org.redcross.sar.mso;
 
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -13,6 +15,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import no.cmr.hrs.sar.model.Fact;
+import no.cmr.hrs.sar.model.Message;
 import no.cmr.hrs.sar.model.Operation;
 import no.cmr.hrs.sar.model.SarObjectImpl;
 import no.cmr.hrs.sar.tools.ChangeObject;
@@ -20,16 +23,15 @@ import no.cmr.hrs.sar.tools.IDHelper;
 import no.cmr.tools.Log;
 
 import org.apache.log4j.Logger;
-import org.redcross.sar.Application;
 import org.redcross.sar.mso.data.*;
-import org.redcross.sar.mso.event.IMsoTransactionListenerIf;
+import org.redcross.sar.mso.data.IMsoObjectIf.IObjectIdIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.util.except.DuplicateIdException;
 import org.redcross.sar.util.except.MsoException;
 import org.redcross.sar.work.AbstractWork;
 import org.redcross.sar.work.IWorkLoop;
-import org.redcross.sar.work.WorkPool;
+import org.redcross.sar.work.IWorkPool;
 import org.rescuenorway.saraccess.api.*;
 import org.rescuenorway.saraccess.except.SaraException;
 import org.rescuenorway.saraccess.model.*;
@@ -37,13 +39,28 @@ import org.rescuenorway.saraccess.model.*;
 /**
  * For documentation, see {@link  IDispatcherIf}
  */
-public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf, SaraChangeListener
+public class SaraDispatcherImpl implements IDispatcherIf, SaraChangeListener
 {
 
 	/**
+	 * This constant identifies a operation finished occurrence.
+	 */
+	private static final String TO_FINISHED = "¤ AVSLUTTET";
+
+	/**
+	 * This constant identifies a internal message.
+	 */
+	private static final String FROM_INTERN = "¤ INTERN";
+	
+	/**
+	 * The dispatched MSO model
+	 */
+    private IMsoModelIf m_msoModel;
+	
+	/**
 	 * Logger object for this class.
 	 */
-	private static final Logger logger = Logger.getLogger(SaraDispatcherImpl.class);
+	private static final Logger m_logger = Logger.getLogger(SaraDispatcherImpl.class);
 	
 	/** 
 	 * <b>SaraChangeEvent arrival buffer strategy</b></p>
@@ -74,7 +91,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	 * 
 	 * For internal use.
 	 */
-    private Timer timer = new Timer();
+    private Timer m_timer = new Timer();
 
     
     /**
@@ -82,7 +99,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	 * 
 	 * Implements the arrival buffer.
 	 */
-    private DelaySchedule schedule = null;
+    private DelaySchedule m_schedule = null;
 
     
 	/**
@@ -90,7 +107,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	 * 
 	 * For internal use.
 	 */
-    private WorkPool m_workPool;
+    private IWorkPool m_workPool;
     
 	
 	/** 
@@ -100,16 +117,27 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	 * These threads loads available operations asynchronously. Hence, 
 	 * enumeration should be delayed until all operations are loaded in SARA. 
 	 **/
-    boolean m_isInitiated = false;
-    
+    private boolean m_isInitiated = false;
     
     /**
-     * <b>Initialization of active operation</b></p>
+     * <b>Operation creation in process start time</b></p>
      * 
-     * Each time a operation opened locally, the dispatchers has to build the
-     * model representing it. This take time. 
+     * Each time a operation is requested created by the dispatcher, the 
+     * dispatchers has to wait on the SARA change event that acknowledges the
+     * creation. The MSO model is not created until this event is received. This
+     * member variable stores the creation process start time in milliseconds. 
      */   
-    boolean m_isLoading = false;
+    private long m_creationInProgress = 0;
+    
+    /**
+     * <b>Operation creation in process timeout</b></p>
+     * 
+     * Each time a operation is requested created by the dispatcher, the 
+     * dispatchers has to wait on the SARA change event that acknowledges the
+     * creation. The MSO model is not created until this event is received. This
+     * member variable stores the timeout associated with the creation process 
+     */   
+    private long m_creationInProgressTimeOut = 0;
 
     
 	/**
@@ -118,7 +146,14 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	 * Access to SARA is supplied through the SARA access service. This 
 	 * service returns a SARA session, which all traffic is handed through. 
 	 */
-    SarAccessService sarSvc;
+    private SarAccessService m_sarAccessService;
+    
+    /**
+     * <b>Current SARA session</b></p>
+     * 
+     * The SARA session handles all traffic to an from the dispatcher 
+     */
+    private SarSession m_sarSession;
     
     
 	/**
@@ -126,7 +161,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	 * 
 	 * Each sar operation is represented by the  
 	 */    
-    SarOperation sarOperation = null;
+    private SarOperation m_sarOperation = null;
     
     
     /**
@@ -134,14 +169,14 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
      * 
      * For internal use.
      */
-    Map<SarBaseObject, IMsoObjectIf> saraMsoMap = new HashMap<SarBaseObject, IMsoObjectIf>();
+    private Map<SarBaseObject, IMsoObjectIf> m_saraMsoMap = new HashMap<SarBaseObject, IMsoObjectIf>();
 
     /**
      * <b>MAS to SARA object mapping</b></p>
      * 
      * For internal use.
      */
-    Map<IMsoObjectIf, SarBaseObject> msoSaraMap = new HashMap<IMsoObjectIf, SarBaseObject>();
+    private Map<IMsoObjectIf, SarBaseObject> m_msoSaraMap = new HashMap<IMsoObjectIf, SarBaseObject>();
 
     /**
      * <b>Dispatch listeners</b>
@@ -150,57 +185,83 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
      * listeners of system critical changes. If these events are not listened for and handled
      * propertly, the system may misserably fail...
      */
-    List<IDispatcherListenerIf> listeners = new ArrayList<IDispatcherListenerIf>();
+    private List<IDispatcherListenerIf> m_listeners = new ArrayList<IDispatcherListenerIf>();
 
     
-    IMsoModelIf m_msoModel;
+    private final InetAddress m_localHost;
+     
+    public SaraDispatcherImpl() throws UnknownHostException {
+    	m_localHost = InetAddress.getLocalHost();
+	}
 
-    public SaraDispatcherImpl()
+	public IMsoObjectIf.IObjectIdIf createObjectId()
     {
-        // setUpService();
-    }
-
-    public IMsoObjectIf.IObjectIdIf makeObjectId()
-    {
-        return new AbstractMsoObject.ObjectId(sarOperation.getID() + "." + sarSvc.getSession().createInstanceId(),null);
-    }
-
-    public SarAccessService getSarSvc()
-    {
-        return sarSvc;
-    }
-
-    public void initiate()
-    {
-    	if(!m_isInitiated) {
-    		
-	        setUpService();
-	        IMsoModelIf imm = Application.getInstance().getMsoModel();
-	        imm.getEventManager().addCommitListener(this);
-	        m_isInitiated = true;
-	        if (sarSvc.getSession().isFinishedLoading()
-	        		&& sarSvc.getSession().getOperations().getOperations().size() == 0)
-	        {
-	            m_isLoading = true;
-	            sarSvc.getSession().createNewOperation("MSO", true);
-	        }
-    	}
+        return createObjectId(m_sarOperation.getID(),null,false);
     }
 
     public boolean isInitiated()
     {
-        if (!m_isLoading && sarSvc.getSession().isFinishedLoading() && sarSvc.getSession().getOperations().getOperations().size() == 0)
-        {
-            m_isLoading = true;
-            sarSvc.getSession().createNewOperation("MSO", true);
-        }
-        return sarSvc.getSession().isFinishedLoading() && !m_isLoading;
+    	return m_sarSession!=null;
+    }
+    
+    public boolean isReady()
+    {
+    	if(isInitiated())
+    	{
+	    	// prepare
+	    	ensureOperationExists();
+	    	// check initiation state
+	        return getSarSession().isFinishedLoading() && !isCreationInProgress();
+    	}
+    	// failure
+    	return false;
     }
 
+    public boolean initiate(IWorkPool pool) 
+    {
+    	if(!isInitiated())
+    	{
+    		try {
+				m_workPool = pool;
+			    Credentials creds = new UserPasswordCredentials("Operatør", "Operatør");
+				m_sarSession = getSarAccessService().createSession(creds);	        
+				m_sarSession.AddChangeListener(this);
+				getSarAccessService().startRecvMessages();
+			    // success
+			    return true;
+			} catch (Exception e) {
+				m_logger.error("Failed to initiate dispatcher",e);
+			}
+    	}
+        // failure
+	    return false;    
+    }
+    
+    public boolean isInitiated(IMsoModelIf aMsoModel)
+    {
+    	return aMsoModel!=null && m_msoModel==aMsoModel;
+    }
+
+    public boolean initiate(IMsoModelIf aMsoModel)
+    {
+		if(isInitiated() && aMsoModel!=null  && !isInitiated(aMsoModel) ) 
+		{
+		    m_msoModel = aMsoModel;
+		    m_msoModel.setDispatcher(this);
+		    m_isInitiated = true; // TODO: Implement several mso models
+		    ensureOperationExists();
+		    // success
+		    return true;
+		}
+		
+    	// failure
+    	return false;
+    }
+    
     public List<String[]> getActiveOperations()
     {
         List<String[]> ops = new ArrayList<String[]>();
-        List<SarOperation> opers = sarSvc.getSession().getOperations().getOperations();
+        List<SarOperation> opers = getSarSession().getOperations().getOperations();
         for (SarOperation soper : opers)
         {
             String[] descr = {IDHelper.formatOperationID(soper.getID()), soper.getID()};
@@ -209,45 +270,46 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         return ops;
     }
 
-    public boolean setActiveOperation(String opID)
+    public String getCurrentOperationID()
     {
+    	String id = null;
+    	if(m_sarOperation != null)
+    		id = m_sarOperation.getID();
+    	return id;
+    }
 
+    public String getCurrentOperationName()
+    {
+    	String name = null;
+    	if(m_sarOperation != null)
+    		name = IDHelper.formatOperationID(getCurrentOperationID());
+    	return name;
+    }
+
+    public boolean setCurrentOperation(String opID)
+    {
+    	// no model initiated?
+    	if(!m_isInitiated) return false;
+    		
     	// initialize
     	boolean bFlag = false;
 
         // notify
         getWorkPool().suspend();
         getMsoModel().setRemoteUpdateMode();
-        getMsoModel().suspendUpdate();
+        getMsoModel().suspendChange();
 
     	try {
 
-    		// notify deactivation?
-    		if(sarOperation !=null) {
-    			fireOnOperationDeactivated(sarOperation.getID());
-    		}
-
-    		// deactivate current operation
-    		sarOperation = null;
-
     		// get operation from SARA session
-    		SarOperation soper = sarSvc.getSession().getOperation(opID);
+    		SarOperation sarOpr = getSarSession().getOperation(opID);
 
 	        // try to clear current MSO model
 	        if (clearMSO()){
 
 		        // try to set as active operation
-		        if (setActiveOperation(soper)) {
-
-			        // save operation
-			        sarOperation = soper;
-
-			        // notify activation
-			        fireOnOperationActivated(sarOperation.getID());
-
-			        // success
-			        bFlag = true;
-		        }
+		        bFlag = setActiveOperation(sarOpr);
+		        
 	        }
 
     	}
@@ -265,25 +327,12 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
     }
 
-    public String getActiveOperationID()
-    {
-    	String id = null;
-    	if(sarOperation != null)
-    		id = sarOperation.getID();
-    	return id;
-    }
-
-    public String getActiveOperationName()
-    {
-    	String name = null;
-    	if(sarOperation != null)
-    		name = IDHelper.formatOperationID(getActiveOperationID());
-    	return name;
-    }
-
     private boolean clearMSO()
     {
 
+    	// no model initiated?
+    	if(!m_isInitiated) return false;
+    	
         // initialize
         boolean success = false;
 
@@ -318,7 +367,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	    		 * ========================================================== */
 	    			    		
 	        	// delete all deleteable relations
-	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+	        	for(IMsoObjectIf msoObj: m_saraMsoMap.values()) {
 	        		if(msoObj instanceof IMsoRelationIf) {
 	        			if(msoObj.isDeletable()) {
 	        				((AbstractMsoObject) msoObj).delete(false);
@@ -327,7 +376,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	        	}
 
 	        	// delete all deleteable objects
-	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+	        	for(IMsoObjectIf msoObj: m_saraMsoMap.values()) {
 	        		if(msoObj instanceof IMsoObjectIf && !(msoObj instanceof IOperationIf)) {
 	        			if(msoObj.isDeletable())
 	        			((AbstractMsoObject) msoObj).delete(false);
@@ -335,7 +384,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	        	}
 
 	        	// delete all undeleteable objects
-	        	for(IMsoObjectIf msoObj: saraMsoMap.values()) {
+	        	for(IMsoObjectIf msoObj: m_saraMsoMap.values()) {
 	        		if(msoObj!=null && !msoObj.isDeleted() && !(msoObj instanceof IOperationIf))
 	        			((AbstractMsoObject) msoObj).delete(false);
 	        	}
@@ -348,8 +397,8 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 		    	}
 
 		    	// clear mapping
-		    	saraMsoMap.clear();
-		    	msoSaraMap.clear();
+		    	m_saraMsoMap.clear();
+		    	m_msoSaraMap.clear();
 
 		    	// do garbage collection now
 		    	Runtime.getRuntime().gc();
@@ -380,14 +429,25 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
     }
 
-    private boolean setActiveOperation(SarOperation soper)
+    private boolean setActiveOperation(SarOperation sarOpr)
     {
+    	
+    	// does operation not exist?
+    	if(sarOpr==null) return false;
+        
+		// notify deactivation?
+		if(m_sarOperation !=null) {
+			fireOnOperationDeactivated(m_sarOperation.getID());
+		}
 
-        // CREATE MSO operation
-        createMsoOperation(soper,false);
+        // save operation
+        m_sarOperation = sarOpr;
+
+    	// CREATE MSO operation
+        createMsoOperation(sarOpr);
 
         // get copy of object
-        List<SarObject> objects = new ArrayList<SarObject>(soper.getObjectList());
+        List<SarObject> objects = new ArrayList<SarObject>(sarOpr.getObjectList());
 
         // ADD ALL CO
         for (SarObject so : objects)
@@ -447,52 +507,76 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
         }
 
+        // notify activation
+        fireOnOperationActivated(m_sarOperation.getID());
+
+        // success
         return true;
 
     }
 
     private IMsoModelIf getMsoModel() {
-    	if(m_msoModel==null) {
-			m_msoModel = Application.getInstance().getMsoModel();
-    	}
     	return m_msoModel;
     }
 
-    private WorkPool getWorkPool() {
-    	if(m_workPool==null) {
-    		try {
-				m_workPool = WorkPool.getInstance();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
+    private IWorkPool getWorkPool() {
     	return m_workPool;
     }
 
-    public void finishActiveOperation()
+    public boolean createNewOperation(long timeOutMillis)
     {
-        //If this is the only operation, shutdown and create a new one
-        boolean createNew = false;
-        if (sarSvc.getSession().getOperations().getOperations().size() == 1)
-        {
-            createNew = true;
-        }
-
-        // forward
-        sarSvc.getSession().finishOperation(sarOperation.getID());
-
-        if (createNew)
-        {
-            createNewOperation();
-        }
-
+    	// get current time in milliseconds.
+    	long tic = System.currentTimeMillis();
+    	
+    	// allowed to start new process?
+    	if(!isCreationInProgress() 
+    			|| tic-m_creationInProgress>m_creationInProgressTimeOut)
+    	{
+    		// set start time
+    		m_creationInProgress = System.currentTimeMillis();
+    		// only allow one creation in process 
+	        m_creationInProgressTimeOut = timeOutMillis;
+	        // start creation process
+	        getSarSession().createNewOperation("MSO", true);
+	        // success
+	        return true;
+    	}
+    	// failure
+        return false;
+    }
+    
+    public boolean isCreationInProgress() 
+    {
+    	return m_creationInProgress>0;
     }
 
-    public void createNewOperation()
+    public boolean finishCurrentOperation()
     {
-        m_isLoading = true;
-        sarSvc.getSession().createNewOperation("MSO", true);
+    	if(m_sarOperation != null)
+    	{
+	    	
+	        // If this is the only operation, shutdown and create a new one
+	        boolean createNew = false;
+	        if (getSarSession().getOperations().getOperations().size() == 1)
+	        {
+	            createNew = true;
+	        }
+	
+	        // forward
+	        getSarSession().finishOperation(m_sarOperation.getID());
+	
+	        // create a new operation?
+	        if (createNew)
+	        {
+	            createNewOperation(5000);
+	        }
+	        
+	        // success
+	        return true;
+	        
+    	}
+    	// failure
+    	return false;
     }
 
     public void merge()
@@ -503,55 +587,101 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
     public void shutdown()
     {
-        sarSvc.getSession().shutDown();
+        getSarSession().shutDown();
     }
 
-    private void createMsoOperation(SarOperation oper, boolean notify)
+    private void createMsoOperation(SarOperation oper)
     {
-        // only one active MSO operation allowed
-        IMsoManagerIf msoManager = Application.getInstance().getMsoModel().getMsoManager();
-        if (!msoManager.operationExists())
-        {
-            try
-            {
-                String form = IDHelper.formatOperationID(oper.getID());
-                String prefix = "";
-                String number = "";
-                if (form.indexOf("-") > 0)
-                {
-                    prefix = form.substring(0, form.lastIndexOf("-"));
-                    number = form.substring(form.lastIndexOf("-") + 1);
-                }
-                /*
-                ControllerInterface c = ((Operation)oper).getController();
-                if(c instanceof SaraApiController) {
-                	SaraApiController sc = (SaraApiController)c;
-                	SARparse p = sc.getParser();
-                }
-                */
-                // get creation date
-                List<?> periods = ((Operation)oper).getActivePeriods();
-            	Calendar t = Calendar.getInstance();
-                if(periods.size()>0)
-                	t.setTimeInMillis(Long.valueOf(periods.get(0).toString()));
-
-                IMsoObjectIf.IObjectIdIf operid = new AbstractMsoObject.ObjectId(oper.getID(),t.getTime());
-                msoManager.createOperation(prefix, number, operid);
-                sarOperation = oper;
-                // notify?
-                if(notify && sarOperation!=null) {
-                	fireOnOperationActivated(sarOperation.getID());
-                }
-
-            }
-            catch (DuplicateIdException e) // shall not happen
-            {
-                e.printStackTrace();
-            }
-        } else
-        {
-            // Hendelse er allerede opprettet, hva nå
-        }
+    	// a model is initiated and the SAR operation exists?
+    	if(m_isInitiated && oper!=null) 
+    	{
+	        // MSO model is only allowed to be created once from SAR operation
+	        if (!getMsoModel().exists())
+	        {
+	            try
+	            {
+	                String form = IDHelper.formatOperationID(oper.getID());
+	                String prefix = "";
+	                String number = "";
+	                if (form.indexOf("-") > 0)
+	                {
+	                    prefix = form.substring(0, form.lastIndexOf("-"));
+	                    number = form.substring(form.lastIndexOf("-") + 1);
+	                }
+	                /*
+	                ControllerInterface c = ((Operation)oper).getController();
+	                if(c instanceof SaraApiController) {
+	                	SaraApiController sc = (SaraApiController)c;
+	                	SARparse p = sc.getParser();
+	                }
+	                */
+	                
+	                // get creation date
+	                List<?> periods = ((Operation)oper).getActivePeriods();
+	            	Calendar t = Calendar.getInstance();
+	                if(periods.size()>0)
+	                	t.setTimeInMillis(Long.valueOf(periods.get(0).toString()));
+	                
+	                // create root object id
+	                IObjectIdIf objId = createObjectId(oper.getID(),t.getTime(),true);
+	                
+	                // create operation
+	                getMsoModel().getMsoManager().createOperation(prefix, number,  objId);
+	                
+	            }
+	            catch (DuplicateIdException e) // shall not happen
+	            {
+	                m_logger.error("Failed to create operation",e);
+	            }
+	        } else
+	        {
+	            m_logger.warn("MSO model creation from SarOperation " +
+	            		"attempted on already created MSO model");
+	        }
+    	}
+    }
+    
+    private void finishMsoOperation(SarOperation sarOpr)
+    {
+    	// check if same as current
+    	String oprId = m_sarOperation.getID();
+    	boolean current = (sarOpr == m_sarOperation);
+    	
+    	/* 
+    	 * TODO: Solve the isFinished() problem. For finished operations,
+    	 * this method does not return true.
+    	 * 
+    	 * 
+    	// try to validate finished state just in case
+    	boolean isFinished = (m_sarOperation instanceof Operation
+    			? ((Operation)m_sarOperation).isFinished() : true);
+		*/
+    	
+    	// is current operation?
+    	if(current) 
+    	{
+    		m_sarOperation = null;
+    		clearMSO();
+    	}
+    	
+    	// notify
+		fireOnOperationFinished(oprId,current);
+		
+		/* 
+		 * TODO: See problem above...
+		 * 
+		 * 
+		 * 
+    	// notify
+    	if(isFinished) 
+    	{
+    		fireOnOperationFinished(oprId,current);
+    	}
+    	else if(current) 
+    	{
+    		fireOnOperationDeactivated(oprId);
+    	}
+    	*/
     }
 
     // global object used in the the commit operation
@@ -575,21 +705,21 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         newObjects.clear();
 
         // Check that operation is added
-        if (sarSvc.getSession().isFinishedLoading() && sarSvc.getSession().getOperations().getOperations().size() == 0)
+        if (getSarSession().isFinishedLoading() && getSarSession().getOperations().getOperations().size() == 0)
         {
-            sarSvc.getSession().createNewOperation("MSO", true);
+            getSarSession().createNewOperation("MSO", true);
         }
 
         // get commit wrapper
         ITransactionIf transaction = (ITransactionIf) e.getSource();
 
         // get object list
-        List<IChangeRecordIf> list = transaction.getChanges();
+        List<IChangeRecordIf> list = transaction.getRecords();
 
         // prepare changed objects
         for (IChangeRecordIf it : list)
         {
-            //IF created, create SARA object
+            //If created, create SARA object
             if (it.isObjectCreated())
             {
             	// create sara object
@@ -604,14 +734,14 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         }
 
         // prepare object to object relations (1-to-1, or named relation)
-        for (IChangeIf.IChangeRelationIf it : transaction.getObjectRelations())
+        for (IChangeIf.IChangeRelationIf it : transaction.getObjectRelationChanges())
         {
         	// forward
             msoRelationChanged(it, true);
         }
 
         // prepare list changes (1-to-N relations)
-        for (IChangeIf.IChangeRelationIf it : transaction.getListRelations())
+        for (IChangeIf.IChangeRelationIf it : transaction.getListRelationChanges())
         {
             msoRelationChanged(it, false);
         }
@@ -627,17 +757,17 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         }
 
         // forward
-        sarSvc.getSession().commit(sarOperation.getID());
+        getSarSession().commit(m_sarOperation.getID());
 
     }
 
     private void msoRelationChanged(IChangeIf.IChangeRelationIf aChange, boolean isNamedRelation)
     {
         // initialize
-        IMsoObjectIf ownObj = aChange.getReferringObject();
-        IMsoObjectIf refObj = aChange.getReferredObject();
-        SarObject srcObj = sarOperation.getSarObject(ownObj.getObjectId());
-        SarObject relObj = sarOperation.getSarObject(refObj.getObjectId());
+        IMsoObjectIf ownObj = aChange.getRelatingObject();
+        IMsoObjectIf refObj = aChange.getRelatedObject();
+        SarObject srcObj = m_sarOperation.getSarObject(ownObj.getObjectId());
+        SarObject relObj = m_sarOperation.getSarObject(refObj.getObjectId());
         String refName = aChange.getName();
         // if SAR objects does not exists in SAR operation, 
         // try map of SAR objects created in this commit 
@@ -690,7 +820,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         IMsoObjectIf msoObj = aRecord.getMsoObject();
         msoObj.getClassCode();
         // get object type
-        SarSession sarSess = sarSvc.getSession();
+        SarSession sarSess = getSarSession();
         String className = msoObj.getClass().getName();
         if (className.indexOf("Impl") > 0)
         {
@@ -700,11 +830,11 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                 msoObj.getObjectId().substring(msoObj.getObjectId().indexOf(".") + 1) :
                 msoObj.getObjectId();
         SarObject sbo = (SarObject) sarSess.createInstance(
-                className, sarOperation.getID(),
+                className, m_sarOperation.getID(),
                 SarBaseObjectFactory.TYPE_OBJECT, objId);
 
         // connect to operation
-        sbo.setOperation(sarOperation);
+        sbo.setOperation(m_sarOperation);
         // update relations and attributes
         updateSaraObject(sbo, aRecord.getMsoObject(), aRecord, false);
         // finished
@@ -714,7 +844,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     private void updateSaraObject(IChangeRecordIf aRecord)
     {
         // get sara object
-    	SarObject so = sarOperation.getSarObject(aRecord.getMsoObject().getObjectId());
+    	SarObject so = m_sarOperation.getSarObject(aRecord.getMsoObject().getObjectId());
         // ensure that this change is submitted to all listeners before any relations is updated
         updateSaraObject(so, aRecord.getMsoObject(), aRecord, true);
     }
@@ -777,7 +907,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         if (submitChanges)
         {
         	// commit this change
-        	sarSvc.getSession().commit(sarOperation.getID());
+        	getSarSession().commit(m_sarOperation.getID());
         }
 
     }
@@ -785,37 +915,45 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     private void deleteSaraObject(IChangeRecordIf aRecord)
     {
         // get object from operation
-        SarObject soi = sarOperation.getSarObject(aRecord.getMsoObject().getObjectId());
+        SarObject soi = m_sarOperation.getSarObject(aRecord.getMsoObject().getObjectId());
 
     	// forward
         soi.delete("DISKO");
 
     }
-
-    public void setUpService()
+    
+    protected SarAccessService getSarAccessService()
     {
-        sarSvc = SarAccessService.getInstance();
-        Credentials creds = new UserPasswordCredentials("Operatør", "Operatør");
-        try
+    	if(m_sarAccessService==null)
+    	{
+            m_sarAccessService = SarAccessService.getInstance();    		
+    	}
+    	return m_sarAccessService;
+    }
+    
+    public SarSession getSarSession()
+    {
+    	return m_sarSession;
+    }
+    
+    protected boolean ensureOperationExists()
+    {
+        if (   getSarSession().isFinishedLoading() 
+            && getSarSession().getOperations().getOperations().size() == 0)
         {
-        	sarSvc.createSession(creds);
+            // no operations exists, create one now
+            return createNewOperation(5000);
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        sarSvc.getSession().AddChangeListener(this);
-
-        try
-        {
-            sarSvc.startRecvMessages();
-        }
-        catch (Exception e)
-        {
-            Log.printStackTrace(e);
-            //Log.warning(e.getMessage());
-        }
+        
+        // NOP
+        return false;
+    	
+    }
+    
+    protected IMsoObjectIf.IObjectIdIf createObjectId(String oprId, Date creationTime, boolean isRoot)
+    {
+    	String objId = (isRoot?oprId:oprId + "." + getSarSession().createInstanceId());
+        return new AbstractMsoObject.ObjectId(objId,creationTime);
     }
 
     protected String getSarObjectID(SaraChangeEvent change) {
@@ -847,17 +985,76 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
     public void saraChanged(final SaraChangeEvent change)
     {
-
-        if (change.getSource() instanceof SarOperation)
+    	// get change source
+    	Object source = change.getSource();
+    	
+    	// dispatch on source instance type
+        if (source instanceof Operation)
         {
-            if (change.getChangeType() == SaraChangeEvent.TYPE_ADD)
+            switch(change.getChangeType())
             {
-            	boolean current = m_isLoading;
-                m_isLoading = false;
-                fireOnOperationCreated(((SarOperation) change.getSource()).getID(), current);
+            case SaraChangeEvent.TYPE_ADD:
+            	// cast to Operation
+            	Operation sarOpr = (Operation)source;
+            	
+            	// get in progress flag
+            	boolean bFlag = isCreationInProgress();
+            	
+            	// is in progress?
+            	if(bFlag)
+            	{
+            		// get host name
+            		String hostName = m_localHost.getHostName();
+            		
+            		// check if this is created by me
+            		bFlag = sarOpr.getCreator().equalsIgnoreCase(hostName);
+            		
+            		// operation created by me?
+            		if(bFlag)
+            		{
+            			// created after creation prosess started?
+            			bFlag = (m_creationInProgress<=sarOpr.getStartTime()); 
+            		}            		
+            	}
+            	
+            	// is creation process finished?
+                m_creationInProgress = (bFlag ? 0 : m_creationInProgress);
+                
+                // notify
+                fireOnOperationCreated(sarOpr.getID(), bFlag);
+                
+                // exit switch
+                break;
+            case SaraChangeEvent.TYPE_REMOVE:
+        		// register this occurrence
+        		finishMsoOperation(change.getSarOp());
+        		// exit switch
+        		break;
+            case SaraChangeEvent.TYPE_CHANGE:
+        		// exit switch
+        		break;        		
+            case SaraChangeEvent.TYPE_EXCEPTION:
+        		// exit switch
+        		break;        		
+            case SaraChangeEvent.TYPE_MESSAGE:
+        		// exit switch
+        		break;        		
             }
         }
-        if (sarOperation != null && change.getSarOp() == sarOperation)
+        /*
+        else if (source instanceof Message)
+        {
+        	Message msg = (Message)source;
+        	if(   FROM_INTERN.equalsIgnoreCase(msg.getFrom())
+        	   && TO_FINISHED.equalsIgnoreCase(msg.getTo()))
+			{
+        		// register this occurrence
+        		finishMsoOperation(change.getSarOp());
+			}        	
+        }
+        */
+        
+        if (m_sarOperation != null && change.getSarOp() == m_sarOperation)
         {
         	try {
 
@@ -876,8 +1073,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
                 }
 
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				m_logger.error("Failed to schedule SARA change",e);
 			}
 
         }
@@ -885,21 +1081,21 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
     private void scheduleSaraChangeWork(SaraChangeEvent e) {
     	// get new schedule from old
-    	schedule = new DelaySchedule(schedule);
+    	m_schedule = new DelaySchedule(m_schedule);
     	try {
 			// add to schedule
-			schedule.add(e);
+			m_schedule.add(e);
 		} catch (RuntimeException ex) {
-			logger.error("Failed to add Sara change work to schedule. This implies that " +
+			m_logger.error("Failed to add Sara change work to schedule. This implies that " +
 					"the buffer is of usufficiently large capacity with respect to the operational " +
 					"requirements of the system. The buffer interval should therefore be decreased.");
 		}
 		// cancel schedule
-		timer.cancel();
+		m_timer.cancel();
 		// set new timer
-		timer = new Timer();
+		m_timer = new Timer();
 		// schedule Sara Change Work
-		timer.schedule(schedule, SARA_CHANGE_EVENT_BUFFER_DELAY);
+		m_timer.schedule(m_schedule, SARA_CHANGE_EVENT_BUFFER_DELAY);
     }
 
     public void saraException(SaraException sce)
@@ -911,42 +1107,26 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     {
 
         Object co = change.getSource();
-        IMsoManagerIf msoManager = Application.getInstance().getMsoModel().getMsoManager();
+        IMsoManagerIf msoManager = getMsoModel().getMsoManager();
 
         if(msoManager.operationExists()) {
 
 	        try
 	        {
 
-	            if (co instanceof SarOperation)
+	            if (co instanceof SarBaseObject)
 	            {
-	            	String oprId = sarOperation.getID();
-	            	boolean current = (co == sarOperation);
-	            	boolean isFinished = (sarOperation instanceof Operation
-	            			? ((Operation)sarOperation).isFinished() : true);
-	            	if(current) {
-	            		sarOperation = null;
-	            		clearMSO();
-	            	}
-	            	// notify
-	            	if(isFinished) {
-	            		fireOnOperationFinished(oprId,current);
-	            	}
-	            	else if(current) {
-	            		fireOnOperationDeactivated(oprId);
-	            	}
-	            } else
-	            {
-	                IMsoObjectIf msoObj = saraMsoMap.get(co);
+	                IMsoObjectIf msoObj = m_saraMsoMap.get(co);
 	                if (msoObj != null)
 	                {
 	                    msoManager.remove(msoObj);
 	                }
 	            }
+	            
 	        }
 	        catch (MsoException e)
 	        {
-	            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+	            m_logger.error("Failed to remove MSO object",e);  
 	        }
         }
 
@@ -964,7 +1144,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
             String relId = toObject.length>1?toObject[1]:null;
             String relName = ((String[]) co.getToObj())[0];
-            SarObjectImpl rel = (SarObjectImpl) sarOperation.getSarObject(relId);
+            SarObjectImpl rel = (SarObjectImpl) m_sarOperation.getSarObject(relId);
             updateMsoRelation(so, rel, relName, co.getFieldName());
 
         } else
@@ -976,7 +1156,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
             // Use object to find MSO object
             if (parentObject != null)
             {
-                IMsoObjectIf msoObj = saraMsoMap.get(parentObject);
+                IMsoObjectIf msoObj = m_saraMsoMap.get(parentObject);
                 Map<?,?> attrs = msoObj.getAttributes();
                 attr = (AttributeImpl<?>) attrs.get(((SarFact) so).getLabel().toLowerCase());
                 if (attr != null)
@@ -997,8 +1177,8 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	private void updateMsoRelation(SarBaseObject so, SarObjectImpl rel, String relName, String fieldName)
     {
     	// get relation objects
-        IMsoObjectIf source = saraMsoMap.get(so);
-        IMsoObjectIf relObj = saraMsoMap.get(rel);
+        IMsoObjectIf source = m_saraMsoMap.get(so);
+        IMsoObjectIf relObj = m_saraMsoMap.get(rel);
         //Get type relation change
         if (fieldName.equalsIgnoreCase(SarBaseObjectImpl.ADD_REL_FIELD))
         {
@@ -1045,7 +1225,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         {
             String parentid = so.getID().substring(0, so.getID().lastIndexOf("."));
             String operid = so.getID().substring(0, so.getID().indexOf("."));
-            SarOperation soper = sarSvc.getSession().getOperation(operid);
+            SarOperation soper = getSarSession().getOperation(operid);
             soi = soper.getSarObject(parentid);
             return soi;
         }
@@ -1061,7 +1241,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     {
         // initialize
     	IMsoObjectIf msoObj = null;
-        IMsoManagerIf msoMgr = Application.getInstance().getMsoModel().getMsoManager();
+        IMsoManagerIf msoMgr = getMsoModel().getMsoManager();
 
         /* ======================================================
          * MSO Object creation
@@ -1103,8 +1283,8 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
         setMsoObjectValues(sarObject, msoObj);
 
         // update internal object mappings
-        saraMsoMap.put(sarObject, msoObj);
-        msoSaraMap.put(msoObj, sarObject);
+        m_saraMsoMap.put(sarObject, msoObj);
+        m_msoSaraMap.put(msoObj, sarObject);
 
     }
 
@@ -1173,7 +1353,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
     			// create work
     			SaraChangeWork work = new SaraChangeWork(new ArrayList<SaraChangeEvent>(changes));
         		// schedule on work pool
-				WorkPool.getInstance().schedule(work);
+				getWorkPool().schedule(work);
 				// cleanup
 				changes.clear();
 			} catch (Exception e1) {
@@ -1197,7 +1377,7 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
 		protected void beforePrepare() {
         	// set remote update mode
-			Application.getInstance().getMsoModel().setRemoteUpdateMode();
+			getMsoModel().setRemoteUpdateMode();
 		}
 
 		/**
@@ -1217,13 +1397,33 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 	            	// do the update
 	                if (change.getChangeType() == SaraChangeEvent.TYPE_ADD)
 	                {
-	                    if (change.getSource() instanceof SarOperation){
-	                        createMsoOperation((SarOperation) change.getSource(),true);
+	                	// get source
+	                	Object source = change.getSource();
+	                	// dispatch on source
+	                    if (source instanceof SarOperation)
+	                    {
+	                        createMsoOperation((SarOperation) source);
 	                    }
-	                    else if (change.getSource() instanceof SarObject){
-	                        addMsoObject((SarObject) change.getSource());
+	                    else if (source instanceof SarObject)
+	                    {
+	                        addMsoObject((SarObject) source);
 	                    }
-	                    else{
+	                    else if (source instanceof Message)
+	                    {
+	                    	Message msg = (Message)source;
+	                    	if(   FROM_INTERN.equalsIgnoreCase(msg.getFrom())
+	                    	   && TO_FINISHED.equalsIgnoreCase(msg.getTo()))
+                			{
+	                    		// register this occurrence
+	                    		finishMsoOperation(change.getSarOp());
+                			}
+	                    	else
+	                    	{
+		                        Log.warning("SaraChange not handled for objectType " + change.getSource().getClass().getName());	                    		
+	                    	}	                    	
+	                    }
+	                    else
+	                    {
 	                        Log.warning("SaraChange not handled for objectType " + change.getSource().getClass().getName());
 	                    }
 	                    //TODO implementer for de andre objekttypene fact og object
@@ -1248,47 +1448,47 @@ public class SaraDispatcherImpl implements IDispatcherIf, IMsoTransactionListene
 
 		protected void afterDone() {
             // resume to old mode
-			Application.getInstance().getMsoModel().restoreUpdateMode();
+			getMsoModel().restoreUpdateMode();
 		}
 
 	}
 
-	private void fireOnOperationCreated(final String oprId, final boolean current) {
-		for (IDispatcherListenerIf it : listeners) {
-			it.onOperationCreated(oprId, current);
+	private void fireOnOperationCreated(String oprId, boolean isLoopback) {
+		for (IDispatcherListenerIf it : m_listeners) {
+			it.onOperationCreated(oprId, isLoopback);
 		}
 	}
 
-	private void fireOnOperationFinished(final String oprId, final boolean current) {
-		for (IDispatcherListenerIf it : listeners) {
-			it.onOperationFinished(oprId, current);
+	private void fireOnOperationFinished(String oprId, boolean isLoopback) {
+		for (IDispatcherListenerIf it : m_listeners) {
+			it.onOperationFinished(oprId, isLoopback);
 		}
 	}
 
-	private void fireOnOperationActivated(final String oprId) {
-		for (IDispatcherListenerIf it : listeners) {
+	private void fireOnOperationActivated(String oprId) {
+		for (IDispatcherListenerIf it : m_listeners) {
 			it.onOperationActivated(oprId);
 		}
 	}
 
-	private void fireOnOperationDeactivated(final String oprId) {
-		for (IDispatcherListenerIf it : listeners) {
+	private void fireOnOperationDeactivated(String oprId) {
+		for (IDispatcherListenerIf it : m_listeners) {
 			it.onOperationDeactivated(oprId);
 		}
 	}
 
 	@Override
 	public boolean addDispatcherListener(IDispatcherListenerIf listener) {
-		if(!listeners.contains(listener)) {
-			return listeners.add(listener);
+		if(!m_listeners.contains(listener)) {
+			return m_listeners.add(listener);
 		}
 		return false;
 	}
 
 	@Override
 	public boolean removeDispatcherListener(IDispatcherListenerIf listener) {
-		if(listeners.contains(listener)) {
-			return listeners.remove(listener);
+		if(m_listeners.contains(listener)) {
+			return m_listeners.remove(listener);
 		}
 		return false;
 	}

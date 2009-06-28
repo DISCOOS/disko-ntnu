@@ -16,7 +16,7 @@ public class BriefingListImpl extends MsoListImpl<IBriefingIf> implements IBrief
     public IBriefingIf createBriefing()
     {
         checkCreateOp();
-        return createdUniqueItem(new BriefingImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new BriefingImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public IBriefingIf createBriefing(IMsoObjectIf.IObjectIdIf anObjectId)

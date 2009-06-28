@@ -333,7 +333,7 @@ public abstract class AbstractDiskoCommand extends BaseCommand implements IMapCo
 	}
 
 	protected void suspendUpdate() {
-		Application.getInstance().getMsoModel().suspendUpdate();
+		Application.getInstance().getMsoModel().suspendChange();
 	}
 
 	protected void resumeUpdate() {

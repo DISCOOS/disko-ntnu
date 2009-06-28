@@ -17,7 +17,7 @@ public class CmdPostListImpl extends MsoListImpl<ICmdPostIf> implements ICmdPost
             throw new DuplicateIdException("Duplicate id for cmd post");
         }
         checkCreateOp();
-        return createdUniqueItem(new CmdPostImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new CmdPostImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public ICmdPostIf createCmdPost(IMsoObjectIf.IObjectIdIf anObjectId)

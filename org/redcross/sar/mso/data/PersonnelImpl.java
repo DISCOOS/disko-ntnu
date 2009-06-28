@@ -82,7 +82,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 
     public void setArrived(Calendar anArrived)
     {
-        m_arrived.setValue(anArrived);
+        m_arrived.set(anArrived);
     }
 
     public Calendar getArrived()
@@ -102,7 +102,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 
     public void setCallOut(Calendar aCallOut)
     {
-        m_callOut.setValue(aCallOut);
+        m_callOut.set(aCallOut);
     }
 
     public Calendar getCallOut()
@@ -162,7 +162,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 
     public void setEstimatedArrival(Calendar anEstimatedArrival)
     {
-        m_estimatedArrival.setValue(anEstimatedArrival);
+        m_estimatedArrival.set(anEstimatedArrival);
     }
 
     public Calendar getEstimatedArrival()
@@ -182,7 +182,7 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 
     public void setReleased(Calendar aReleased)
     {
-        m_released.setValue(aReleased);
+        m_released.set(aReleased);
     }
 
     public Calendar getReleased()
@@ -282,17 +282,17 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
     
     public void setStatus(PersonnelStatus aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public void setStatus(String aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public PersonnelStatus getStatus()
     {
-        return m_status.getValue();
+        return m_status.get();
     }
 
     public IData.DataOrigin getStatusState()
@@ -312,17 +312,17 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 
     public void setType(PersonnelType aType)
     {
-        m_type.setValue(aType);
+        m_type.set(aType);
     }
 
     public void setType(String aType)
     {
-        m_type.setValue(aType);
+        m_type.set(aType);
     }
 
     public PersonnelType getType()
     {
-        return m_type.getValue();
+        return m_type.get();
     }
 
     public IData.DataOrigin getTypeState()
@@ -347,17 +347,17 @@ public class PersonnelImpl extends AbstractPerson implements IPersonnelIf
 
     public void setImportStatus(PersonnelImportStatus status)
     {
-    	m_importStatus.setValue(status);
+    	m_importStatus.set(status);
     }
 
     public void setImportStatus(String status)
     {
-    	m_importStatus.setValue(PersonnelImportStatus.valueOf(status));
+    	m_importStatus.set(PersonnelImportStatus.valueOf(status));
     }
 
     public PersonnelImportStatus getImportStatus()
     {
-    	return m_importStatus.getValue();
+    	return m_importStatus.get();
     }
 
     public String getImportStatusText()

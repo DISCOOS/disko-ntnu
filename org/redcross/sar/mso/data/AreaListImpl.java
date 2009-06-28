@@ -15,7 +15,7 @@ public class AreaListImpl extends MsoListImpl<IAreaIf> implements IAreaListIf
     public IAreaIf createArea(boolean hostile)
     {
         checkCreateOp();
-        return createdUniqueItem(new AreaImpl(getOwner().getModel(), makeUniqueId(),true));
+        return createdUniqueItem(new AreaImpl(getOwner().getModel(), createUniqueId(),true));
     }
 
     public IAreaIf createArea(IMsoObjectIf.IObjectIdIf anObjectId,boolean hostile)

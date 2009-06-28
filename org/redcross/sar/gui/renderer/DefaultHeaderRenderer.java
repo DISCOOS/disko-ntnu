@@ -76,14 +76,19 @@ public class DefaultHeaderRenderer implements ITableHeaderRenderer {
 			} 
 		}
 		// calculate width from data
-		Object value = table.getColumnModel().getColumn(col).getHeaderValue();
-		getTableCellRendererComponent(table,value,false,false,row, col);
-		Icon icon = m_panel.getCaptionIcon();
-		String text = m_panel.getCaptionText();
-		int w = (icon!=null ? icon.getIconWidth() : 0)
-			  + Utils.getStringWidth(g, Utils.stripHtml(text))
-			  + m_panel.getButtonsPanel().getTotalItemWidth(false);
-		return w;
+		int count = table.getColumnModel().getColumnCount();
+		if(col<count)
+		{
+			Object value = table.getColumnModel().getColumn(col).getHeaderValue();
+			getTableCellRendererComponent(table,value,false,false,row, col);
+			Icon icon = m_panel.getCaptionIcon();
+			String text = m_panel.getCaptionText();
+			int w = (icon!=null ? icon.getIconWidth() : 0)
+				  + Utils.getStringWidth(g, Utils.stripHtml(text))
+				  + m_panel.getButtonsPanel().getTotalItemWidth(false);
+			return w;
+		}
+		return 0;
 	}
 
 	public void doClick() {

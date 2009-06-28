@@ -197,7 +197,7 @@ public class ElementPanel extends DefaultPanel {
 						// is value adjusting?
 						if(e.getValueIsAdjusting() || listsAreChangeing) return;
 
-						// load objects of spesified type
+						// load objects of spesifyed type
 						loadObjects((Enum<?>)typeList.getSelectedValue());
 						
 						// notify
@@ -546,11 +546,11 @@ public class ElementPanel extends DefaultPanel {
 				else if(e instanceof SearchSubType ||
 						MsoClassCode.CLASSCODE_AREA.equals(e) ) {
 					// get areas
-					c = new ArrayList<IMsoObjectIf>(cp.getAreaList().selectItems(getAreaSelector((SearchSubType)e), null));
+					c = new ArrayList<IMsoObjectIf>(cp.getAreaList().selectItems(getAreaSelector((SearchSubType)e)));
 				}
 				else if(MsoClassCode.CLASSCODE_POI.equals(e)) {
 					// get areas
-					c = new ArrayList<IMsoObjectIf>(cp.getPOIList().selectItems(getPOISelector(),null));
+					c = new ArrayList<IMsoObjectIf>(cp.getPOIList().selectItems(getPOISelector()));
 				}
 				else if(MsoClassCode.CLASSCODE_UNIT.equals(e)) {
 					// get search areas

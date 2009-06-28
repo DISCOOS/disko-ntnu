@@ -2,6 +2,7 @@ package org.redcross.sar.mso.data;
 
 import org.redcross.sar.data.IData;
 import org.redcross.sar.data.Selector;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.Position;
@@ -262,18 +263,18 @@ public interface IUnitIf extends IHierarchicalUnitIf, IAssociationIf, ICommunica
     /**
      * Pauses the unit if possible
      *
-     * @return Paused unit status
+     * @return IChangeIf object if changes, null otherwise.
      * @throws org.redcross.sar.util.except.IllegalOperationException is the unit is EMPTY or RELEASED.
      */
-    public UnitStatus pause() throws IllegalOperationException;
+    public IChangeIf pause() throws IllegalOperationException;
 
     /**
      * Resumes the unit if paused
      *
-     * @return Paused unit status
+     * @return IChangeIf object if changes, null otherwise.
      * @throws org.redcross.sar.util.except.IllegalOperationException is the unit is not paused.
      */
-    public void resume() throws IllegalOperationException;
+    public IChangeIf resume() throws IllegalOperationException;
 
     /**
      * Indicates the unit is paused. A paused unit can only be resumed by <code>resume()</code>. Any status

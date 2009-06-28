@@ -88,7 +88,6 @@ public class AssociationDialog extends DefaultDialog {
 			doc.addAutoCompleteListener(new IAutoCompleteListener() {
 
 				public void onSuggestionFound(AutoCompleteDocument document, String suggestion) {
-					if(!isChangeable()) return;
 					if(suggestion==null) {
 						getOrganizationComboBoxField().setValue(null);
 						getDivisionComboBoxField().setValue(null);
@@ -96,9 +95,12 @@ public class AssociationDialog extends DefaultDialog {
 						
 					} else {
 						Association[] items = AssocUtils.parse(suggestion,true,false);
-						getOrganizationComboBoxField().setValue(items[0].getName(1));
-						getDivisionComboBoxField().setValue(items[0].getName(2));
-						getDepartmentComboBoxField().setValue(items[0].getName(3));
+						if(items!=null)
+						{
+							getOrganizationComboBoxField().setValue(items[0].getName(1));
+							getDivisionComboBoxField().setValue(items[0].getName(2));
+							getDepartmentComboBoxField().setValue(items[0].getName(3));
+						}
 					}
 				}
 				
@@ -109,7 +111,7 @@ public class AssociationDialog extends DefaultDialog {
 
     private ComboBoxField getOrganizationComboBoxField() {
 		if(m_organizationComboBoxField==null) {
-			m_organizationComboBoxField = new ComboBoxField("organization","Organisasjon",false);    		
+			m_organizationComboBoxField = new ComboBoxField("organization","Organisasjon",true);    		
 			m_organizationComboBoxField.fill(AssocUtils.getOrganizationNames());
 			m_organizationComboBoxField.setValue("");
 			m_organizationComboBoxField.getEditComponent().addItemListener(new ItemListener() {
@@ -134,12 +136,13 @@ public class AssociationDialog extends DefaultDialog {
 
 	private ComboBoxField getDivisionComboBoxField() {
 		if(m_divisionComboBoxField==null) {
-			m_divisionComboBoxField = new ComboBoxField("division","Divisjon",false);
+			m_divisionComboBoxField = new ComboBoxField("division","Divisjon",true);
 			m_divisionComboBoxField.setValue("");
 			m_divisionComboBoxField.getEditComponent().addItemListener(new ItemListener() {
 
 				@Override
 				public void itemStateChanged(ItemEvent e) {
+					//if(m_divisionComboBoxField.isAdjusting()) return;
 					String[] deps = null;
 					// get selected item
 					if(e.getItem()!=null) {
@@ -162,15 +165,16 @@ public class AssociationDialog extends DefaultDialog {
 	
 	private ComboBoxField getDepartmentComboBoxField() {
 		if(m_departmentComboBoxField==null) {
-			m_departmentComboBoxField = new ComboBoxField("department","Avdeling",false);    		
+			m_departmentComboBoxField = new ComboBoxField("department","Avdeling",true);    		
 			m_departmentComboBoxField.setValue("");
 		}
 		return m_departmentComboBoxField;
 	}    
 	
 	private void load(String search, IAssociationIf entity) {
+		getSearchTextField().setValue(search);
+		/*
 		// prepare
-		setChangeable(false);
         if(entity!=null) {
         	getSearchTextField().setValue(search);
         	getOrganizationComboBoxField().setValue(entity.getOrganization());
@@ -180,19 +184,18 @@ public class AssociationDialog extends DefaultDialog {
         	getOrganizationComboBoxField().setValue(null);
         	getDivisionComboBoxField().setValue(null);
         	getDepartmentComboBoxField().setValue(null);
-        }		
-		setChangeable(true);
-        setDirty(false);
+        }
+        */		
 	}
 	
 	private void save(IAssociationIf entity) {
 		// prepare
-        if(entity!=null&&isDirty()) {
-        	entity.suspendUpdate();
+        if(entity!=null) {
+        	entity.suspendChange();
         	entity.setOrganization(getOrganization());
         	entity.setDivision(getDivision());
         	entity.setDepartment(getDepartment());
-        	entity.resumeUpdate(false);
+        	entity.resumeChange(false);
         }		
 	}
 	

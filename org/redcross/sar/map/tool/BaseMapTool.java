@@ -466,7 +466,7 @@ public class BaseMapTool extends BaseTool implements IMapTool {
 				e.printStackTrace();
 			}
 		}
-		Application.getInstance().getMsoModel().suspendUpdate();
+		Application.getInstance().getMsoModel().suspendChange();
 	}
 
 	protected void resumeUpdate() {

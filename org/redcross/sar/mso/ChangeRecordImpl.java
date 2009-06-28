@@ -2,14 +2,18 @@ package org.redcross.sar.mso;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
+import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
+import org.redcross.sar.mso.IChangeIf.IChangeRelationIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
-import org.redcross.sar.mso.data.IMsoDataIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IMsoRelationIf;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
@@ -18,15 +22,21 @@ public class ChangeRecordImpl implements IChangeRecordIf
 {
 
 	private int m_mask;
+	private long m_seqNo = -1;
 	private UpdateMode m_mode;
 	private boolean m_isDirty;
 	private boolean m_isLoopbackMode;
 	private boolean m_isRollbackMode;
+	private boolean m_isSorted = false;
 	private List<IChangeIf> m_changes = new ArrayList<IChangeIf>();
 	private List<IChangeIf> m_filters = new ArrayList<IChangeIf>();
-	private Map<IMsoDataIf,List<IChangeIf>> m_map = new HashMap<IMsoDataIf,List<IChangeIf>>();
+	private Map<String,List<IChangeIf>> m_map = new HashMap<String, List<IChangeIf>>();
 	
 	private final IMsoObjectIf m_msoObj;
+	
+	private final ISeqNoGenIf m_nextSeqNoGen;
+	
+	private final Logger m_logger = Logger.getLogger(getClass());
 
     /* ===============================================
      * Constructors
@@ -35,35 +45,81 @@ public class ChangeRecordImpl implements IChangeRecordIf
     public ChangeRecordImpl(ChangeRecordImpl rs)
     {
     	// forward
-    	this(rs.getMsoObject(),rs.getUpdateMode(),rs.getMask());
+    	this(rs.getMsoObject(),rs.getUpdateMode(),getType(rs.getMask()),rs.getNextSeqNo());
     	// clone lists
     	m_filters = new ArrayList<IChangeIf>(rs.m_filters);
     	m_changes = new ArrayList<IChangeIf>(rs.m_changes);
-    	m_map = new HashMap<IMsoDataIf, List<IChangeIf>>(rs.m_map);
+    	m_map = new HashMap<String, List<IChangeIf>>(rs.m_map);
     	// set dirty flag
     	m_isDirty = true;
     }
     
     public ChangeRecordImpl(IMsoObjectIf anObject, UpdateMode mode)
     {
-    	this(anObject,mode,0);
+    	this(anObject,mode,MsoEventType.EMPTY_EVENT,0);
     }
     
-    public ChangeRecordImpl(IMsoObjectIf anObject, UpdateMode aMode, int aMask)
+    public ChangeRecordImpl(IMsoObjectIf anObject, UpdateMode mode, ISeqNoGenIf generator)
     {
+    	this(anObject, mode, MsoEventType.EMPTY_EVENT, generator);
+    }    
+    
+    public ChangeRecordImpl(IMsoObjectIf anObject, UpdateMode aMode, MsoEventType aMask)
+    {
+    	this(anObject, aMode, aMask, new SeqNoGen(0));
+    }
+    
+    public ChangeRecordImpl(IMsoObjectIf anObject, UpdateMode aMode, MsoEventType aMask, long nextSeqNo)
+    {
+    	this(anObject, aMode, aMask, new SeqNoGen(nextSeqNo));
+    }
+    
+    public ChangeRecordImpl(IMsoObjectIf anObject, UpdateMode aMode, MsoEventType aMask, ISeqNoGenIf generator)
+    {
+    
     	// prepare
-        m_mask = aMask;
+        m_mask = aMask.maskValue();
         m_mode = aMode;
         m_msoObj = anObject;
+        m_nextSeqNoGen = generator;
     }
     
     /* ===============================================
      * Public methods
      * =============================================== */
     
-    @Override
-	public IMsoDataIf getObject() {
-		return m_msoObj;
+	@Override
+	public long getSeqNo() {
+		if(m_isDirty)
+		{
+			calculate();
+		}
+		return m_seqNo;
+	}
+    
+	@Override
+	public long getNextSeqNo() {
+		return m_nextSeqNoGen.getNextSeqNo();
+	}
+			
+	@Override
+	public boolean isSeqNoEnabled() {
+		return m_nextSeqNoGen.isSeqNoEnabled();
+	}
+
+	@Override
+	public void setSeqNoEnabled(boolean isEnabled) {
+		m_nextSeqNoGen.setSeqNoEnabled(isEnabled);	
+	}
+
+	@Override
+	public boolean isSorted() {
+		return m_isSorted;
+	}
+
+	@Override
+	public void setSorted(boolean isSorted) {
+		m_isSorted = isSorted;
 	}
 
 	@Override
@@ -189,19 +245,16 @@ public class ChangeRecordImpl implements IChangeRecordIf
 
     	if(isChanged() && getMsoObject().getAttributes().containsValue(anAttribute)) 
     	{
-    		IChangeAttributeIf it = getFilter(anAttribute);
-    		if(it!=null) 
+    		if(!containsFilter(anAttribute)) 
     		{
-        		// remove attribute change from filter
-    			m_filters.add(it);
-    		} 
-    		// get change
-    		it = get(anAttribute);
-    		if(it!=null) 
-    		{
-        		// add attribute change to filter
-    			return m_filters.add(it);
-    		} 
+	    		// get change
+	    		IChangeAttributeIf it = get(anAttribute);
+	    		if(it!=null) 
+	    		{
+	        		// add attribute change to filter
+	    			return m_filters.add(it);
+	    		}
+    		}
     		
     	}
     	// failure
@@ -230,7 +283,7 @@ public class ChangeRecordImpl implements IChangeRecordIf
     		// has reference?
     		if(aReference!=null) 
     		{
-    			// get current filter
+    			// is not filtered already?
     			List<IChangeRelationIf> list = getFilter(aReference);
     			// remote old filter
 				m_filters.removeAll(list);
@@ -281,7 +334,7 @@ public class ChangeRecordImpl implements IChangeRecordIf
     
     @Override
     public List<IChangeIf> getFilters() {
-    	return new ArrayList<IChangeIf>(m_filters);
+    	return clone(m_filters);
     }
     
     @Override
@@ -333,28 +386,6 @@ public class ChangeRecordImpl implements IChangeRecordIf
     	return addFilter(aReference);
 	}
 
-    @Override
-    public List<IChangeIf> getChanges() {
-    	
-    	// initialize 
-    	List<IChangeIf> changes = new Vector<IChangeIf>();
-    	
-    	// changes exists?
-    	if(isChanged())
-    	{
-    		// add changes
-	    	changes.addAll(getObjectChanges());
-	    	changes.addAll(getAttributeChanges());
-	    	changes.addAll(getObjectReferenceChanges());
-	    	changes.addAll(getListReferenceChanges());
-    	}
-    	
-    	// finished
-    	return changes;
-    }
-    
-    
-            
 	@Override
 	public boolean containsFilter(IMsoAttributeIf<?> anAttribute) {
 		return getFilter(anAttribute)!=null;
@@ -380,14 +411,14 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	}
 
 	@Override
-	public List<IChangeIf> get(IMsoDataIf anObject) {
-		return m_map.get(anObject);
+	public List<IChangeIf> get(String objectId) {
+		return m_map.get(objectId);
 	}
 		
 	@Override
 	public List<IChangeObjectIf> get(IMsoObjectIf anObject) {
 		Vector<IChangeObjectIf> changes = new Vector<IChangeObjectIf>();
-		List<IChangeIf> list = m_map.get(anObject);
+		List<IChangeIf> list = m_map.get(anObject.getObjectId());
 		if(list!=null)
 		{
 			for(IChangeIf it : list)
@@ -400,7 +431,7 @@ public class ChangeRecordImpl implements IChangeRecordIf
 
 	@Override
 	public IChangeAttributeIf get(IMsoAttributeIf<?> anAttribute) {
-		List<IChangeIf> list = m_map.get(anAttribute);
+		List<IChangeIf> list = m_map.get(anAttribute.getObjectId());
 		if(list!=null)
 		{
 			return (IChangeAttributeIf)list.get(0);
@@ -411,7 +442,7 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	@Override
 	public List<IChangeRelationIf> get(IMsoRelationIf<?> aReference) {
 		Vector<IChangeRelationIf> changes = new Vector<IChangeRelationIf>();
-		List<IChangeIf> list = m_map.get(aReference);
+		List<IChangeIf> list = m_map.get(aReference.getObjectId());
 		if(list!=null)
 		{
 			for(IChangeIf it : list)
@@ -423,21 +454,33 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	}
 
 	@Override
-	public boolean record(IChangeIf aChange)
+	public boolean record(IChangeIf aChange, boolean checkout)
 	{
-		// valid change type?
-		if(isValid(aChange))
-		{
-			// translate
-			switch(getUpdateMode())
-			{
-			case LOCAL_UPDATE_MODE:
-				return record(aChange,aChange.isRollbackMode());
-			case REMOTE_UPDATE_MODE:
-				return record(aChange,aChange.isLoopbackMode());
+		try {
+			// valid change type?
+			if(isValid(aChange,checkout))
+			{			
+				
+				// clone change
+				aChange = aChange.clone();
+				
+				// set sequence number
+				aChange.setSeqNo(m_nextSeqNoGen.createSeqNo());
+				
+				// translate
+				switch(aChange.getUpdateMode())
+				{
+				case LOCAL_UPDATE_MODE:
+					return record(aChange,checkout,aChange.isRollbackMode());
+				case REMOTE_UPDATE_MODE:
+					return record(aChange,checkout,aChange.isLoopbackMode());
+				}
 			}
+		} catch (CloneNotSupportedException e) {
+			m_logger.error("Failed to clone IChangeIf instance",e);
 		}
-		// invalid change type
+		
+		// invalid change type, or clone error
 		return false;
 	}
 
@@ -446,8 +489,10 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	{
 		// set remove flag
 		boolean bFlag = false;
+		
 		// get list
-		List<IChangeIf> list = m_map.get(aChange.getObject());
+		List<IChangeIf> list = m_map.get(aChange.getObjectId());
+		
 		// found list of changes registered?
 		if(list!=null)
 		{
@@ -491,14 +536,11 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	}
 
     @Override
-    public boolean union(IChangeRecordIf aRs) {
+    public boolean union(IChangeRecordIf aRs, boolean checkout) {
     	// initialize dirty flag
     	boolean bFlag = false;
     	// is union possible?
-    	if(   aRs != null 
-    	   && aRs != this 
-    	   && aRs.getUpdateMode() == getUpdateMode()
-    	   && aRs.getObject() == getObject())
+    	if(   aRs != null && aRs != this && aRs.getMsoObject() == getMsoObject())
     	{
 	    	// get list
 	    	List<IChangeIf> changes = aRs.getChanges();
@@ -507,7 +549,7 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	    	// get union mask
 	    	for(IChangeIf it : changes)
 	    	{
-	    		record(it);
+	    		record(it,checkout);
 			}
     	}
 		// finished
@@ -521,8 +563,7 @@ public class ChangeRecordImpl implements IChangeRecordIf
     	// is difference possible?
     	if(   aRs != null 
     	   && aRs != this 
-    	   && aRs.getUpdateMode() == getUpdateMode()
-    	   && aRs.getObject() == getObject())
+    	   && aRs.getMsoObject() == getMsoObject())
     	{
 	    	// get list
 	    	List<IChangeIf> changes = aRs.getChanges();
@@ -537,6 +578,12 @@ public class ChangeRecordImpl implements IChangeRecordIf
     }
 
     @Override
+    public List<IChangeIf> getChanges() 
+    {
+    	return (isFiltered() ? sort(m_filters) : clone(m_changes));
+    }
+                
+    @Override
 	public List<IChangeObjectIf> getObjectChanges()
 	{    	
     	// initialize 
@@ -550,40 +597,43 @@ public class ChangeRecordImpl implements IChangeRecordIf
         if (!(createdObject && deletedObject))
         {        
 	    	// get list for changes
-	    	List<IChangeIf> list = (isFiltered() ? m_filters : m_map.get(m_msoObj));
+	    	List<IChangeIf> list = (isFiltered() ? m_filters : m_map.get(m_msoObj.getObjectId()));
 	    	
-	    	// get change objects
-	        if (createdObject)
-	        {	        	
-	        	// get CREATED_OBJECT change
-	        	add(changes,get(list,MsoEventType.CREATED_OBJECT_EVENT.maskValue()));
-	        	// finished
-	        	return changes;
-	        }
-	        if (deletedObject)
-	        {
-	        	// get DELETED_OBJECT change
-	        	add(changes,get(list,MsoEventType.DELETED_OBJECT_EVENT.maskValue()));	        
-	        	// finished
-	        	return changes;
-			} 
-	        
-	    	if (isObjectModified())
-	        {
-	    		add(changes,get(list,MsoEventType.MODIFIED_DATA_EVENT.maskValue()));
-	        }
-	        if (isRelationAdded())
-	        {
-	        	add(changes,get(list,MsoEventType.ADDED_RELATION_EVENT.maskValue()));
-	        }
-	        if (isRelationRemoved())
-	        {
-	        	add(changes,get(list,MsoEventType.REMOVED_RELATION_EVENT.maskValue()));
-	        }
-	        
+	    	// has changes?
+	    	if(list!=null)
+	    	{
+		    	// get change objects
+		        if (createdObject)
+		        {	        	
+		        	// get CREATED_OBJECT change
+		        	add(changes,get(list,MsoEventType.CREATED_OBJECT_EVENT.maskValue()));
+		        	// finished
+		        	return sort(changes);
+		        }
+		        if (deletedObject)
+		        {
+		        	// get DELETED_OBJECT change
+		        	add(changes,get(list,MsoEventType.DELETED_OBJECT_EVENT.maskValue()));	        
+		        	// finished
+		        	return sort(changes);
+				} 
+		        
+		    	if (isObjectModified())
+		        {
+		    		add(changes,get(list,MsoEventType.MODIFIED_DATA_EVENT.maskValue()));
+		        }
+		        if (isRelationAdded())
+		        {
+		        	add(changes,get(list,MsoEventType.ADDED_RELATION_EVENT.maskValue()));
+		        }
+		        if (isRelationRemoved())
+		        {
+		        	add(changes,get(list,MsoEventType.REMOVED_RELATION_EVENT.maskValue()));
+		        }
+	    	}	        
         }
         // finished
-    	return changes;
+    	return sort(changes);
 	}
 	
     @Override
@@ -598,28 +648,44 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	    	// get list for changes
 	    	List<IChangeIf> list = (isFiltered() ? m_filters : m_changes);
 
-	    	// is not deleted?
-	    	if(!isObjectDeleted())
-	    	{
-	    		for(IChangeIf it : get(list,MsoEventType.MODIFIED_DATA_EVENT.maskValue(),false,false))
-	    		{
-		    		changes.add((IChangeAttributeIf)it);	    			
-	    		}
-	    	}
+    		for(IChangeIf it : get(list,MsoEventType.MODIFIED_DATA_EVENT.maskValue(),false,false))
+    		{
+	    		changes.add((IChangeAttributeIf)it);	    			
+    		}
 	    	
         }
         
         // finished
-        return changes;
+        return sort(changes);
         
     }
 
 	@Override
 	public Collection<IChangeRelationIf> getRelationChanges() 
 	{
-		Collection<IChangeRelationIf> list = getObjectReferenceChanges();
-		list.addAll(getListReferenceChanges());
-		return list;
+    	// initialize 
+    	List<IChangeRelationIf> changes = new Vector<IChangeRelationIf>();
+    	
+        // a object that is both CREATED and DELETED equals NO CHANGE
+        if (isChanged())
+        {        
+	    	// get list for changes
+	    	List<IChangeIf> list = (isFiltered() ? m_filters : m_changes);
+
+    		for(IChangeIf it : get(list,MsoEventType.REMOVED_RELATION_EVENT.maskValue(),false,false))
+    		{
+    			changes.add((IChangeRelationIf)it);
+    		}
+    		
+    		for(IChangeIf it : get(list,MsoEventType.ADDED_RELATION_EVENT.maskValue(),false,false))
+    		{
+    			changes.add((IChangeRelationIf)it);
+    		}
+	    	
+        }
+        
+        // finished
+        return sort(changes);		
 	}
 	
 	@Override
@@ -643,23 +709,19 @@ public class ChangeRecordImpl implements IChangeRecordIf
     			}
     		}
     		
-	    	// is not deleted?
-	    	if(!isObjectDeleted())
-	    	{
-	    		for(IChangeIf it : get(list,MsoEventType.ADDED_RELATION_EVENT.maskValue(),false,false))
-	    		{
-	    			IChangeRelationIf aChange = (IChangeRelationIf)it;
-	    			if(!aChange.isInList())
-	    			{
-			    		changes.add(aChange);	    				    				
-	    			}
-	    		}
-	    	}
+    		for(IChangeIf it : get(list,MsoEventType.ADDED_RELATION_EVENT.maskValue(),false,false))
+    		{
+    			IChangeRelationIf aChange = (IChangeRelationIf)it;
+    			if(!aChange.isInList())
+    			{
+		    		changes.add(aChange);	    				    				
+    			}
+    		}
 	    	
         }
         
         // finished
-        return changes;
+        return sort(changes);
     	
 	}
 
@@ -684,26 +746,27 @@ public class ChangeRecordImpl implements IChangeRecordIf
     			}
     		}
     		
-	    	// is not deleted?
-	    	if(!isObjectDeleted())
-	    	{
-	    		for(IChangeIf it : get(list,MsoEventType.ADDED_RELATION_EVENT.maskValue(),false,false))
-	    		{
-	    			IChangeRelationIf aChange = (IChangeRelationIf)it;
-	    			if(aChange.isInList())
-	    			{
-			    		changes.add(aChange);	    				    				
-	    			}
-	    		}
-	    	}
+    		for(IChangeIf it : get(list,MsoEventType.ADDED_RELATION_EVENT.maskValue(),false,false))
+    		{
+    			IChangeRelationIf aChange = (IChangeRelationIf)it;
+    			if(aChange.isInList())
+    			{
+		    		changes.add(aChange);	    				    				
+    			}
+    		}
 	    	
         }
         
         // finished
-        return changes;
+        return sort(changes);
         
     }
 
+    @Override
+	public int compareTo(IChangeRecordIf rs) {
+		return (int)(getSeqNo() - rs.getSeqNo());
+	}
+    
     public static boolean isFlagSet(int flag, int mask)
     {
     	if(mask>=flag)
@@ -720,12 +783,14 @@ public class ChangeRecordImpl implements IChangeRecordIf
      * Private methods
      * =============================================== */
     
-	private boolean isValid(IChangeIf aChange)
+	private boolean isValid(IChangeIf aChange, boolean checkout)
 	{
+		// initialize flag
+		boolean bFlag = false;
+		
+		// exists?
 		if(aChange!=null)
 		{
-			// initialize flag
-			boolean bFlag = false;
 			// check that the change belongs to the MSO object of this record
 			if(aChange instanceof IChangeObjectIf)
 			{
@@ -737,45 +802,61 @@ public class ChangeRecordImpl implements IChangeRecordIf
 			}
 			else if(aChange instanceof IChangeRelationIf)
 			{
-				bFlag = (getMsoObject()==((IChangeRelationIf)aChange).getReferringObject());						
+				bFlag = (getMsoObject()==((IChangeRelationIf)aChange).getRelatingObject());						
 			}
 			// same MSO object owner?
 			if(bFlag) 
 			{
-				// check if update mode is same
-				bFlag = (aChange.getUpdateMode()==getUpdateMode());
+				// if checkout of old changes should be evaluated 
+				bFlag = !checkout || (aChange.getUpdateMode()==getUpdateMode());
 				
-				// not the same update mode?
-				if(!bFlag)
-				{
-					// the only time update modes is allowed
-					// to be different is in loopback mode to
-					// ensure that successfully committed changes
-					// are removed from the record.
-					bFlag = aChange.isLoopbackMode();
-				}
-				// finished
-				return bFlag;
+				// always allow loopbacks and rollbacks
+				bFlag |= aChange.isLoopbackMode() || aChange.isRollbackMode();
+				
 			}
 		}
-		return false;
+		return bFlag;
 	}
 	
-	private boolean record(IChangeIf aChange, boolean undo)
+	private boolean record(IChangeIf aChange, boolean checkout, boolean undo)
 	{
-		// get list
-		List<IChangeIf> list = m_map.get(aChange.getObject());
+		// initialize flag
+		boolean bFlag = false;
 		
-		// a rollback or loopback has occurred?
-		if(undo)
+		// get list
+		List<IChangeIf> list = m_map.get(aChange.getObjectId());
+		
+		/*
+		for(String key : m_map.keySet())
 		{
-        	/* a rollback or loopback mode means that 
-        	 * changes made in the changed object so far 
-        	 * are discarded. Hence, current list should 
-        	 * be cleared */
-			m_map.remove(aChange.getObject());
-			m_changes.removeAll(list);
-
+			if(key.equals(aChange.getObjectId())) {
+				System.out.println("Exists");
+			}
+		}
+		*/
+		
+		// a rollback or loopback has occurred and changes should be checked out?
+		if(checkout && undo)
+		{
+			// found recorded changes?
+			if(list!=null)
+			{	        	
+				/* a rollback or loopback mode means that 
+	        	 * changes made in the changed object so far 
+	        	 * are discarded. Hence, current list should 
+	        	 * be cleared */
+				m_map.remove(aChange.getObjectId());
+				m_changes.removeAll(list);
+				
+				// set dirty flag
+				bFlag = true;
+				
+			} 
+			else
+			{
+				// found no recorded changes, notify
+				m_logger.debug("Did not find any recorded changes for " + aChange.getObject());
+			}			
 		} 
 		else
 		{
@@ -783,13 +864,14 @@ public class ChangeRecordImpl implements IChangeRecordIf
 			if(list==null)
 			{
 				list = new ArrayList<IChangeIf>();
-				m_map.put(aChange.getObject(), list);				
+				m_map.put(aChange.getObjectId(), list);				
 			}
 			// initialize
 			int mask = aChange.getMask();
 			
-			// find index in map
-			int index = find(list, mask);
+			// find first index in mapped (short) list (maximum one occurrence exist)
+			int index = find(list, 0, mask);
+			
 			// add or replace?
 			if(index==-1)
 			{
@@ -801,28 +883,49 @@ public class ChangeRecordImpl implements IChangeRecordIf
 				// replace
 				list.set(index, aChange);
 			}
-			// find index in sequence list
-			index = find(m_changes, mask);
-			// add or replace?
-			if(index==-1)
+			
+			
+			// find first occurrences of mask in list
+			index = find(m_changes, 0, mask);
+			// find all equal masks 
+			while(index>-1){
+				// get change
+				IChangeIf it = m_changes.get(index);
+				// is same data object as recorded change?
+				if(it.getObject() == aChange.getObject())
+				{
+					// replace
+					m_changes.remove(index);
+					m_changes.add(aChange);
+
+					// set dirty flag
+					bFlag = true;
+					
+				}
+				// search again, starting at next index
+				// find all occurrences of mask in list
+				index++;
+				index = find(m_changes, index, mask);
+			}
+			
+			// add?
+			if(!bFlag)
 			{
 				// add
 				m_changes.add(aChange);				
-			}
-			else
-			{
-				// replace
-				m_changes.remove(index);
-				m_changes.add(aChange);
+
+				// set dirty flag
+				bFlag = true;
+				
 			}
 			
 		}		
 		
-		// set dirty flag
-		m_isDirty = true;
+		// append to dirty flag
+		m_isDirty |= bFlag;
 		
 		// finished
-		return true;
+		return bFlag;
 		
 	}
 	
@@ -892,15 +995,15 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	}
 	
 	/**
-	 * Get index of first change with given flags set.
+	 * Get index of first change with mask equal to flags (exact match).
 	 * 
 	 * @param list - the list with changes.
 	 * @param flags - the flags to match.
 	 * @return Returns index of the first change with given flags set.
 	 */
-	private int find(List<IChangeIf> list, int flags)
+	private int find(List<IChangeIf> list, int offset, int flags)
 	{
-		List<Integer> idx = find(list,flags,false,true);
+		List<Integer> idx = find(list,offset,flags,true,true);
 		return idx.size() > 0 ? idx.get(0) : -1;
 	}
 	
@@ -913,7 +1016,7 @@ public class ChangeRecordImpl implements IChangeRecordIf
 	 * @param head - return first found only
 	 * @return Returns a list of matching changes
 	 */
-	private List<Integer> find(List<IChangeIf> list, int mask, boolean exact, boolean head)
+	private List<Integer> find(List<IChangeIf> list, int offset, int mask, boolean exact, boolean head)
 	{
 		// initialize
 		List<Integer> found = new Vector<Integer>();
@@ -923,7 +1026,7 @@ public class ChangeRecordImpl implements IChangeRecordIf
 			// get size
 			int size = list.size();
 			// search for mask
-			for(int i=0;i<size;i++)
+			for(int i=offset;i<size;i++)
 			{
 				if(exact)
 				{
@@ -972,43 +1075,133 @@ public class ChangeRecordImpl implements IChangeRecordIf
      */
     private void calculate()
     {
+    	
     	// reset current values
 		m_mask = 0;
+		m_seqNo = -1;
 		m_isLoopbackMode = false;
 		m_isRollbackMode = false;
+		
 		// loop over all changes
-		for(List<IChangeIf> list : m_map.values()) 
+		for(IChangeIf it : m_changes)
 		{
-			for(IChangeIf it : list)
+
+			// search for lowest and highest sequence number 
+			long seqNo = it.getSeqNo();
+			m_seqNo = (m_seqNo==-1 ? seqNo : Math.min(seqNo,m_seqNo));
+			
+			// append masks
+			m_mask |= it.getMask();
+	        /* =========================================
+	         * Get union of update loopback flags. The
+	         * change object is a loopback only as long 
+	         * as all changes are loopbacks. 
+	         * ========================================= */				
+			// found non-dominant loopback flag?
+			if(m_isLoopbackMode)
 			{
-				// append masks
-				m_mask |= it.getMask();
-		        /* =========================================
-		         * Get union of update loopback flags. The
-		         * change object is a loopback only as long 
-		         * as all changes are loopbacks. 
-		         * ========================================= */				
-				// found non-dominant loopback flag?
-				if(m_isLoopbackMode)
-				{
-					// continue to replace flag until false of finished
-					m_isLoopbackMode = it.isLoopbackMode();
-				}
-		        /* =========================================
-		         * Get union of update rollback flags. The
-		         * change object is a rollback only as long 
-		         * as all changes are rollbacks. 
-		         * ========================================= */				
-				// found non-dominant loopback flag?
-				if(m_isRollbackMode)
-				{
-					// continue to replace flag until false of finished
-					m_isRollbackMode = it.isRollbackMode();
-				}
+				// continue to replace flag until false of finished
+				m_isLoopbackMode = it.isLoopbackMode();
+			}
+	        /* =========================================
+	         * Get union of update rollback flags. The
+	         * change object is a rollback only as long 
+	         * as all changes are rollbacks. 
+	         * ========================================= */				
+			// found non-dominant loopback flag?
+			if(m_isRollbackMode)
+			{
+				// continue to replace flag until false of finished
+				m_isRollbackMode = it.isRollbackMode();
 			}
 		}
 		// reset dirty flag
 		m_isDirty = false;
+    }
+    
+    private static MsoEventType getType(int mask)
+    {
+    	for(MsoEventType it : MsoEventType.values())
+    	{
+    		if(it.ordinal()==mask) return it;
+    	}
+    	return MsoEventType.EMPTY_EVENT;
+    }
+    
+    /**
+     * Create copy of list, sort if sorting is enabled, and return it.
+     * @param <T> - the list data type
+     * @param list - the list to create a copy of and sort
+     * @return Returns a sorted copy of given list.
+     */
+    private <T extends Comparable<? super T>> List<T> sort(List<T> list) 
+    {
+    	list = clone(list);
+    	if(m_isSorted) Collections.sort(list);
+    	return list;
+    }
+
+    /**
+     * Clone given list
+     * @param <T> - the list data type
+     * @param list - the list to clone
+     * @return Returns a copy of the given list
+     */
+    private static <T extends Comparable<? super T>> List<T> clone(List<T> list) 
+    {
+    	return new Vector<T>(list);
+    }
+    
+    public static class SeqNoGen implements ISeqNoGenIf 
+    {
+    	private long m_nextSeqNo = 0;
+    	private boolean m_isSeqNoEnabled = true;
+    	
+    	public SeqNoGen(long nextSeqNo)
+    	{
+    		m_nextSeqNo = nextSeqNo;
+    	}
+    	
+        /**
+         * Create a new sequence number 
+         * @return Returns next sequence number or -1 is sequence number generation is off.
+         */
+        public long createSeqNo()
+        {
+        	long seqNo = -1;
+        	if(m_isSeqNoEnabled)
+        	{
+	        	// get sequence number
+	        	seqNo = m_nextSeqNo;
+	        	// prepare next sequence number
+	        	if(m_nextSeqNo==Long.MAX_VALUE)
+	        	{
+	        		m_nextSeqNo = 0;
+	        	}
+	        	else 
+	        	{
+	        		m_nextSeqNo++;
+	        	}
+        	}
+        	return seqNo;
+        	
+        }
+
+		@Override
+		public long getNextSeqNo() {
+			return m_isSeqNoEnabled ? m_nextSeqNo : -1;
+		}
+
+		@Override
+		public boolean isSeqNoEnabled() {
+			return m_isSeqNoEnabled;
+		}
+
+		@Override
+		public void setSeqNoEnabled(boolean isEnabled) {
+			m_isSeqNoEnabled = isEnabled;
+		}
+    	
     }
     
 }

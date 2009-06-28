@@ -169,7 +169,7 @@ public class EstimateDialog extends DefaultDialog {
 						if(getMsoObject()!=null) {
 							try {
 								IAssignmentIf assignment = (IAssignmentIf)getMsoObject();
-								String oprID = Application.getInstance().getMsoModel().getDispatcher().getActiveOperationID();
+								String oprID = Application.getInstance().getMsoModel().getDispatcher().getCurrentOperationID();
 								RouteCostEstimator estimator = (RouteCostEstimator)DsPool.getInstance().getItem(RouteCostEstimator.class, oprID);
 								getTrackDialog().load(wp.getMap(),assignment,estimator.getCost(assignment).getEstimatedTrack());
 								getTrackDialog().setVisible(true);

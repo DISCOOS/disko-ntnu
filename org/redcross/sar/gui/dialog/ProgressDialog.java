@@ -53,6 +53,7 @@ public class ProgressDialog extends DefaultDialog {
 
 		// apply layout
 		this.pack();
+		
 	}
 
 	private Component getLocationComponent(Window window) {
@@ -72,7 +73,6 @@ public class ProgressDialog extends DefaultDialog {
 	public DiskoProgressPanel getProgressPanel() {
 		if (m_progressPanel == null) {
 			m_progressPanel = new DiskoProgressPanel();
-			m_progressPanel.setOpaque(false);
 			m_progressPanel.getCancelButton().addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {

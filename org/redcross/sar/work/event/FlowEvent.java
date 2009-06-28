@@ -15,8 +15,12 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.UndoableEdit;
 
 import org.redcross.sar.gui.field.IField;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
+import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
+import org.redcross.sar.mso.IChangeIf.IChangeRelationIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 
@@ -60,6 +64,10 @@ public class FlowEvent extends EventObject {
 
 	public boolean isDataMsoObject() {
 		return (data instanceof IMsoObjectIf);
+	}
+	
+	public boolean isDataChange() {
+		return (data instanceof IChangeIf);
 	}
 	
 	public boolean isSourceMsoObject() {
@@ -143,7 +151,7 @@ public class FlowEvent extends EventObject {
 		return (isUndoableEventCreateable()?new UndoableEditEvent(getSource(),edit):null);
 	}
 	
-	public Map<IMsoModelIf,List<IChangeRecordIf>> getUncommittedChanges() {
+	public Map<IMsoModelIf,List<IChangeRecordIf>> getChanges() {
 		Map<IMsoModelIf,List<IChangeRecordIf>> 
 			changes = new HashMap<IMsoModelIf, List<IChangeRecordIf>>();
 		// add source
@@ -151,11 +159,10 @@ public class FlowEvent extends EventObject {
 			addChangeSource(getSourceAsMsoObject(),changes);			
 		}
 		if(isSourceField()) {
-			IField<?> field = (IField<?>)source;
-			IMsoAttributeIf<?> attr = field.getMsoAttribute();
-			if(attr!=null) {
-				addChangeSource(attr,changes);			
-			}
+			addChangeSource(((IField<?>)source).getChanges(),changes);			
+		}
+		if(isDataChange()) {
+			addChangeSource((IChangeIf)data,changes);			
 		}
 		// add data?
 		if(isDataMsoObject()) addChangeSource(getDataAsMsoObject(),changes);
@@ -177,10 +184,29 @@ public class FlowEvent extends EventObject {
 		}
     }
 	
-	private void addChangeSource(IMsoAttributeIf<?> msoAttr, Map<IMsoModelIf,List<IChangeRecordIf>> changes) {
-		if(msoAttr.isChanged()) {
-			// prepare
-			IMsoObjectIf msoObj = msoAttr.getOwnerObject();
+	private void addChangeSource(List<IChangeIf> source, Map<IMsoModelIf,List<IChangeRecordIf>> changes) {
+		for(IChangeIf it : source)
+		{
+			addChangeSource(it,changes);
+		}    	
+    }	
+	
+	private void addChangeSource(IChangeIf source, Map<IMsoModelIf,List<IChangeRecordIf>> changes) {
+		IMsoObjectIf msoObj = null;
+		if(source instanceof IChangeObjectIf)
+		{
+			msoObj = ((IChangeObjectIf)source).getMsoObject();
+		}
+		else if(source instanceof IChangeAttributeIf)
+		{
+			msoObj = ((IChangeAttributeIf)source).getOwnerObject();				
+		}
+		else if(source instanceof IChangeRelationIf)
+		{
+			msoObj = ((IChangeRelationIf)source).getRelatingObject();				
+		}
+		if(msoObj!=null)
+		{
 			IMsoModelIf model = msoObj.getModel();
 			List<IChangeRecordIf> list = changes.get(model);
 			// initialize list?
@@ -191,12 +217,20 @@ public class FlowEvent extends EventObject {
 			// get flags
 			boolean bFlag = msoObj.isCreated();
 			// add change source to list
-			IChangeRecordIf change = addChangeSource(msoObj,list,!bFlag);
+			IChangeRecordIf change = addChangeSource(msoObj,list,!bFlag);					
 			// add as partial?
-			if(bFlag && change!=null) change.addFilter(msoAttr.getName());
+			if(bFlag && change!=null) {
+				if(source instanceof IChangeAttributeIf)
+				{
+					change.addFilter(((IChangeAttributeIf)source).getMsoAttribute());
+				}
+				else if(source instanceof IChangeRelationIf)
+				{
+					change.addFilter(((IChangeRelationIf)source).getMsoRelation());
+				}
+			}
 		}
-    	
-    }	
+    }		
 	
 	private IChangeRecordIf addChangeSource(IMsoObjectIf msoObj, List<IChangeRecordIf> changes, boolean clearPartial) {
 		// do not allow duplicates

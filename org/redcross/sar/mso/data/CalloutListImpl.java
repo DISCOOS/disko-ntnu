@@ -15,7 +15,7 @@ public class CalloutListImpl extends MsoListImpl<ICalloutIf> implements ICallout
     public ICalloutIf createCallout()
     {
         checkCreateOp();
-        return createdUniqueItem(new CalloutImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new CalloutImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public ICalloutIf createCallout(IMsoObjectIf.IObjectIdIf anObjectId)

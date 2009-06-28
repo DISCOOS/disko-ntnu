@@ -75,12 +75,12 @@ public class OperationAreaImpl extends AbstractMsoObject implements IOperationAr
 
     public void setGeodata(Polygon aGeodata)
     {
-        m_geodata.setValue(aGeodata);
+        m_geodata.set(aGeodata);
     }
 
     public Polygon getGeodata()
     {
-        return m_geodata.getPolygon();
+        return m_geodata.get();
     }
 
     public IData.DataOrigin getGeodataState()

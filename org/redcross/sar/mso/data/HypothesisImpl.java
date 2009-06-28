@@ -58,17 +58,17 @@ public class HypothesisImpl extends AbstractMsoObject implements IHypothesisIf
 
     public void setStatus(HypothesisStatus aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public void setStatus(String aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public HypothesisStatus getStatus()
     {
-        return m_status.getValue();
+        return m_status.get();
     }
 
     public String getStatusText()

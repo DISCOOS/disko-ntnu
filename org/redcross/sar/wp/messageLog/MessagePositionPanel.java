@@ -311,7 +311,7 @@ public class MessagePositionPanel extends BasePanel implements IEditorIf
 		PositionPanel panel = getPositionPanel();
 
 		// suspend update events
-		m_wp.getMsoModel().suspendUpdate();
+		m_wp.getMsoModel().suspendChange();
 
 		// get current message, create if not exist
 		IMessageIf message = MessageLogBottomPanel.getCurrentMessage(true);

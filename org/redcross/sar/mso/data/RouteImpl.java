@@ -63,12 +63,12 @@ public class RouteImpl extends AbstractMsoObject implements IRouteIf
     *-------------------------------------------------------------------------------------------*/
     public void setGeodata(Route aGeodata)
     {
-        m_geodata.setValue(aGeodata);
+        m_geodata.set(aGeodata);
     }
 
     public Route getGeodata()
     {
-        return m_geodata.getRoute();
+        return m_geodata.get();
     }
 
     public IData.DataOrigin getGeodataState()

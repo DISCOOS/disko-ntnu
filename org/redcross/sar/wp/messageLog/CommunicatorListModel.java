@@ -18,11 +18,11 @@ import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.ICommunicatorIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitType;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 
-public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
+public class CommunicatorListModel implements ListModel, IMsoChangeListenerIf {
 
 	private final EventListenerList m_listeners = new EventListenerList();
 
@@ -260,7 +260,7 @@ public class CommunicatorListModel implements ListModel, IMsoUpdateListenerIf {
 	/**
 	 * Updates unit list based on MSO communicator events
 	 *
-	 * @see org.redcross.sar.mso.event.IMsoUpdateListenerIf#handleMsoChangeEvent(org.redcross.sar.mso.event.MsoEvent.Change)
+	 * @see org.redcross.sar.mso.event.IMsoChangeListenerIf#handleMsoChangeEvent(org.redcross.sar.mso.event.MsoEvent.Change)
 	 */
 	public void handleMsoChangeEvent(MsoEvent.ChangeList events) {
 

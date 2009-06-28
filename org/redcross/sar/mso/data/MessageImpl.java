@@ -157,17 +157,17 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 
     public void setStatus(MessageStatus aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public void setStatus(String aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public MessageStatus getStatus()
     {
-        return m_status.getValue();
+        return m_status.get();
     }
 
     public IData.DataOrigin getStatusState()
@@ -192,14 +192,14 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     public void setBroadcast(boolean aBroadcast)
     {
     	// suspend MSO update
-		suspendUpdate();
+		suspendChange();
 		// clear receiver lists when changing broadcast state
 		m_unconfirmedReceivers.removeAll();
 		m_confirmedReceivers.removeAll();
 		// update
 		m_broadcast.setValue(aBroadcast);
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
     }
 
     public IData.DataOrigin getBroadcastState()
@@ -365,7 +365,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     	boolean bFlag = false;
 
     	// suspend MSO update
-		suspendUpdate();
+		suspendChange();
 
 		// remove from confirmed
 		m_confirmedReceivers.remove(aReceiver);
@@ -386,7 +386,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 		}
 
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 
 		// finished
 		return bFlag;
@@ -398,7 +398,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     	boolean bFlag = false;
 
     	// suspend MSO update
-		suspendUpdate();
+		suspendChange();
 
 		// remove from unconfirmed
 		m_unconfirmedReceivers.remove(aReceiver);
@@ -416,7 +416,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 			// consume;
 		}
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 
 		// finished
 		return bFlag;
@@ -425,11 +425,11 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     public void removeReceiver(ICommunicatorIf communicator)
     {
         // suspend MSO update
-		suspendUpdate();
+		suspendChange();
 		m_unconfirmedReceivers.remove(communicator);
 		m_confirmedReceivers.remove(communicator);
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
     }
 
     public ICommunicatorIf getReceiver()
@@ -448,11 +448,11 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     public void setReceiver(ICommunicatorIf communicator)
     {
     	// suspend MSO update
-		suspendUpdate();
+		suspendChange();
 		setBroadcast(false);
 		m_confirmedReceivers.add(communicator);
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 
     }
 
@@ -503,7 +503,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
         int deletedLineNumber = aLine.getLineNumber();
 
         // suspend MSO update
-		suspendUpdate();
+		suspendChange();
 
 		// try to remove line
 		if (!m_messageLines.remove(aLine)) {
@@ -519,7 +519,7 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
 		}
 
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 
 		// finished
         return bFlag;
@@ -539,13 +539,13 @@ public class MessageImpl extends AbstractTimeItem implements IMessageIf
     {
         IMessageLineIf retVal;
         // suspend MSO update
-		suspendUpdate();
+		suspendChange();
 		retVal = m_model.getMsoManager().getCmdPost().getMessageLines().createMessageLine();
 		retVal.setLineType(aType);
 		retVal.setLineNumber(getNextLineNumber());
 		m_messageLines.add(retVal);
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 		return retVal;
     }
 

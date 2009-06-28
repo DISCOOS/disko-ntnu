@@ -57,14 +57,6 @@ public class DefaultDialog extends JDialog implements IDialog {
     public static final int POS_SOUTH  = 4;
     public static final int POS_CENTER = 5;
 
-    public static final int TRANSLUCENT_MANUAL = 0;
-    public static final int TRANSLUCENT_ONFOCUS = 1;
-    public static final int TRANSLUCENT_ONMOUSE = 2;
-
-    public static final int MARKED_MANUAL = TRANSLUCENT_MANUAL;
-    public static final int MARKED_ONFOCUS = TRANSLUCENT_ONFOCUS;
-    public static final int MARKED_ONMOUSE = TRANSLUCENT_ONMOUSE;
-
     public static final int SIZE_TO_OFF = 0;		// force size off
     public static final int SIZE_TO_COMPONENT = 1;	// force size to snapping bounds
     public static final int SIZE_TO_SCREEN = 2;		// force size to screen bounds
@@ -88,8 +80,8 @@ public class DefaultDialog extends JDialog implements IDialog {
 
     private int isMarked = 0;
 
-    private int isTranslucentOn = TRANSLUCENT_MANUAL;
-    private int isMarkedOn = MARKED_MANUAL;
+    private int translucentOn = TRANSLUCENT_MANUAL;
+    private int markedOn = MARKED_MANUAL;
 
     private final Adapter m_adapter = new Adapter();
     private final DialogWorker m_worker = new DialogWorker(MILLIS_TO_SHOW);
@@ -271,15 +263,15 @@ public class DefaultDialog extends JDialog implements IDialog {
         return this.opacity;
     }
 
-    public int isMarkedOn() {
-        return isMarkedOn;
+    public int getMarkedOn() {
+        return markedOn;
     }
 
     @Override
     public int setMarkedOn(int isMarkedOn) {
-        int old = this.isMarkedOn;
+        int old = this.markedOn;
         if(old!=isMarkedOn) {
-            this.isMarkedOn = isMarkedOn;
+            this.markedOn = isMarkedOn;
             onAutoLayout();
         }
         return old;
@@ -300,15 +292,15 @@ public class DefaultDialog extends JDialog implements IDialog {
     }
 
     @Override
-    public int isTranslucentOn() {
-        return isTranslucentOn;
+    public int getTranslucentOn() {
+        return translucentOn;
     }
 
     @Override
     public int setTrancluentOn(int isTranslucentOn) {
-        int old = this.isTranslucentOn;
+        int old = this.translucentOn;
         if(old!=isTranslucentOn) {
-            this.isTranslucentOn = isTranslucentOn;
+            this.translucentOn = isTranslucentOn;
             onAutoLayout();
         }
         return old;
@@ -772,17 +764,17 @@ public class DefaultDialog extends JDialog implements IDialog {
             // cast to glass pane to DiskoGlassPane
             DiskoGlassPane glassPane = (DiskoGlassPane) getGlassPane();
             // is dialog marked?
-            if ((isMarkedOn & MARKED_ONFOCUS) == MARKED_ONFOCUS) {
+            if ((markedOn & MARKED_ONFOCUS) == MARKED_ONFOCUS) {
                 setMarked(glassPane.isFocusInWindow() ? 1 : 0);
             }
-            if ((isMarkedOn & MARKED_ONMOUSE) == MARKED_ONMOUSE) {
+            if ((markedOn & MARKED_ONMOUSE) == MARKED_ONMOUSE) {
                 setMarked(glassPane.isMouseInWindow() ? 1 : 0);
             }
             // is dialog translucent?
-            if ((isTranslucentOn & TRANSLUCENT_ONFOCUS) == TRANSLUCENT_ONFOCUS) {
+            if ((translucentOn & TRANSLUCENT_ONFOCUS) == TRANSLUCENT_ONFOCUS) {
                 setTrancluent(!glassPane.isFocusInWindow());
             }
-            if ((isTranslucentOn & TRANSLUCENT_ONMOUSE) == TRANSLUCENT_ONMOUSE) {
+            if ((translucentOn & TRANSLUCENT_ONMOUSE) == TRANSLUCENT_ONMOUSE) {
                 float opacity = getOpacity();
                 if (glassPane.isMouseInWindow()) {
                     setOpacity(new Float(AppProps.getText("GUI.LAYOUT.OPAQUE.SHOW")));
@@ -829,15 +821,16 @@ public class DefaultDialog extends JDialog implements IDialog {
 
     }
 
-    private boolean handleComponentEvent(Component source, boolean isMove) {
-        if(source==snapToComponent) {
-            return true;
-        }
-        else if(source==this) {
-            return isMove && isSnapToLocked;
-        }
+    private boolean handleComponentEvent(Component source, 
+    		boolean isShow, boolean isHide, boolean isMove, boolean isResize) {
+    	if(source==this) {
+        	return isShow || isHide || isMove && isSnapToLocked;
+        } 
+        else if(source==snapToComponent) {
+            return isMove || isResize;
+        } 
         else if(snapToComponent!=null && source==SwingUtilities.getRoot(snapToComponent)) {
-            return isMove;
+            return isMove || isResize; 
         }
         return false;
     }
@@ -882,14 +875,14 @@ public class DefaultDialog extends JDialog implements IDialog {
     private class Adapter implements ComponentListener, IGlassPaneListener {
 
         /*========================================================
-           * ComponentListener implementation
-           *======================================================== */
+         * ComponentListener implementation
+         *======================================================== */
 
         public void componentShown(ComponentEvent e) {
             // cast source to component
             Component c = (Component)e.getSource();
             // handle?
-            if(handleComponentEvent(c,false)) {
+            if(handleComponentEvent(c,true,false,false,false)) {
                 snapTo(false,(c!=snapToComponent));
                 onAutoLayout();
                 setWindowState(true);
@@ -900,7 +893,7 @@ public class DefaultDialog extends JDialog implements IDialog {
             // cast source to component
             Component c = (Component)e.getSource();
             // handle?
-            if(handleComponentEvent(c,false)) {
+            if(handleComponentEvent(c,false,true,false,false)) {
                 setVisible(false);
                 setWindowState(true);
             }
@@ -910,16 +903,16 @@ public class DefaultDialog extends JDialog implements IDialog {
             // cast source to component
             Component c = (Component)e.getSource();
             // handle?
-            if(handleComponentEvent(c,true)) {
+            if(handleComponentEvent(c,false,false,true,false)) {
                 snapTo(false,(c!=snapToComponent));
             }
         }
 
         public void componentResized(ComponentEvent e) {
-            // cast source to component
+            // cast source to component        	
             Component c = (Component)e.getSource();
             // handle?
-            if(handleComponentEvent(c,false)) {
+            if(handleComponentEvent(c,false,false,false,true)) {
                 snapTo(false,(c!=snapToComponent));
             }
         }
@@ -932,11 +925,6 @@ public class DefaultDialog extends JDialog implements IDialog {
             if(!getGlassPane().isLocked()) {
                 if(e.getType() == GlassPaneEvent.MOUSE_CHANGED) {
                     onAutoLayout();
-                    /*
-                    if(onAutoLayout()) {
-                        System.out.println("onAutoLayout:="+System.currentTimeMillis() + ", thread:="+Thread.currentThread().getId());
-                    }
-                    */
                 }
                 else if(e.getType() == GlassPaneEvent.FOCUS_CHANGED) {
                     onAutoLayout();
@@ -948,15 +936,20 @@ public class DefaultDialog extends JDialog implements IDialog {
         }
 
         private void setWindowState(boolean isShowing) {
-
+        	
+        	// get dialog
+        	JDialog d = DefaultDialog.this;
+        	
+    		//System.out.println("setWindowState("+d.getClass().getSimpleName()+"@"+d.hashCode()+","+isShowing+")");
+    		
             // can set translucency?
-            if(isTranslucencySupported) {
-                AWTUtilitiesWrapper.setWindowOpaque(DefaultDialog.this, isShowing ? !isTranslucent : true);
+            if(isTranslucencySupported && false) {
+                AWTUtilitiesWrapper.setWindowOpaque(d, isShowing ? !isTranslucent : true);
             }
 
             // can set opacity?
-            if(isOpacitySupported) {
-                AWTUtilitiesWrapper.setWindowOpacity(DefaultDialog.this, isShowing ? opacity : 1.0f);
+            if(isOpacitySupported && false) {
+                AWTUtilitiesWrapper.setWindowOpacity(d, isShowing ? opacity : 1.0f);
             }
 
         }

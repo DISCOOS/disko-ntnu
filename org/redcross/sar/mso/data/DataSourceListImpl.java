@@ -11,7 +11,7 @@ public class DataSourceListImpl extends MsoListImpl<IDataSourceIf> implements ID
     public IDataSourceIf createDataSource()
     {
         checkCreateOp();
-        return createdUniqueItem(new DataSourceImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new DataSourceImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public IDataSourceIf createDataSource(IMsoObjectIf.IObjectIdIf anObjectId)

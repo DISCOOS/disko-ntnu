@@ -17,7 +17,7 @@ public class ForecastListImpl extends MsoListImpl<IForecastIf> implements IForec
     public IForecastIf createForecast(Calendar aCalendar, String aText)
     {
         checkCreateOp();
-        return createdUniqueItem(new ForecastImpl(getOwner().getModel(), makeUniqueId(), aCalendar, aText));
+        return createdUniqueItem(new ForecastImpl(getOwner().getModel(), createUniqueId(), aCalendar, aText));
     }
 
     public IForecastIf createForecast(IMsoObjectIf.IObjectIdIf anObjectId)

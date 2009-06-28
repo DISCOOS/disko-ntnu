@@ -113,14 +113,14 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		// add listener?
 		if(model!=null) {
 			m_msoInterests = interests;
-			m_msoModel.getEventManager().addLocalUpdateListener(this);
+			m_msoModel.getEventManager().addChangeListener(this);
 		}
 	}
 	
 	public void disconnect() {
 		// unregister?
 		if(m_msoModel!=null) {
-			m_msoModel.getEventManager().removeLocalUpdateListener(this);
+			m_msoModel.getEventManager().removeChangeListener(this);
 			m_msoModel = null;
 		}
 	}
@@ -202,7 +202,7 @@ public abstract class AbstractPanel extends JPanel implements IPanel, IPanelMana
 		// consume change events
 		setChangeable(false);
 		// suspend for faster update?
-		if(m_msoModel!=null) m_msoModel.suspendUpdate();
+		if(m_msoModel!=null) m_msoModel.suspendChange();
 		// request action
 		bFlag = beforeFinish();
 		// resume updates?

@@ -148,7 +148,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
     {
         if (isDeletable())
         {
-        	suspendUpdate();
+        	suspendChange();
         	// is hostile?
         	if(m_hostile) {
 	        	// delete area POIs
@@ -165,7 +165,7 @@ public class AreaImpl extends AbstractMsoObject implements IAreaIf
 	        		it.delete(true);
 	        	}
         	}
-        	resumeUpdate(true);
+        	resumeChange(true);
         	// forward
             return super.delete(deep);
         }

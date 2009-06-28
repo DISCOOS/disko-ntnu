@@ -3,9 +3,11 @@ package org.redcross.sar.mso;
 import java.util.Collection;
 import java.util.List;
 
+import org.redcross.sar.mso.IChangeIf.IChangeAttributeIf;
+import org.redcross.sar.mso.IChangeIf.IChangeObjectIf;
+import org.redcross.sar.mso.IChangeIf.IChangeRelationIf;
 import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
-import org.redcross.sar.mso.data.IMsoDataIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IMsoRelationIf;
 import org.redcross.sar.mso.event.MsoEvent;
@@ -19,8 +21,61 @@ import org.redcross.sar.mso.event.MsoEvent;
  */
 
 @SuppressWarnings("unchecked")
-public interface IChangeRecordIf extends IChangeIf {
+public interface IChangeRecordIf extends Comparable<IChangeRecordIf> {
 
+	/**
+	 * Get change record set sequence number. </p>
+	 * 
+	 * This number equals the lowest change sequence number in record.
+	 * 
+	 * @return Returns lowest change sequence number. If no change is 
+	 * recorded, -1 is returned.
+	 */
+	public long getSeqNo();
+	
+	/**
+	 * Get maximum recorded sequence number. </p>
+	 * 
+	 * This number equals the lowest change sequence number in record.
+	 * 
+	 * @return Returns highest recorded change sequence number. If no change is 
+	 * recorded, or sequence numbers are disabled, -1 is returned.
+	 */
+	public long getNextSeqNo();
+	
+	/**
+	 * Get sequence number state.
+	 * 
+	 * @return Returns {@code true} is sequence numbers are on.
+	 */
+	public boolean isSeqNoEnabled();
+	
+	/**
+	 * Enable or disable sequence number. If on, the change sequence number
+	 * is set for each change.
+	 * 
+	 * @param isEnabled - the state
+	 */
+	public void setSeqNoEnabled(boolean isEnabled);
+	
+	/**
+	 * Check if changes are sorted. Default value is {@code false}.
+	 * 
+	 * @return Returns {@code true} if changes are sorted. 
+	 */
+	public boolean isSorted();
+	
+	/**
+	 * Set sorting behavior of record set list. </p>
+	 * 
+	 * If set to {@code true}, all lists of changes are 
+	 * sorted before they are returned. </p> 
+	 * 
+	 * Changes are sorted ascending on the change sequence number
+	 * {@code IChangeIf.getSeqNo()} (the order they occurred).
+	 */
+	public void setSorted(boolean isSorted);
+	
 	/**
 	 * Get owner of the changes.
 	 *  
@@ -36,6 +91,13 @@ public interface IChangeRecordIf extends IChangeIf {
 	public int getMask();
 		
 	/**
+	 * Check if a specific flag is set
+	 * @param mask - the mask to check for
+	 * @return Returns {@code true} is mask is set.
+	 */
+	public boolean isFlagSet(int flag);
+	
+	/**
 	 * Get the changes exists flag. Changes exists as long
 	 * as {@code getMask()} is greater than zero and the object
 	 * is not both created and deleted. Objects that are both
@@ -47,6 +109,57 @@ public interface IChangeRecordIf extends IChangeIf {
 	 */
 	public boolean isChanged();
     
+	/**
+	 * Check if mask {@code MsoEventType.CREATED_OBJECT_EVENT} is set. 
+	 * @return Returns {@code true} if mask 
+	 * {@code MsoEventType.CREATED_OBJECT_EVENT} is set.
+	 */
+    public boolean isObjectCreated();
+
+	/**
+	 * Check if mask {@code MsoEventType.DELETED_OBJECT_EVENT} is set. 
+	 * @return Returns {@code true} if mask 
+	 * {@code MsoEventType.DELETED_OBJECT_EVENT} is set.
+	 */
+    public boolean isObjectDeleted();
+
+	/**
+	 * Check if mask {@code MsoEventType.MODIFIED_OBJECT_EVENT} is set. 
+	 * @return Returns {@code true} if mask 
+	 * {@code MsoEventType.MODIFIED_OBJECT_EVENT} is set.
+	 */
+    public boolean isObjectModified();
+
+	/**
+	 * Check if mask {@code MsoEventType.ADDED_RELATION_EVENT} is set. 
+	 * @return Returns {@code true} if mask 
+	 * {@code MsoEventType.ADDED_RELATION_EVENT} is set.
+	 */
+    public boolean isRelationAdded();
+
+	/**
+	 * Check if mask {@code MsoEventType.REMOVED_RELATION_EVENT} is set. 
+	 * @return Returns {@code true} if mask 
+	 * {@code MsoEventType.REMOVED_RELATION_EVENT} is set.
+	 */
+    public boolean isRelationRemoved();
+
+	/**
+	 * Check if mask {@code MsoEventType.ADDED_RELATION_EVENT} or
+	 * {@code MsoEventType.REMOVED_RELATION_EVENT} is set. 
+	 * @return Returns {@code true} if mask mask 
+	 * {@code MsoEventType.ADDED_RELATION_EVENT} or
+	 * {@code MsoEventType.REMOVED_RELATION_EVENT} is set.
+	 */
+    public boolean isRelationModified();
+
+	/**
+	 * Check if mask {@code MsoEventType.CLEAR_ALL_EVENT} is set. 
+	 * @return Returns {@code true} if mask mask 
+	 * {@code MsoEventType.CLEAR_ALL_EVENT} is set.
+	 */
+    public boolean isAllDataCleared();	
+	
     /**
      * Get update loopback mode </p> 
      * 
@@ -111,20 +224,12 @@ public interface IChangeRecordIf extends IChangeIf {
      */    
     public UpdateMode getUpdateMode();
         
-    /**
-     * Get list of changed data. If filters are active, a 
-     * sub-set of all changes are returned.
-     *   
-     * @return Returns a list of changed data.
-     */
-	public List<IChangeIf> getChanges();
-    	
 	/**
 	 * Get list of changes in given object
-	 * @param object - the changed object
+	 * @param objectId - the object id
 	 * @return Returns list of changes in given object
 	 */
-	public List<IChangeIf> get(IMsoDataIf anObject);
+	public List<IChangeIf> get(String objectId);
 	
 	/**
 	 * Get changes for given MSO object
@@ -148,11 +253,21 @@ public interface IChangeRecordIf extends IChangeIf {
 	public List<IChangeRelationIf> get(IMsoRelationIf<?> aReference);
 	
 	/**
-	 * Add a change to the record.
+	 * Add a new change to the record.
+	 * 
 	 * @param aChange - the change to add to the record
-	 * @return Returns {@code true} is change was added.
+	 * @param difference - if {@code true}, a loopback or rollback 
+	 * change remove previous changes recorded on the same 
+	 * data object. If {@code false}, a loopback or rollback change 
+	 * are just added to previous changes. </p>
+	 * 
+	 * Note that the change record references the actual change object, 
+	 * and may alter it (sequence number) according to current 
+	 * state (setting the sequence number is enabled).
+	 * 
+	 * @return Returns {@code true} if changes processed.
 	 */
-	public boolean record(IChangeIf aChange);
+	public boolean record(IChangeIf aChange, boolean difference);
 	
 	/**
 	 * Remove a change from the record.
@@ -170,10 +285,11 @@ public interface IChangeRecordIf extends IChangeIf {
      * Create a union of changes in this with changes 
      * in given change record. 
      * @param aChange - the change record to union with this
+     * @param compress TODO
      * 
      * @return Returns {@code true} if union was performed on this.
      */
-    public boolean union(IChangeRecordIf aChange);	    
+    public boolean union(IChangeRecordIf aChange, boolean compress);	    
     
 	/**
 	 * Create a complement of changes in this change record 
@@ -187,36 +303,72 @@ public interface IChangeRecordIf extends IChangeIf {
 	public boolean difference(IChangeRecordIf rs);
 	
     /**
-     * Get the list of object changes. 
+     * Get list of recorded changes.
+     *  
+     * If filters are active, a sub-list is returned. 
+     * The list is sorted on ascending change sequence 
+     * number {@code getSeqNo()}.
+     * 
+     * @return Returns a list of recorded changes.
+     */
+	public List<IChangeIf> getChanges();
+    	
+    /**
+     * Get a copy of the list of recorded object changes. </p>
+     * 
+     * If filters are active, a sub-list is returned. 
+     * The list is sorted on ascending change sequence 
+     * number {@code getSeqNo()}.
      *   
-     * @return Returns the list of object changes 
+     * @return Returns a copy of the list of recorded object changes.
      */
 	public List<IChangeObjectIf> getObjectChanges();
 	
     /**
-     * Get list of changed attributes.
-     * @return Return list of attributes changed locally
+     * Get a copy of the list of recorded attribute changes. </p>
+     * 
+     * If filters are active, a sub-list is returned. 
+     * The list is sorted on ascending change sequence 
+     * number {@code getSeqNo()}.
+     * 
+     * @return Returns a copy of the list of recorded attribute changes.
      */    
     public Collection<IChangeIf.IChangeAttributeIf> getAttributeChanges();
     
     /**
-     * Get the list of changed references.
+     * Get a copy of the list of recorded relation changes.  </p>
+     * 
+     * If filters are active, a sub-list is returned. 
+     * The list is sorted on ascending change sequence 
+     * number {@code getSeqNo()}.
      *  
-     * @return Returns a list of changed references
+     * @return Returns a copy of the list of recorded relation changes.
      */
     public Collection<IChangeIf.IChangeRelationIf> getRelationChanges();
     
     /**
-     * Get the list of changed object (one-to-one) references.
+     * Get a copy of the list of recorded object (one-to-one) 
+     * relation changes.  </p>
+     * 
+     * If filters are active, a sub-list is returned. 
+     * The list is sorted on ascending change sequence 
+     * number {@code getSeqNo()}.
      *  
-     * @return Returns a list of changed object references
+     * @return Returns a copy of the list of recorded 
+     * object relation changes.
      */
     public Collection<IChangeIf.IChangeRelationIf> getObjectReferenceChanges();
 
     /**
-     * Get the list of changed list (one-to-many) references.
+     * Get a copy of the list of recorded list (one-to-many) 
+     * relation changes.  </p>
+     * 
+     * If filters are active, a sub-list is returned. 
+     * The list is sorted on ascending change sequence 
+     * number {@code getSeqNo()}.
      *  
-     * @return Returns a list of changed list references
+     * @return Returns a copy of the list of recorded 
+     * list relation changes.
      */
     public Collection<IChangeIf.IChangeRelationIf> getListReferenceChanges();
     
@@ -260,5 +412,46 @@ public interface IChangeRecordIf extends IChangeIf {
      * Clear only filters found in given record.
      */
     public void clearFilters(IChangeRecordIf rs);
+    
+    /**
+     * This interface create change sequence numbers. 
+     *   
+     * @author kenneth
+     *
+     */
+    public interface ISeqNoGenIf {
+    	
+    	/**
+    	 * Create ascending change sequence number 
+    	 * @return Returns change sequence number.
+    	 */
+    	public long createSeqNo();
+    	
+    	/**
+    	 * Get change record set sequence number. </p>
+    	 * 
+    	 * This number equals the lowest change sequence number in record.
+    	 * 
+    	 * @return Returns lowest change sequence number. If no change is 
+    	 * recorded, -1 is returned.
+    	 */
+    	public long getNextSeqNo();
+    	
+    	/**
+    	 * Get sequence number state.
+    	 * 
+    	 * @return Returns {@code true} is sequence numbers are on.
+    	 */
+    	public boolean isSeqNoEnabled();
+    	
+    	/**
+    	 * Enable or disable sequence number. If on, the change sequence number
+    	 * is set for each change.
+    	 * 
+    	 * @param isEnabled - the state
+    	 */
+    	public void setSeqNoEnabled(boolean isEnabled);    	
+    	
+    }
     
 }

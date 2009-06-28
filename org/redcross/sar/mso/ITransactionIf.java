@@ -25,19 +25,31 @@ public interface ITransactionIf
      * Get a list of change records.
      * @return The list
      */
-    public List<IChangeRecordIf> getChanges();
+    public List<IChangeRecordIf> getRecords();
 
+    /**
+     * Get a list of changed objects.
+     * @return The list
+     */
+    public List<IChangeIf.IChangeObjectIf> getObjectChanges();
+
+    /**
+     * Get a list of changed attributes.
+     * @return The list
+     */
+    public List<IChangeIf.IChangeAttributeIf> getAttributeChanges();
+    
     /**
      * Get a list of changed object (one-to-one) references.
      * @return The list
      */
-    public List<IChangeIf.IChangeRelationIf> getObjectRelations();
+    public List<IChangeIf.IChangeRelationIf> getObjectRelationChanges();
 
     /**
      * Get a list of changed list (one-to-many) references.
      * @return The list
      */
-    public List<IChangeIf.IChangeRelationIf> getListRelations();
+    public List<IChangeIf.IChangeRelationIf> getListRelationChanges();
         
 
 }

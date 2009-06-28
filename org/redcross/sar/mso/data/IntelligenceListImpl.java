@@ -11,7 +11,7 @@ public class IntelligenceListImpl extends MsoListImpl<IIntelligenceIf> implement
     public IIntelligenceIf createIntelligence()
     {
         checkCreateOp();
-        return createdUniqueItem(new IntelligenceImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new IntelligenceImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public IIntelligenceIf createIntelligence(IMsoObjectIf.IObjectIdIf anObjectId)

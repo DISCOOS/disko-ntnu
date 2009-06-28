@@ -11,11 +11,11 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IHypothesisIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
 public class HypothesisListModel extends AbstractListModel implements
-		IMsoUpdateListenerIf {
+		IMsoChangeListenerIf {
 
 	private static final long serialVersionUID = 1L;
 	private EnumSet<IMsoManagerIf.MsoClassCode> myInterests;
@@ -28,7 +28,7 @@ public class HypothesisListModel extends AbstractListModel implements
 		this.msoModel = msoModel;
 		// add listeners
 		IMsoEventManagerIf msoEventManager = msoModel.getEventManager();
-		msoEventManager.addLocalUpdateListener(this);
+		msoEventManager.addChangeListener(this);
 		// forward
 		load();
 	}

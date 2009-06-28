@@ -24,7 +24,7 @@ public class MessageLineListImpl extends MsoListImpl<IMessageLineIf> implements 
     public IMessageLineIf createMessageLine()
     {
         checkCreateOp();
-        return createdUniqueItem(new MessageLineImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new MessageLineImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public IMessageLineIf createMessageLine(IMsoObjectIf.IObjectIdIf anObjectId)

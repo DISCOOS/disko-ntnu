@@ -3,6 +3,7 @@ package org.redcross.sar.math;
 import java.util.Calendar;
 import java.util.Collection;
 
+import org.apache.log4j.Logger;
 import org.redcross.sar.data.IData;
 
 public class Level<S extends IData, T, D extends Number> implements ILevel<T,D> {
@@ -16,6 +17,8 @@ public class Level<S extends IData, T, D extends Number> implements ILevel<T,D> 
 	protected Variable<D> m_level;
 	protected Average<D> m_in;
 	protected Average<D> m_out;
+	
+	Logger m_logger; 
 
 	/* ============================================================
 	 * Constructors
@@ -23,6 +26,8 @@ public class Level<S extends IData, T, D extends Number> implements ILevel<T,D> 
 
 	@SuppressWarnings("unchecked")
 	public Level(Class<D> dataClass, String name, int range, String unit) {
+		// prepare
+		m_logger = Logger.getLogger(getClass());
 		// create variables
 		m_level = (Variable<D>)Variable.createVariable(dataClass, name, unit);
 		m_in = (Average<D>)Average.createVariable(dataClass, "in",unit+"/e",range);
@@ -136,8 +141,8 @@ public class Level<S extends IData, T, D extends Number> implements ILevel<T,D> 
 				// add net change to current level
 				m_level.set(new Sample<D>(m_level.add(net),change.getTime()));
 
-				// DEBUG: Print level and rates
-				System.out.println(m_level.m_name + " = " + getIn() + ":" + getLevel() + ":" + getOut());
+				// log level and rates
+				m_logger.info(m_level.m_name + " = " + getIn() + ":" + getLevel() + ":" + getOut());
 
 			}
 

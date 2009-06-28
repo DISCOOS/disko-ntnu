@@ -30,6 +30,7 @@ import org.disco.io.event.SessionEvent;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.gui.panel.DefaultPanel;
+import org.redcross.sar.util.Utils;
 
 public class ConsoleDialog extends DefaultDialog {
 
@@ -109,6 +110,7 @@ public class ConsoleDialog extends DefaultDialog {
 	private JTabbedPane getOutputPane() {
 		if (outputPane == null) {
 			outputPane = new JTabbedPane();
+			Utils.setFixedSize(outputPane, 680, 450);
 			outputPane.addTab("IO and events", null, getEventsScrollPane(), null);
 			outputPane.addTab("Console history", null, getCommandScrollPane(), null);
 			outputPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

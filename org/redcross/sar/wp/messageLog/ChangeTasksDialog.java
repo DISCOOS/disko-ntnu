@@ -14,7 +14,7 @@ import org.redcross.sar.mso.data.ITaskIf;
 import org.redcross.sar.mso.data.ITaskIf.TaskPriority;
 import org.redcross.sar.mso.data.ITaskIf.TaskStatus;
 import org.redcross.sar.mso.data.ITaskIf.TaskType;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 
@@ -42,7 +42,7 @@ import javax.swing.JToggleButton;
  *
  * @author thomasl
  */
-public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoUpdateListenerIf
+public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoChangeListenerIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -92,7 +92,7 @@ public class ChangeTasksDialog extends DefaultDialog implements IEditorIf, IMsoU
 		super(wp.getApplication().getFrame());
 
 		m_wp = wp;
-		wp.getMsoEventManager().addLocalUpdateListener(this);
+		wp.getMsoEventManager().addChangeListener(this);
 
 		m_buttonMap = new HashMap<JToggleButton, JButton>();
 		m_buttonTypeMap = new HashMap<JToggleButton, TaskSubType>();

@@ -16,20 +16,22 @@ import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 public abstract class ChangeImpl implements IChangeIf
 {
 	protected int m_mask;
-	protected IMsoDataIf m_data;
+	protected long m_seqNo = -1;
+	protected IMsoDataIf m_object;
 	protected UpdateMode m_mode;
 	protected boolean m_isLoopbackMode;
 	protected boolean m_isRollbackMode;
-	protected final Calendar m_time;
-
-	public ChangeImpl(IMsoDataIf aData, UpdateMode aMode, int mask, boolean isLoopback, boolean isRollback)
+	protected Calendar m_time;
+	
+	public ChangeImpl(IMsoDataIf aObject, UpdateMode aMode, MsoEventType mask, boolean isLoopback, boolean isRollback)
 	{
-		m_data = aData;
+		m_object = aObject;
 		m_mode = aMode;
-		m_mask = mask;
+		m_mask = mask.maskValue();
 		m_isLoopbackMode = isLoopback;
 		m_isRollbackMode = isRollback;
 		m_time = Calendar.getInstance();
+		m_seqNo = -1;
 	}
 
 	@Override 
@@ -37,13 +39,22 @@ public abstract class ChangeImpl implements IChangeIf
 	{
 		return m_mode;
 	}
+	
+	@Override
+	public long getSeqNo() {
+		return m_seqNo;
+	}
+	
+	public void setSeqNo(long seqNo)
+	{
+		m_seqNo = seqNo;
+	}
 
 	@Override
 	public int getMask()
 	{
 		return m_mask;
 	}
-	
 	
 	@Override
 	public boolean isFlagSet(int flag) {
@@ -114,14 +125,30 @@ public abstract class ChangeImpl implements IChangeIf
 	@Override
 	public IMsoDataIf getObject() 
 	{
-		return m_data;
+		return m_object;
 	}
 	
-    public static boolean isFlagSet(int flag, int mask)
+    @Override
+	public String getObjectId() 
+    {
+    	return m_object.getObjectId();
+    }
+
+	@Override
+	public int compareTo(IChangeIf change) {
+		return (int)(m_seqNo - change.getSeqNo());
+	}
+    
+	public static boolean isFlagSet(int flag, int mask)
     {
     	return (mask & flag) == flag;
     }
-
+	
+	public IChangeIf clone() throws CloneNotSupportedException
+	{
+		return null;
+	}
+    
 	/**
 	 * Class for changed MsoObjects.
 	 */
@@ -129,10 +156,10 @@ public abstract class ChangeImpl implements IChangeIf
 	{
 		public ChangeObject(IMsoObjectIf anObject)
 		{
-			this(anObject,anObject.getModel().getUpdateMode(),0,false,false);
+			this(anObject,anObject.getModel().getUpdateMode(),MsoEventType.EMPTY_EVENT,false,false);
 		}
 		
-		public ChangeObject(IMsoObjectIf anObject, UpdateMode aMode, int aMask, boolean isLoopback, boolean isRollback)
+		public ChangeObject(IMsoObjectIf anObject, UpdateMode aMode, MsoEventType aMask, boolean isLoopback, boolean isRollback)
 		{
 			super(anObject,aMode,aMask,isLoopback,isRollback);
 		}
@@ -140,20 +167,27 @@ public abstract class ChangeImpl implements IChangeIf
 		@Override
 		public IMsoObjectIf getMsoObject()
 		{
-			return (IMsoObjectIf)m_data;
+			return (IMsoObjectIf)m_object;
 		}
+
+		@Override
+		public IChangeObjectIf clone() {
+			ChangeObject aChange = new ChangeObject(getMsoObject(),
+					m_mode,MsoEventType.EMPTY_EVENT,
+					m_isLoopbackMode,m_isRollbackMode);
+			aChange.m_mask = m_mask;
+			return aChange;
+		}		
 			    
 	}
 
 	public static class ChangeAttribute extends ChangeImpl implements IChangeAttributeIf
 	{
-		private int m_mask;
 		private Object m_value;
 
-		public ChangeAttribute(IMsoAttributeIf<?> theAttribute, UpdateMode aMode, Object value, int aMask, boolean isLoopback, boolean isRollback)
+		public ChangeAttribute(IMsoAttributeIf<?> theAttribute, UpdateMode aMode, Object value, MsoEventType aMask, boolean isLoopback, boolean isRollback)
 		{
 			super(theAttribute,aMode,aMask,isLoopback,isRollback);
-			m_mask = aMask;
 			m_value = value;
 		}
 
@@ -183,6 +217,15 @@ public abstract class ChangeImpl implements IChangeIf
 			return getMsoAttribute().getOwnerObject();
 		}
 
+		@Override
+		public IChangeAttributeIf clone() {
+			ChangeAttribute aChange = new ChangeAttribute(getMsoAttribute(),
+					m_mode,m_value,MsoEventType.EMPTY_EVENT,
+					m_isLoopbackMode,m_isRollbackMode);
+			aChange.m_mask = m_mask;
+			return aChange;
+		}		
+		
 	}
 
 	/**
@@ -192,13 +235,11 @@ public abstract class ChangeImpl implements IChangeIf
 	 */
 	public static class ChangeRelation extends ChangeImpl implements IChangeRelationIf
 	{
-		private int m_mask;
-		private final IMsoObjectIf m_referredObj;
+		private IMsoObjectIf m_referredObj;
 
-		public ChangeRelation(IMsoRelationIf<?> aRelation, UpdateMode aMode, int aMask, IMsoObjectIf theReferredObj, boolean isLoopback, boolean isRollback)
+		public ChangeRelation(IMsoRelationIf<?> aRelation, UpdateMode aMode, MsoEventType aMask, IMsoObjectIf theReferredObj, boolean isLoopback, boolean isRollback)
 		{
 			super(aRelation, aMode, aMask, isLoopback, isRollback);
-			m_mask = aMask;
 			m_referredObj = theReferredObj;
 		}
 
@@ -220,13 +261,13 @@ public abstract class ChangeImpl implements IChangeIf
 		}
 
 		@Override
-		public IMsoObjectIf getReferringObject()
+		public IMsoObjectIf getRelatingObject()
 		{
 			return getMsoRelation().getOwnerObject();
 		}
 
 	    @Override
-		public IMsoObjectIf getReferredObject()
+		public IMsoObjectIf getRelatedObject()
 		{
 			return m_referredObj;
 		}
@@ -236,6 +277,15 @@ public abstract class ChangeImpl implements IChangeIf
 			return (IMsoRelationIf<?>)getObject();
 		}
 
+		@Override
+		public IChangeRelationIf clone() {
+			ChangeRelation aChange = new ChangeRelation(getMsoRelation(),
+					m_mode,MsoEventType.EMPTY_EVENT, m_referredObj,
+					m_isLoopbackMode,m_isRollbackMode);
+			aChange.m_mask = m_mask;
+			return aChange;
+		}		
+		
 	    @Override
 		public boolean equals(Object o)
 	    {
@@ -254,7 +304,7 @@ public abstract class ChangeImpl implements IChangeIf
 	        {
 	            return false;
 	        }
-	        if (getReferredObject() != null && getReferredObject().equals(refObj.getReferredObject()))
+	        if (getRelatedObject() != null && getRelatedObject().equals(refObj.getRelatedObject()))
 	        {
 	            return false;
 	        }
@@ -267,8 +317,8 @@ public abstract class ChangeImpl implements IChangeIf
 	    {
 	        int result = 7;
 	        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
-	        result = 31 * result + (getReferredObject() != null ? getReferredObject().hashCode() : 0);
-	        result = 31 * result + (getReferringObject() != null ? getReferringObject().hashCode() : 0);
+	        result = 31 * result + (getRelatedObject() != null ? getRelatedObject().hashCode() : 0);
+	        result = 31 * result + (getRelatingObject() != null ? getRelatingObject().hashCode() : 0);
 	        return result;
 	    }		
 		

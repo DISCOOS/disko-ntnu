@@ -16,7 +16,7 @@ public class OperationAreaListImpl extends MsoListImpl<IOperationAreaIf> impleme
     public IOperationAreaIf createOperationArea()
     {
         checkCreateOp();
-        return createdUniqueItem(new OperationAreaImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new OperationAreaImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public IOperationAreaIf createOperationArea(IMsoObjectIf.IObjectIdIf anObjectId)

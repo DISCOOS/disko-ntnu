@@ -6,7 +6,7 @@ import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IPersonnelIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.work.event.IFlowListener;
@@ -24,7 +24,7 @@ import javax.swing.JPanel;
  *
  * @author thomasl, kenneth
  */
-public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateListenerIf
+public class PersonnelAddressBottomPanel extends JPanel implements IMsoChangeListenerIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -48,7 +48,7 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 		// initialize GUI
 		initialize();
 		// add listeners
-		wp.getMsoEventManager().addLocalUpdateListener(this);
+		wp.getMsoEventManager().addChangeListener(this);
 		getInfoPanel().addFlowListener(wp);
 	}
 
@@ -199,9 +199,9 @@ public class PersonnelAddressBottomPanel extends JPanel implements IMsoUpdateLis
 	
 	private void setAddress() {
 		// Store address fields in single string, separated by ;
-		m_currentPersonnel.suspendUpdate();
+		m_currentPersonnel.suspendChange();
 		m_currentPersonnel.setAddress(getAddress());
-		m_currentPersonnel.resumeUpdate(true);
+		m_currentPersonnel.resumeChange(true);
 		m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 	}
 	

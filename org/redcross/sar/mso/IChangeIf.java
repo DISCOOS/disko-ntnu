@@ -6,19 +6,39 @@ import org.redcross.sar.mso.data.IMsoDataIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IMsoRelationIf;
 import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 
 /**
- * The IChangeIf interface define methods that used by the transaction handler when 
- * committing and rolling back objects and references.
+ * The IChangeIf interface define methods for tracking SINGLE changes, 
+ * also known as unit changes,  made on IMsoObjectIf objects, 
+ * IMsoAttributeIf attributes and IMsoRelationIf relations. The mask returned
+ * by {@code IChangeIf.getMask()} is therefore always equal an ordinal in 
+ * {@code MsoEventType}. Methods for managing collections of changes is
+ * supplied by the IChangeRecordIf interface. </p> 
  */
 @SuppressWarnings("unchecked")
-public interface IChangeIf
+public interface IChangeIf extends Comparable<IChangeIf>, Cloneable
 {
+	/**
+	 * Get the change sequence number of this change relative 
+	 * to the first change (which has sequence number 0).
+	 * @return Returns the change sequence number
+	 */
+	public long getSeqNo();
+	
+	/**
+	 * Set change sequence number. </p>
+	 * 
+	 * @param seqNo - the change sequence number. 
+	 */
+    public void setSeqNo(long seqNo);
     
 	/**
-	 * Get the update mask for this object.
+	 * Get the update mask for this object. This value maps always to a
+	 * ordinal in {@link MsoEventType}.
+	 * 
 	 * @return Returns the update mask for this object
-	 * @see MsoEvent for more information about individual mask values.
+	 * @see MsoEvent for more information about individual mask values (ordinals).
 	 */
 	public int getMask();
 	
@@ -156,7 +176,23 @@ public interface IChangeIf
      * @return Returns data object.
      */
     public IMsoDataIf getObject();
-        
+    
+    /**
+     * Get changed object ID.
+     * 
+     * @return Returns the changed object ID.
+     */
+    public String getObjectId();
+    
+    /**
+     * Get a copy of the change.
+     * 
+     * @return Returns a copy of change.
+     * 
+     * @throws CloneNotSupportedException
+     */
+    public IChangeIf clone() throws CloneNotSupportedException;
+    
 	/**
 	 * Methods that used by the transaction handler when committing objects.
 	 */
@@ -223,12 +259,12 @@ public interface IChangeIf
         /**
         * Get referring object (owner).
         */
-        public IMsoObjectIf getReferringObject();
+        public IMsoObjectIf getRelatingObject();
 
         /**
         * Get referred object (referenced object).
         */
-        public IMsoObjectIf getReferredObject();            
+        public IMsoObjectIf getRelatedObject();            
         
         /**
          * Get reference object

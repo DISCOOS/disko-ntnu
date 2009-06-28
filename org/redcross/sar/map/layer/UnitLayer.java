@@ -51,7 +51,6 @@ public class UnitLayer extends AbstractMsoFeatureLayer {
  		UnitFeature msoFeature = new UnitFeature();
  		msoFeature.setSpatialReference(srs);
  		msoFeature.setMsoObject(msoObject);
- 		System.out.println("Created UnitFeature " + msoObject);
  		return msoFeature;
  	}
 

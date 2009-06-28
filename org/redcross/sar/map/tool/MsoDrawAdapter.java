@@ -47,7 +47,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
 import org.redcross.sar.mso.data.ISearchIf.SearchSubType;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.Utils;
@@ -66,7 +66,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author kennetgu
  *
  */
-public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListener,
+public class MsoDrawAdapter implements IMsoChangeListenerIf, IMsoLayerEventListener,
 									IElementEventListener , IFlowListener {
 
 	private int consumeCount = 0;
@@ -125,7 +125,7 @@ public class MsoDrawAdapter implements IMsoUpdateListenerIf, IMsoLayerEventListe
 		drawMode = DrawMode.MODE_UNDEFINED;
 
 		// add listeners
-		msoModel.getEventManager().addLocalUpdateListener(this);
+		msoModel.getEventManager().addChangeListener(this);
 
 		// add global key event listeners
 		app.getKeyEventDispatcher().addKeyListener(

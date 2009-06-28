@@ -298,7 +298,7 @@ public class ListDialog extends DefaultDialog {
 
 	private void change(AssignmentStatus status) {
 		try {
-			app.getMsoModel().suspendUpdate();
+			app.getMsoModel().suspendChange();
 			JTable table = getAssignmentTable();
 			for (int i = 0; i < table.getRowCount(); i++) {
 				// selected?

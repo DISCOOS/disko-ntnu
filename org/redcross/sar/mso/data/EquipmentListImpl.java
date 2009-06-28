@@ -16,7 +16,7 @@ public class EquipmentListImpl extends MsoListImpl<IEquipmentIf> implements IEqu
     public IEquipmentIf createEquipment()
     {
         checkCreateOp();
-        return createdUniqueItem(new EquipmentImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new EquipmentImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public IEquipmentIf createEquipment(IMsoObjectIf.IObjectIdIf anObjectId)

@@ -36,7 +36,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
     private boolean m_isRollbackMode = false;
     private boolean m_isLoopbackMode = false;
 
-	protected final Class m_class;
+	protected final Class<T> m_class;
     protected final AbstractMsoObject m_owner;
     protected final IMsoModelIf m_model;
 
@@ -44,7 +44,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
     protected T m_remoteValue;
     protected IData.DataOrigin m_origin = IData.DataOrigin.NONE;
 
-    protected AttributeImpl(Class aClass, AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, T theValue)
+    protected AttributeImpl(Class<T> aClass, AbstractMsoObject theOwner, String theName, int theCardinality, int theIndexNo, T theValue)
     {
         m_class = aClass;
         m_owner = theOwner;
@@ -170,6 +170,15 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 	@Override
 	public abstract MsoDataType getDataType();
 
+	/**
+	 * Get attribute object id.
+	 * 
+	 * @return Returns attribute object id.
+	 */
+	public String getObjectId() {
+		return getOwnerObject().getObjectId() + "#" + getName();
+	}
+	
 	@Override
 	public MsoClassCode getClassCode() {
 		return MsoClassCode.CLASSCODE_NOCLASS;
@@ -218,7 +227,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
     	m_changeCount++;
     	// create attribute change instance 
     	IChangeIf change = new ChangeImpl.ChangeAttribute(this, aMode,get(),
-				MsoEventType.MODIFIED_DATA_EVENT.maskValue(),
+				MsoEventType.MODIFIED_DATA_EVENT,
 				isLoopbackMode(),isRollbackMode());
     	// finished
     	return change;
@@ -302,7 +311,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
     	 * ======================================================== */
 
         UpdateMode updateMode = m_model.getUpdateMode();
-        IData.DataOrigin newState;
+        IData.DataOrigin newOrigin;
         boolean isDirty = false;
         boolean isLoopback = false;
         boolean isRollback = false;
@@ -338,7 +347,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             			!isEqual(m_localValue, aValue) : false;
 
             	// get next state
-                newState = isConflict ?
+                newOrigin = isConflict ?
                 		  IData.DataOrigin.CONFLICT
                 		: IData.DataOrigin.REMOTE;
 
@@ -377,15 +386,20 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             	 * set to local state.
             	 * =========================================================== */
 
+            	// potential rollback occurred?
             	if (isEqual(m_remoteValue, aValue))
                 {
-                    newState = IData.DataOrigin.REMOTE;
-                    isDirty = isEqual(m_localValue, aValue);
-                    isRollback = true;
+            		// set REMOTE origin
+                    newOrigin = IData.DataOrigin.REMOTE;
+                    // get change flaf
+                    isDirty = (m_localValue!=null || m_origin!=newOrigin);
+                    // a change implies a rollback 
+                    isRollback = isDirty;
+                    // reset local value
                     m_localValue = null;
                 } else
                 {
-                    newState = IData.DataOrigin.LOCAL;
+                    newOrigin = IData.DataOrigin.LOCAL;
                     if (!isEqual(m_localValue, aValue))
                     {
                         m_localValue = aValue;
@@ -395,9 +409,9 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             }
             break;
         }
-        if (m_origin != newState)
+        if (m_origin != newOrigin)
         {
-            m_origin = newState;
+            m_origin = newOrigin;
             isDirty = true;
         }
         // set loopback mode
@@ -407,8 +421,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
         // notify change
         if (!isCreating && (isDirty || isLoopback || isRollback))
         {
-        	m_owner.registerModifiedData(onChangeOccurred(updateMode),isDirty);
-            //m_owner.registerModifiedData(this,updateMode,isDirty,isLoopback,isRollback);
+        	m_owner.registerModifiedData(onChangeOccurred(updateMode));
         }
     }
 
@@ -480,7 +493,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 	        // update state to REMOTE
 	        m_origin = IData.DataOrigin.REMOTE;
 	        // notify owner
-            m_owner.registerModifiedData(onChangeOccurred(m_model.getUpdateMode()),true);
+            m_owner.registerModifiedData(onChangeOccurred(m_model.getUpdateMode()));
         	// restore previous update mode?
             if(bFlag) m_model.restoreUpdateMode();
             // success
@@ -530,8 +543,8 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             }
             m_origin = aState;
             // notify owner
-            m_owner.registerModifiedData(onChangeOccurred(m_model.getUpdateMode()),false);
-            //m_owner.registerModifiedData(this,m_model.getUpdateMode(),false,false,false);
+            m_owner.registerModifiedData(onChangeOccurred(m_model.getUpdateMode()));
+            // finished
             return true;
         }
         return false;
@@ -567,13 +580,6 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
         return m_isRequired;
     }
 
-    /*
-    public boolean isChanged()
-    {
-        return m_changed;
-    }
-    */
-
     public int getCardinality()
     {
         return m_cardinality;
@@ -585,6 +591,8 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
     	}
     	return true;
     }
+    
+    protected abstract T getNaNValue(); 
 
     public static class MsoBoolean extends AttributeImpl<Boolean> implements IMsoBooleanIf
     {
@@ -627,6 +635,11 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 		@Override
 		public MsoDataType getDataType() {
 			return MsoDataType.BOOLEAN;
+		}
+
+		@Override
+		protected Boolean getNaNValue() {
+			return null;
 		}
 		
     }
@@ -711,13 +724,18 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 			return MsoDataType.INTEGER;
 		}
         
+		@Override
+		protected Integer getNaNValue() {
+			return null;
+		}
+		
     }
 
     public static class MsoDouble extends AttributeImpl<Double> implements IMsoDoubleIf
     {
         public MsoDouble(AbstractMsoObject theOwner, String theName)
         {
-            super(Long.class, theOwner, theName, 0,Integer.MAX_VALUE, (double) 0);
+            super(Double.class, theOwner, theName, 0,Integer.MAX_VALUE, (double) 0);
         }
 
         public MsoDouble(AbstractMsoObject theOwner, String theName, int theIndexNo)
@@ -787,6 +805,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 			return MsoDataType.DOUBLE;
 		}
         
+		@Override
+		protected Double getNaNValue() {
+			return null;
+		}
     }
 
     public static class MsoString extends AttributeImpl<String> implements IMsoStringIf
@@ -827,6 +849,11 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 			return MsoDataType.STRING;
 		}
         
+		@Override
+		protected String getNaNValue() {
+			return null;
+		}
+		
     }
 
     public static class MsoCalendar extends AttributeImpl<Calendar> implements IMsoCalendarIf
@@ -865,11 +892,6 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             super.set(aDTG);
         }
 
-        public void setValue(Calendar aDTG)
-        {
-            setAttrValue(aDTG);
-        }
-
         public Calendar getCalendar()
         {
             return getAttrValue();
@@ -885,6 +907,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 			return MsoDataType.CALENDAR;
 		}
         
+		@Override
+		protected Calendar getNaNValue() {
+			return null;
+		}
     }
 
     public static class MsoPosition extends AttributeImpl<Position> implements IMsoPositionIf
@@ -907,30 +933,26 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
         @Override
         public void set(Position aPosition)
         {
-            super.set(aPosition);
+            setAttrValue(aPosition);
         }
-
-        public void setValue(Position aPosition)
-        {
-            super.setAttrValue(aPosition);
-        }
-
-        public void setValue(String anId, Point2D.Double aPoint)
+        
+        @Override
+        public void set(String anId, Point2D.Double aPoint)
         {
             Position pos = new Position(anId, aPoint);
             setAttrValue(pos);
         }
 
-        public Position getPosition()
-        {
-            return getAttrValue();
-        }
-        
 		@Override
 		public MsoDataType getDataType() {
 			return MsoDataType.POSITION;
 		}
         
+		@Override
+		protected Position getNaNValue() {
+			return new Position(null);
+		}
+		
     }
 
     public static class MsoTimePos extends AttributeImpl<TimePos> implements IMsoTimePosIf
@@ -950,22 +972,6 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             super(TimePos.class, theOwner, theName, theCardinality, theIndexNo, aTimePos);
         }
 
-        @Override
-        public void set(TimePos aTimePos)
-        {
-            super.set(aTimePos);
-        }
-
-        public void setValue(TimePos aTimePos)
-        {
-            super.setAttrValue(aTimePos);
-        }
-
-        public TimePos getTimePos()
-        {
-            return getAttrValue();
-        }
-
         public boolean isGisAttribute()
         {
             return true;
@@ -976,6 +982,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 			return MsoDataType.TIMEPOS;
 		}
         
+		@Override
+		protected TimePos getNaNValue() {
+			return new TimePos();
+		}
     }
 
     public static class MsoPolygon extends AttributeImpl<Polygon> implements IMsoPolygonIf
@@ -995,22 +1005,6 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             super(Polygon.class, theOwner, theName, theCardinality, theIndexNo, aPolygon);
         }
 
-        @Override
-        public void set(Polygon aPolygon)
-        {
-            super.set(aPolygon);
-        }
-
-        public void setValue(Polygon aPolygon)
-        {
-            super.setAttrValue(aPolygon);
-        }
-
-        public Polygon getPolygon()
-        {
-            return getAttrValue();
-        }
-
         public boolean isGisAttribute()
         {
             return true;
@@ -1021,6 +1015,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 			return MsoDataType.POLYGON;
 		}
         
+		@Override
+		protected Polygon getNaNValue() {
+			return new Polygon(null);
+		}
     }
 
     public static class MsoRoute extends AttributeImpl<Route> implements IMsoRouteIf
@@ -1040,22 +1038,6 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             super(Route.class, theOwner, theName, theCardinality, theIndexNo, aRoute);
         }
 
-        @Override
-        public void set(Route aRoute)
-        {
-            super.set(aRoute);
-        }
-
-        public void setValue(Route aRoute)
-        {
-            super.setAttrValue(aRoute);
-        }
-
-        public Route getRoute()
-        {
-            return getAttrValue();
-        }
-
         public boolean isGisAttribute()
         {
             return true;
@@ -1066,6 +1048,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 			return MsoDataType.ROUTE;
 		}
         
+		@Override
+		protected Route getNaNValue() {
+			return new Route(null);
+		}
     }
 
     public static class MsoTrack extends AttributeImpl<Track> implements IMsoTrackIf
@@ -1085,22 +1071,6 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             super(Track.class, theOwner, theName, theCardinality, theIndexNo, aTrack);
         }
 
-        @Override
-        public void set(Track aTrack)
-        {
-            super.set(aTrack);
-        }
-
-        public void setValue(Track aTrack)
-        {
-            super.setAttrValue(aTrack);
-        }
-
-        public Track getTrack()
-        {
-            return getAttrValue();
-        }
-
         public boolean isGisAttribute()
         {
             return true;
@@ -1111,6 +1081,10 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 			return MsoDataType.TRACK;
 		}
         
+		@Override
+		protected Track getNaNValue() {
+			return new Track(null);
+		}
     }
 
     public static class MsoEnum<E extends Enum<E>> extends AttributeImpl<E> implements IMsoEnumIf<E>
@@ -1133,7 +1107,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
         public MsoEnum(AbstractMsoObject theOwner, String theName, int theCardinality, E anInstance)
         {
         	// forward
-            super(anInstance.getClass(), theOwner, theName, theCardinality, Integer.MAX_VALUE, anInstance);
+            super((Class<E>)anInstance.getClass(), theOwner, theName, theCardinality, Integer.MAX_VALUE, anInstance);
             // prepare
             m_initialValue = anInstance;
         }
@@ -1145,20 +1119,15 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
         @Override
         public void set(E anEnum)
         {
-            super.set(anEnum);
+        	set(anEnum,null);
         }
 
-        public void setValue(E anEnum)
+        public void set(String aName)
         {
-        	setValue(anEnum,null);
+        	set(aName,null);
         }
 
-        public void setValue(String aName)
-        {
-        	setValue(aName,null);
-        }
-
-        public void setValue(E anEnum, Calendar aTime)
+        public void set(E anEnum, Calendar aTime)
         {
             // forward
         	addHistory(anEnum, aTime);
@@ -1166,7 +1135,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             super.setAttrValue(anEnum);
         }
 
-        public void setValue(String aName, Calendar aTime)
+        public void set(String aName, Calendar aTime)
         {
             E anEnum = enumValue(aName);
             // validate
@@ -1180,12 +1149,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
             super.setAttrValue(enumValue(aName));
         }
 
-        public E getValue()
-        {
-            return getAttrValue();
-        }
-
-        public String getValueName()
+        public String getEnumName()
         {
             return getAttrValue().name();
         }
@@ -1217,6 +1181,11 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
         	return m_history.getHeadTime();
         }
 
+		@Override
+		protected E getNaNValue() {
+			return m_class.getEnumConstants()[0];
+		}
+		
         /**
          * Get history of specified status
          *
@@ -1357,7 +1326,7 @@ public abstract class AttributeImpl<T> implements IMsoAttributeIf<T>
 
     public int hashCode()
     {
-        int result;
+        int result = 7;
         result = (m_class != null ? m_class.hashCode() : 0);
         result = 31 * result + (m_owner != null ? m_owner.getObjectId().hashCode() : 0); // To avoid eternal loop
         result = 31 * result + (m_name != null ? m_name.hashCode() : 0);

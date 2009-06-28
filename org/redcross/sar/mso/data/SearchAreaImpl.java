@@ -61,17 +61,17 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
 
     public void setStatus(SearchAreaStatus aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public void setStatus(String aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public SearchAreaStatus getStatus()
     {
-        return m_status.getValue();
+        return m_status.get();
     }
 
     public String getStatusText()
@@ -95,12 +95,12 @@ public class SearchAreaImpl extends AbstractMsoObject implements ISearchAreaIf
 
     public void setGeodata(Polygon aGeodata)
     {
-        m_geodata.setValue(aGeodata);
+        m_geodata.set(aGeodata);
     }
 
     public Polygon getGeodata()
     {
-        return m_geodata.getPolygon();
+        return m_geodata.get();
     }
 
     public IData.DataOrigin getGeodataState()

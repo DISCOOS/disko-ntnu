@@ -56,7 +56,6 @@ public class POILayer extends AbstractMsoFeatureLayer {
  		POIFeature msoFeature = new POIFeature();
  		msoFeature.setSpatialReference(srs);
  		msoFeature.setMsoObject(msoObject);
- 		System.out.println("Created POIFeature " + msoObject);
  		return msoFeature;
  	}
 

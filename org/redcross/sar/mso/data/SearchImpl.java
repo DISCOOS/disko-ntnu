@@ -39,7 +39,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
     public SearchImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, int aNumber, SearchSubType aSubType)
     {
         super(theMsoModel, anObjectId, aNumber);
-        m_subType.setValue(aSubType);
+        m_subType.set(aSubType);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         if(m_mainList!=null) {
         	setNumber(m_mainList.makeSerialNumber(aSubType));
         }
-        m_subType.setValue(aSubType);
+        m_subType.set(aSubType);
     }
 
     @SuppressWarnings("unchecked")
@@ -100,12 +100,12 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
         if(m_mainList!=null) {
         	setNumber(m_mainList.makeSerialNumber(SearchSubType.valueOf(aSubType)));
         }
-        m_subType.setValue(aSubType);
+        m_subType.set(aSubType);
     }
 
     public SearchSubType getSubType()
     {
-        return m_subType.getValue();
+        return m_subType.get();
     }
 
     public String getInternationalSubTypeName()
@@ -329,7 +329,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
 
     public void setStart(Calendar aStart)
     {
-        m_start.setValue(aStart);
+        m_start.set(aStart);
     }
 
     public Calendar getStart()
@@ -349,7 +349,7 @@ public class SearchImpl extends AssignmentImpl implements ISearchIf
 
     public void setStop(Calendar aStop)
     {
-        m_stop.setValue(aStop);
+        m_stop.set(aStop);
     }
 
     public Calendar getStop()

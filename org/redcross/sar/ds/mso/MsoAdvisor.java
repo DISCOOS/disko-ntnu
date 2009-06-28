@@ -26,7 +26,7 @@ import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IAssignmentIf.AssignmentStatus;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Change;
 import org.redcross.sar.mso.event.MsoEvent.ChangeList;
@@ -169,7 +169,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 			m_dispatcher = m_model.getDispatcher();
 
 			// listen for changes
-			m_model.getEventManager().addLocalUpdateListener(m_msoAdapter);
+			m_model.getEventManager().addChangeListener(m_msoAdapter);
 
 			// finished
 			return true;
@@ -181,7 +181,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 		// allowed?
 		if(m_model!=null) {
 			// remove listener
-			m_model.getEventManager().removeLocalUpdateListener(m_msoAdapter);
+			m_model.getEventManager().removeChangeListener(m_msoAdapter);
 			// initialize
 			m_model = null;
 			m_comitter = null;
@@ -368,7 +368,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
 	 * Anonymous classes
 	 * ========================================================================= */
 
-    protected final IMsoUpdateListenerIf m_msoAdapter = new IMsoUpdateListenerIf() {
+    protected final IMsoChangeListenerIf m_msoAdapter = new IMsoChangeListenerIf() {
 
     	@Override
     	public EnumSet<MsoClassCode> getInterests() {
@@ -379,7 +379,7 @@ public class MsoAdvisor extends AbstractDs<ICue,IDsObject,EventObject> {
     	public void handleMsoChangeEvent(ChangeList list) {
 
     		// consume?
-    		if(!getID().equals(m_dispatcher.getActiveOperationID()) || m_dsObjs.isEmpty()) return;
+    		if(!getID().equals(m_dispatcher.getCurrentOperationID()) || m_dsObjs.isEmpty()) return;
 
     		// not a clear all event?
     		if(!list.isClearAllEvent()) {

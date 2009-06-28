@@ -68,7 +68,7 @@ public class ServicePool {
 		m_dispatcher.addDispatcherListener(new DispatcherAdapter() {
 
 			@Override
-			public void onOperationCreated(String oprID, boolean current) {
+			public void onOperationCreated(String oprID, boolean isLoopback) {
 				doAutoOn(oprID,false);
 			}
 
@@ -83,7 +83,7 @@ public class ServicePool {
 			}
 
 			@Override
-			public void onOperationFinished(String oprID, boolean current) {
+			public void onOperationFinished(String oprID, boolean isLoopback) {
 				doAutoOff(oprID,true);
 			}
 

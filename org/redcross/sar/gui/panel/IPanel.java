@@ -10,11 +10,11 @@ import javax.swing.border.Border;
 
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.map.event.IMsoLayerEventListener;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.work.event.IFlowListener;
 
 public interface IPanel extends IChangeable,
-								IMsoUpdateListenerIf,
+								IMsoChangeListenerIf,
 								IMsoLayerEventListener,
 								IFlowListener,
 								ActionListener {

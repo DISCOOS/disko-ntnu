@@ -1,15 +1,17 @@
-package org.redcross.sar.mso.event;
+package org.redcross.sar.mso;
 
 import no.cmr.tools.Log;
 
 import org.apache.log4j.Logger;
-import org.redcross.sar.Application;
-import org.redcross.sar.mso.ChangeRecordImpl;
-import org.redcross.sar.mso.IChangeRecordIf;
-import org.redcross.sar.mso.ITransactionIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
-import org.redcross.sar.mso.IMsoModelIf.UpdateMode;
+import org.redcross.sar.mso.ITransactionIf.TransactionType;
 import org.redcross.sar.mso.data.IMsoObjectIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
+import org.redcross.sar.mso.event.IMsoCoChangeListenerIf;
+import org.redcross.sar.mso.event.IMsoEventManagerIf;
+import org.redcross.sar.mso.event.IMsoTransactionListenerIf;
+import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.MsoEventType;
 import org.redcross.sar.util.except.TransactionException;
 import org.redcross.sar.work.ProgressMonitor;
@@ -17,6 +19,7 @@ import org.redcross.sar.work.ProgressMonitor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +36,14 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 	/**
 	 * Map from MsoClassCode to client update listeners that is interested in each MsoClassCodes
 	 */
-    private final Map<MsoClassCode, List<IMsoUpdateListenerIf>>
-    	m_clientUpdateListeners = new HashMap<MsoClassCode,List<IMsoUpdateListenerIf>>();
+    private final Map<MsoClassCode, List<IMsoChangeListenerIf>>
+    	m_slaveChangeListeners = new HashMap<MsoClassCode,List<IMsoChangeListenerIf>>();
 
     /**
 	 * Map from MsoClassCode to server update listeners that is interested in each MsoClassCodes
 	 */
     private final Map<MsoClassCode, List<IMsoUpdateListenerIf>>
-    	m_serverUpdateListeners = new HashMap<MsoClassCode,List<IMsoUpdateListenerIf>>();
+    	m_masterUpdateListeners = new HashMap<MsoClassCode,List<IMsoUpdateListenerIf>>();
 
 	/**
 	 * Collections of commit listeners
@@ -50,7 +53,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 	/**
 	 * Collections of Co update listeners
 	 */
-    private final Collection<IMsoCoUpdateListenerIf> m_coUpdateListeners = new Vector<IMsoCoUpdateListenerIf>();
+    private final Collection<IMsoCoChangeListenerIf> m_coUpdateListeners = new Vector<IMsoCoChangeListenerIf>();
 
 
 	/**
@@ -72,39 +75,48 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
      * Logging object
      */
     private final Logger m_logger = Logger.getLogger(MsoEventManagerImpl.class);
+    
+    /**
+     * The Mso model instance
+     */
+    private final IMsoModelIf m_model;
 
+    
+    protected MsoEventManagerImpl(IMsoModelIf aMsoModel) {
+    	m_model = aMsoModel;
+	}
+    
     /* ------------------------------------------------------------------
      * IMsoEventManagerIf implementation
      * ------------------------------------------------------------------ */
 
-    /**
-     * Add a listener in the {@link #m_clientUpdateListeners} queue.
+	/**
+     * Add a listener in the {@link #m_slaveChangeListeners} queue.
      */
-    public void addLocalUpdateListener(IMsoUpdateListenerIf aListener)
+    public void addChangeListener(IMsoChangeListenerIf aListener)
     {
-        defineInterests(m_clientUpdateListeners,aListener,aListener.getInterests());
+        defineInterests(m_slaveChangeListeners,aListener,aListener.getInterests());
     }
 
     /**
-     * Remove a listener in the {@link #m_clientUpdateListeners} queue.
+     * Remove a listener in the {@link #m_slaveChangeListeners} queue.
      */
-    public void removeLocalUpdateListener(IMsoUpdateListenerIf aListener)
+    public void removeChangeListener(IMsoChangeListenerIf aListener)
     {
-        removeInterests(m_clientUpdateListeners,aListener);
+        removeInterests(m_slaveChangeListeners,aListener);
     }
 
     public void notifyClearAll(IMsoObjectIf root)
     {
-    	// get update mode
-    	UpdateMode mode = Application.getInstance().getMsoModel().getUpdateMode();
     	// create change object
-    	IChangeRecordIf aChange = new ChangeRecordImpl(root,mode,
-    			MsoEventType.CLEAR_ALL_EVENT.maskValue());
+    	IChangeRecordIf aChange = new ChangeRecordImpl(root,
+    			m_model.getUpdateMode(),
+    			MsoEventType.CLEAR_ALL_EVENT);
         // notify
-        fireChange(m_clientUpdateListeners, getUpdateEvents(aChange));
+        fireSlaveChange(m_slaveChangeListeners, getUpdateEvents(aChange));
     }
 
-    public void notifyLocalUpdate(IChangeRecordIf aChange)
+    public void notifyChange(IChangeRecordIf aChange)
     {
     	// consume?
     	if(aChange.getMask()!=0)
@@ -112,7 +124,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     		// notify now?
     		if(m_resumeCount==0)
     		{
-    			fireChange(m_clientUpdateListeners,
+    			fireSlaveChange(m_slaveChangeListeners,
     					getUpdateEvents(aChange));
     		}
     		else
@@ -129,7 +141,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     	IMsoObjectIf msoObj = e.getSource();
     	// search for existing event
 		for(MsoEvent.Change it : buffer) {
-			if(it.getSource().equals(msoObj)) {
+			if(it.getSource() == msoObj) {
 				it.union(e); return;
 			}
 		}
@@ -137,29 +149,29 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 		buffer.add(e);
     }
 
-    public void addRemoteUpdateListener(IMsoUpdateListenerIf aListener)
+    public void addUpdateListener(IMsoUpdateListenerIf aListener)
     {
-        defineInterests(m_serverUpdateListeners,aListener,aListener.getInterests());
+        defineInterests(m_masterUpdateListeners,aListener,aListener.getInterests());
     }
 
-    public void removeRemoteUpdateListener(IMsoUpdateListenerIf aListener)
+    public void removeUpdateListener(IMsoUpdateListenerIf aListener)
     {
-        removeInterests(m_serverUpdateListeners,aListener);
+        removeInterests(m_masterUpdateListeners,aListener);
     }
 
-    public void notifyRemoteUpdate(IChangeRecordIf aChange)
+    public void notifyUpdate(IChangeRecordIf aChange)
     {
     	// consume?
     	if(aChange.getMask()!=0)
     	{
-	        fireChange(m_serverUpdateListeners, getUpdateEvents(aChange));
+	        fireMasterUpdate(m_masterUpdateListeners, getUpdateEvents(aChange));
     	}
     }
 
     /**
      * Add a listener in the {@link #m_commitListeners} queue.
      */
-    public void addCommitListener(IMsoTransactionListenerIf aListener)
+    public void addTransactionListener(IMsoTransactionListenerIf aListener)
     {
         m_commitListeners.add(aListener);
     }
@@ -167,7 +179,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     /**
      * Remove a listener in the {@link #m_commitListeners} queue.
      */
-    public void removeCommitListener(IMsoTransactionListenerIf aListener)
+    public void removeTransactionListener(IMsoTransactionListenerIf aListener)
     {
         m_commitListeners.remove(aListener);
     }
@@ -191,7 +203,72 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 
 
 
-    private void fireChange(
+    private void fireSlaveChange(
+    		Map<MsoClassCode, List<IMsoChangeListenerIf>> theListeners,
+    		MsoEvent.ChangeList events)
+    {
+        final long WORK_TIME = 100;
+
+        if (theListeners.size() == 0)
+        {
+            return;
+        }
+
+        // initialize
+        long tic = System.currentTimeMillis();
+        List<IMsoChangeListenerIf> list = new ArrayList<IMsoChangeListenerIf>(100);;
+
+        // get all?
+        if (events.isClearAllEvent())
+        {
+        	for(List<IMsoChangeListenerIf> it : theListeners.values()) {
+        		for(IMsoChangeListenerIf listener : it) {
+        			if(!list.contains(listener)) list.add(listener);
+        		}
+        	}
+        }
+        else
+        {
+        	// only notify those that are interested
+        	for(MsoEvent.Change it : events.getEvents()) {
+        		List<IMsoChangeListenerIf> interested = theListeners.get(it.getSource().getClassCode());
+        		if(interested!=null) {
+            		for(IMsoChangeListenerIf listener : interested) {
+            			if(!list.contains(listener)) list.add(listener);
+            		}
+        		}
+        	}
+        }
+
+        // get array of interested listeners to prevent concurrent modification
+        IMsoChangeListenerIf[] items = new IMsoChangeListenerIf[list.size()];
+ 
+        // loop over all listeners
+        for (IMsoChangeListenerIf  it : list.toArray(items))
+        {
+            try
+            {
+                it.handleMsoChangeEvent(events);
+
+            }
+            catch (Exception ex)
+            {
+            	String msg = "Exception in fireUpdate, listener: " + it.toString();
+            	m_logger.error(msg,ex);
+                Log.printStackTrace(msg,ex);
+            }
+
+            // update progress monitor?
+            if(WORK_TIME<System.currentTimeMillis()-tic) {
+                Thread.yield();
+                getProgressMonitor().refreshProgress();
+                tic = System.currentTimeMillis();
+            }
+
+        }
+    }
+
+    private void fireMasterUpdate(
     		Map<MsoClassCode, List<IMsoUpdateListenerIf>> theListeners,
     		MsoEvent.ChangeList events)
     {
@@ -230,25 +307,18 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 
         // get array of interested listeners to prevent concurrent modification
         IMsoUpdateListenerIf[] items = new IMsoUpdateListenerIf[list.size()];
-        list.toArray(items);
-
-        // get number of listeners
-        int count = items.length;
-
+        
         // loop over all listeners
-        for (int i=0; i< count; i++)
+        for (IMsoUpdateListenerIf it : list.toArray(items))
         {
-            // get listener
-            IMsoUpdateListenerIf listener = items[i];
-
             try
             {
-                listener.handleMsoChangeEvent(events);
+                it.handleMsoUpdateEvent(events);
 
             }
             catch (Exception ex)
             {
-            	String msg = "Exception in fireUpdate, listener: " + listener.toString();
+            	String msg = "Exception in fireUpdate, listener: " + it.toString();
             	m_logger.error(msg,ex);
                 Log.printStackTrace(msg,ex);
             }
@@ -262,13 +332,17 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
 
         }
     }
-
+    
     private void fireCommit(Collection<IMsoTransactionListenerIf> theListeners, ITransactionIf aSource) throws TransactionException
     {
-        if (theListeners.size() == 0)
+    	// vaild commit data?
+        if (aSource==null 
+        		|| TransactionType.COMMIT.equals(aSource.getType()) 
+        		|| theListeners.size() == 0)
         {
             return;
         }
+        // notify listeners
         MsoEvent.Commit event = new MsoEvent.Commit(aSource);
         for (IMsoTransactionListenerIf listener : theListeners)
         {
@@ -302,28 +376,28 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     	return list;
     }
 
-    public void addCoUpdateListener(IMsoCoUpdateListenerIf aListener)
+    public void addCoChangeListener(IMsoCoChangeListenerIf aListener)
     {
         m_coUpdateListeners.add(aListener);
     }
 
-    public void removeCoUpdateListener(IMsoCoUpdateListenerIf aListener)
+    public void removeCoUpdateListener(IMsoCoChangeListenerIf aListener)
     {
         m_coUpdateListeners.remove(aListener);
     }
 
-    public void notifyCoUpdate(IChangeRecordIf aChange)
+    public void notifyCoChange(IChangeRecordIf aChange)
     {
         if (m_coUpdateListeners.size() == 0)
         {
             return;
         }
         MsoEvent.CoChange event = new MsoEvent.CoChange(aChange);
-        for (IMsoCoUpdateListenerIf listener : m_coUpdateListeners)
+        for (IMsoCoChangeListenerIf listener : m_coUpdateListeners)
         {
             try
             {
-                listener.handleMsoCoUpdateEvent(event);
+                listener.handleMsoCoChangeEvent(event);
             }
             catch (Exception e)
             {
@@ -334,27 +408,30 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
         }
     }
 
-    private void defineInterests(
-    		Map<MsoClassCode, List<IMsoUpdateListenerIf>> theListeners,
-    		IMsoUpdateListenerIf aListener, EnumSet<MsoClassCode> interests) {
+    @SuppressWarnings("unchecked")
+	private void defineInterests(
+    		Map theListeners,
+    		EventListener aListener, EnumSet<MsoClassCode> interests) {
     	// cleanup
     	removeInterests(theListeners, aListener);
     	// register interests
     	for(MsoClassCode it : interests) {
-    		List<IMsoUpdateListenerIf> list = theListeners.get(it);
+    		List list = (List)theListeners.get(it);
     		if(list==null) {
-    			list = new ArrayList<IMsoUpdateListenerIf>();
+    			list = new ArrayList();
     			theListeners.put(it,list);
     		}
     		list.add(aListener);
     	}
     }
 
+    @SuppressWarnings("unchecked")
     private void removeInterests(
-    		Map<MsoClassCode, List<IMsoUpdateListenerIf>> theListeners,
-    		IMsoUpdateListenerIf aListener) {
+    		Map theListeners,
+    		EventListener aListener) {
 
-        for(List<IMsoUpdateListenerIf> it : theListeners.values()) {
+    	Collection<List> lists = (Collection<List>)theListeners.values();
+        for(List it : lists) {
             if(it.contains(aListener)) {
             	it.remove(aListener);
             }
@@ -371,7 +448,7 @@ public class MsoEventManagerImpl implements IMsoEventManagerIf
     	// fire client update notifications?
     	if(m_resumeCount==0 && m_buffer.size()>0) {
     		// notify listeners
-    		fireChange(m_clientUpdateListeners, new MsoEvent.ChangeList(m_buffer,false));
+    		fireSlaveChange(m_slaveChangeListeners, new MsoEvent.ChangeList(m_buffer,false));
     		// clear buffer
     		m_buffer.clear();
     	}

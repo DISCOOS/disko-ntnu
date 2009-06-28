@@ -15,7 +15,7 @@ import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.Change;
 import org.redcross.sar.mso.event.MsoEvent.ChangeList;
@@ -150,7 +150,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 			m_driver = m_model.getDispatcher();
 
 			// listen for changes
-			m_model.getEventManager().addLocalUpdateListener(m_msoAdapter);
+			m_model.getEventManager().addChangeListener(m_msoAdapter);
 
 			// finished
 			return true;
@@ -162,7 +162,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 		// allowed?
 		if(m_model!=null) {
 			// remove listener
-			m_model.getEventManager().removeLocalUpdateListener(m_msoAdapter);
+			m_model.getEventManager().removeChangeListener(m_msoAdapter);
 			// initialize
 			m_model = null;
 			m_manager = null;
@@ -201,7 +201,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
 	 * Anonymous classes
 	 * ========================================================================= */
 
-    protected final IMsoUpdateListenerIf m_msoAdapter = new IMsoUpdateListenerIf() {
+    protected final IMsoChangeListenerIf m_msoAdapter = new IMsoChangeListenerIf() {
 
     	@Override
     	public EnumSet<MsoClassCode> getInterests() {
@@ -212,7 +212,7 @@ public abstract class AbstractDsMso<M extends IMsoObjectIf, T
     	public void handleMsoChangeEvent(ChangeList list) {
 
     		// consume?
-    		if(!getID().equals(m_driver.getActiveOperationID()) || m_dsObjs.isEmpty()) return;
+    		if(!getID().equals(m_driver.getCurrentOperationID()) || m_dsObjs.isEmpty()) return;
 
     		// not a clear all event?
     		if(!list.isClearAllEvent()) {

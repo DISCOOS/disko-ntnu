@@ -42,7 +42,7 @@ public class OperationTableModel extends AbstractTableModel {
 				// update row
 				row[0] = oprID;
 				// is current?
-				if(dispatcher.getActiveOperationID()==oprID)
+				if(dispatcher.getCurrentOperationID()==oprID)
 					current = i;
 				// save row
 				rows[i] = row;
@@ -89,12 +89,12 @@ public class OperationTableModel extends AbstractTableModel {
 	private final DispatcherAdapter m_adapter = new DispatcherAdapter() {
 
 		@Override
-		public void onOperationCreated(String oprID, boolean current) {
+		public void onOperationCreated(String oprID, boolean isLoopback) {
 			change();
 		}
 
 		@Override
-		public void onOperationFinished(String oprID, boolean current) {
+		public void onOperationFinished(String oprID, boolean isLoopback) {
 			change();
 		}
 

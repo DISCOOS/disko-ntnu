@@ -95,17 +95,17 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 
     public void setLineType(MessageLineType aLineType)
     {
-        m_lineType.setValue(aLineType);
+        m_lineType.set(aLineType);
     }
 
     public void setLineType(String aLineType)
     {
-        m_lineType.setValue(aLineType);
+        m_lineType.set(aLineType);
     }
 
     public MessageLineType getLineType()
     {
-        return m_lineType.getValue();
+        return m_lineType.get();
     }
 
     public IData.DataOrigin getLineTypeState()
@@ -165,7 +165,7 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 
     public void setLineTime(Calendar anOperationTime)
     {
-        m_operationTime.setValue(anOperationTime);
+        m_operationTime.set(anOperationTime);
     }
 
     public Calendar getLineTime()
@@ -185,11 +185,11 @@ public class MessageLineImpl extends AbstractMsoObject implements IMessageLineIf
 
     public void setLinePosition(Position aPosition)
     {
-    	m_linePosition.setValue(aPosition);
+    	m_linePosition.set(aPosition);
     }
 
 	public Position getLinePosition() {
-		return m_linePosition.getPosition();
+		return m_linePosition.get();
 	}
 
 	public IData.DataOrigin getLinePositionState() {

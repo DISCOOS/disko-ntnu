@@ -63,7 +63,10 @@ public abstract class MsoDragAndDropLabel<M extends IMsoObjectIf> extends MsoLab
 
 		@Override
 		public Transferable getTransferable() {
-			return new TransferableMsoObject<M>(getMsoObject());
+			IMsoObjectIf msoObj = getMsoObject();
+			Class<?> c = msoObj.getClass();
+			String dataFlavor = c.getInterfaces()[0].getCanonicalName(); 
+			return new TransferableObject(msoObj,dataFlavor);
 		}
 		
 		@Override

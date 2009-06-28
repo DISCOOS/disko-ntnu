@@ -51,7 +51,7 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
 
     public void setBirthdate(Calendar aBirthdate)
     {
-        m_birthdate.setValue(aBirthdate);
+        m_birthdate.set(aBirthdate);
     }
 
     public Calendar getBirthdate()
@@ -151,12 +151,12 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
 
     public void setResidence(Position aResidence)
     {
-        m_residence.setValue(aResidence);
+        m_residence.set(aResidence);
     }
 
     public Position getResidence()
     {
-        return m_residence.getPosition();
+        return m_residence.get();
     }
 
     public IData.DataOrigin getResidenceState()
@@ -251,17 +251,17 @@ public abstract class AbstractPerson extends AbstractMsoObject implements IPerso
 
     public void setGender(PersonGender aGender)
     {
-        m_gender.setValue(aGender);
+        m_gender.set(aGender);
     }
 
     public void setGender(String aGender)
     {
-        m_gender.setValue(aGender);
+        m_gender.set(aGender);
     }
 
     public PersonGender getGender()
     {
-        return m_gender.getValue();
+        return m_gender.get();
     }
 
     public String getGenderText()

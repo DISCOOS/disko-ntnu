@@ -77,17 +77,17 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
 
     public void setSubType(BoatSubType aSubType)
     {
-        m_subType.setValue(aSubType);
+        m_subType.set(aSubType);
     }
 
     public void setSubType(String aSubType)
     {
-        m_subType.setValue(aSubType);
+        m_subType.set(aSubType);
     }
 
     public BoatSubType getSubType()
     {
-        return m_subType.getValue();
+        return m_subType.get();
     }
 
     public IData.DataOrigin getSubTypeState()
@@ -102,7 +102,7 @@ public class BoatImpl extends AbstractTransportUnit implements IBoatIf
 
     public String getSubTypeName()
     {
-        return Internationalization.translate(m_subType.getValue());
+        return Internationalization.translate(m_subType.get());
     }
 
     /*-------------------------------------------------------------------------------------------

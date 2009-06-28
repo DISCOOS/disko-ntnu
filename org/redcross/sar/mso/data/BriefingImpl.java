@@ -183,7 +183,7 @@ public class BriefingImpl extends AbstractMsoObject implements IBriefingIf
 
     public void setClosure(Calendar aClosure)
     {
-        m_closure.setValue(aClosure);
+        m_closure.set(aClosure);
     }
 
     public Calendar getClosure()

@@ -1,11 +1,13 @@
 package org.redcross.sar.gui.field;
 
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.Icon;
 
 import org.redcross.sar.gui.IChangeable;
 import org.redcross.sar.gui.event.IFieldListener;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.work.event.IFlowListener;
 
@@ -13,13 +15,16 @@ public interface IField<V> extends IChangeable {
 
 	public String getName();
 
+	public List<IChangeIf> getChanges();
+	
 	/**
 	 * Get the first MSO attribute
 	 */
-	public IMsoAttributeIf<V> getMsoAttribute();
-	public IMsoAttributeIf<V> clearMsoAttribute();
-	public IMsoAttributeIf<V> clearMsoAttribute(Object newEditValue);
+	public IMsoAttributeIf<?> getMsoAttribute();
 	public boolean setMsoAttribute(IMsoAttributeIf<?> attribute);
+	
+	public void clearModel();
+	public void clearModel(Object newEditValue);
 	
 	/**
 	 * Add a field listener

@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.redcross.sar.Application;
 import org.redcross.sar.data.Selector;
-import org.redcross.sar.mso.event.IMsoCoUpdateListenerIf;
+import org.redcross.sar.mso.IMsoModelIf;
+import org.redcross.sar.mso.event.IMsoCoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 
 /**
@@ -21,24 +21,39 @@ import org.redcross.sar.mso.event.MsoEvent;
  *
  * @param <M> - the item type
  * 
- * @see IMsoCoUpdateListenerIf for more information about 
+ * @see IMsoCoChangeListenerIf for more information about 
  * derived (co) update events.
  */
-public abstract class AbstractCoList<M extends IMsoObjectIf> implements IMsoCoListIf<M>, IMsoCoUpdateListenerIf
+public abstract class AbstractCoList<M extends IMsoObjectIf> implements IMsoCoListIf<M>, IMsoCoChangeListenerIf
 {
+	/**
+	 * The co-list items 
+	 */
     protected final HashMap<String, M> m_items;
-    
+
+    /**
+     * The co-list change count 
+     */
     protected int m_changeCount;
 
-    public AbstractCoList()
+    /**
+	 * The MSO model owning the objects.
+	 */
+	protected final IMsoModelIf m_model;
+
+	/**
+	 * Constructor
+	 */
+    public AbstractCoList(IMsoModelIf aMsoModel)
     {
-        this(50);
+        this(aMsoModel,50);
     }
 
-    public AbstractCoList(int aSize)
+    public AbstractCoList(IMsoModelIf aMsoModel, int aSize)
     {
         m_items = new LinkedHashMap<String, M>(aSize);
-        Application.getInstance().getMsoModel().getEventManager().addCoUpdateListener(this);
+        m_model = aMsoModel;
+        m_model.getEventManager().addCoChangeListener(this);        
     }
 
     public Collection<M> getItems()
@@ -66,7 +81,7 @@ public abstract class AbstractCoList<M extends IMsoObjectIf> implements IMsoCoLi
                 | MsoEvent.MsoEventType.MODIFIED_DATA_EVENT.maskValue();
 
 
-    public void handleMsoCoUpdateEvent(MsoEvent.CoChange e)
+    public void handleMsoCoChangeEvent(MsoEvent.CoChange e)
     {
         if (!hasInterestIn(e.getSource()))
         {

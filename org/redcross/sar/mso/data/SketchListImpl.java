@@ -16,7 +16,7 @@ public class SketchListImpl extends MsoListImpl<ISketchIf> implements ISketchLis
     public ISketchIf createSketch()
     {
         checkCreateOp();
-        return createdUniqueItem(new SketchImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new SketchImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public ISketchIf createSketch(IMsoObjectIf.IObjectIdIf anObjectId)

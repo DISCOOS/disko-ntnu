@@ -1,15 +1,15 @@
 package org.redcross.sar.mso.event;
 
 import java.util.EnumSet;
+import java.util.EventListener;
 
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 
-
-
 /**
- * Interface for MsoUpdateListener method
+ * Interface for the {@code handleMsoUpdateEvent} method. When this method
+ * is fired, a master update is required.  
  */
-public interface IMsoUpdateListenerIf extends java.util.EventListener
+public interface IMsoUpdateListenerIf extends EventListener
 {
     /**
      * Handle an event.
@@ -18,7 +18,7 @@ public interface IMsoUpdateListenerIf extends java.util.EventListener
      *
      * @param e The {@link ChangeList events} that shall be handled.
      */
-    public void handleMsoChangeEvent(MsoEvent.ChangeList e);
+    public void handleMsoUpdateEvent(MsoEvent.ChangeList e);
 
     /**
      * This method indicates which MSO classes that the listener are interested in. Only

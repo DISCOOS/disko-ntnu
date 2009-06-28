@@ -133,7 +133,7 @@ public class CalloutImpl extends AbstractMsoObject implements ICalloutIf
 
     public void setCreated(Calendar created)
     {
-    	m_created.setValue(created);
+    	m_created.set(created);
     }
 
 	public Calendar getCreated()

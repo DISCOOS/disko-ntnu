@@ -79,17 +79,17 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
 
     public void setStatus(IntelligenceStatus aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public void setStatus(String aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public IntelligenceStatus getStatus()
     {
-        return m_status.getValue();
+        return m_status.get();
     }
 
     public String getStatusText()
@@ -174,7 +174,7 @@ public class IntelligenceImpl extends AbstractMsoObject implements IIntelligence
 
     public void setTime(Calendar aTime)
     {
-        m_time.setValue(aTime);
+        m_time.set(aTime);
     }
 
     public Calendar getTime()

@@ -27,7 +27,7 @@ import org.redcross.sar.gui.event.IFieldModelListener;
  * @param <I> - Item data type
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractFieldModel<V> implements IFieldModel<V> {
+public abstract class AbstractFieldModel<V extends Object> implements IFieldModel<V> {
 
 	private static final long serialVersionUID = 1L;	
 
@@ -39,7 +39,6 @@ public abstract class AbstractFieldModel<V> implements IFieldModel<V> {
 	private DataState m_lastState = DataState.NONE;
 	private DataOrigin m_lastOrigin = DataOrigin.NONE;
 	
-
 	/* ==================================================================
 	 *  Constructors
 	 * ================================================================== */
@@ -81,20 +80,7 @@ public abstract class AbstractFieldModel<V> implements IFieldModel<V> {
 	public boolean isChangedSince(int changeCount) {
 		return(translateChangeCount()!=changeCount);
 	}
-	
-	@Override
-	public V getValue() {
-		switch(getOrigin()) {
-		case LOCAL:
-		case CONFLICT:
-			return getLocalValue();
-		case REMOTE:
-			return getRemoteValue();
-		}
-		// data origin is NOSOURCE
-		return null;
-	}
-	
+		
 	@Override
 	public abstract Object getSource();
 	
@@ -102,13 +88,22 @@ public abstract class AbstractFieldModel<V> implements IFieldModel<V> {
 	public abstract boolean isBoundTo(Object source);
 	
 	@Override
+	public abstract V getValue();
+	
+	@Override
+	public abstract boolean setValue(V value);
+	
+	@Override
 	public abstract V getLocalValue();
 	
 	@Override
-	public abstract void setLocalValue(V value);
+	public abstract boolean setLocalValue(V value);
 	
 	@Override
 	public abstract V getRemoteValue();
+	
+	@Override
+	public abstract boolean setRemoteValue(V value);
 	
 	@Override
 	public abstract boolean acceptLocalValue();
@@ -238,5 +233,6 @@ public abstract class AbstractFieldModel<V> implements IFieldModel<V> {
 		}
 		return 0;
 	}	
+	
 }
  

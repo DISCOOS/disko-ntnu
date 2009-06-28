@@ -16,7 +16,7 @@ public class CheckpointListImpl extends MsoListImpl<ICheckpointIf> implements IC
     public ICheckpointIf createCheckpoint()
     {
         checkCreateOp();
-        return createdUniqueItem(new CheckpointImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new CheckpointImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public ICheckpointIf createCheckpoint(IMsoObjectIf.IObjectIdIf anObjectId)

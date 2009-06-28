@@ -7,25 +7,28 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 
-import org.redcross.sar.mso.data.IMsoObjectIf;
-
 /**
  * @author kennetgu
  *
  */
-public class TransferableMsoObject<M extends IMsoObjectIf> implements Transferable
+public class TransferableObject implements Transferable
 {
 	private static DataFlavor m_flavor = null;
 	
-	private M m_anObject;
+	private Object m_anObject;
 
-    public TransferableMsoObject(M anObject)
+	/**
+	 * Constructs a TransferableObject instance 
+	 * @param anObject - the object to transfer
+	 * @param canonicalName - the local object canonical class name
+	 */
+    public TransferableObject(Object anObject, String canonicalName)
     {
     	try {
 	        // save assignment
 	    	m_anObject = anObject;    	
 	    	// create flavor
-	    	m_flavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class="+anObject.getClass().getSimpleName());
+	    	m_flavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class="+canonicalName);
     	}
     	catch(Exception e) {
     		e.printStackTrace();

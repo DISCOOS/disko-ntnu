@@ -2,10 +2,12 @@ package org.redcross.sar.mso.event;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import org.redcross.sar.mso.IChangeRecordIf;
 import org.redcross.sar.mso.ITransactionIf;
@@ -133,9 +135,33 @@ public abstract class MsoEvent extends java.util.EventObject
     }
 
     /**
+     * Create copy of list, sort if sorting is enabled, and return it.
+     * @param <T> - the list data type
+     * @param list - the list to create a copy of and sort
+     * @return Returns a sorted copy of given list.
+     */
+    private static <T extends Comparable<? super T>> List<T> sort(List<T> list, boolean copy) 
+    {
+    	if(copy) list = clone(list);
+    	Collections.sort(list);
+    	return list;
+    }
+
+    /**
+     * Clone given list
+     * @param <T> - the list data type
+     * @param list - the list to clone
+     * @return Returns a copy of the given list
+     */
+    private static <T extends Comparable<? super T>> List<T> clone(Collection<T> list) 
+    {
+    	return new Vector<T>(list);
+    }
+    
+    /**
      * Event that triggers an update of the user interface and/or the server handler.
      */
-    public static class Change extends MsoEvent
+    public static class Change extends MsoEvent implements Comparable<Change>
     {
 		private static final long serialVersionUID = 1L;
 
@@ -240,9 +266,9 @@ public abstract class MsoEvent extends java.util.EventObject
 	    	if(e!=null)
 	    	{
 		    	// make union
-		    	if(m_rs.union(e.getChange())) {
+		    	if(m_rs.union(e.getChange(), false)) {
 		    		// update event mask
-		    		m_eventTypeMask = m_rs.getMask();
+		    		m_eventTypeMask |= m_rs.getMask();
 		    		// union performed
 		    		return true;
 		    	}
@@ -250,6 +276,11 @@ public abstract class MsoEvent extends java.util.EventObject
 	    	// union not performed
 	    	return false;
 	    }
+
+		@Override
+		public int compareTo(Change e) {
+			return (int)(m_rs.getSeqNo() - e.getChange().getSeqNo());
+		}
 
     }
 
@@ -278,8 +309,7 @@ public abstract class MsoEvent extends java.util.EventObject
 
 		private final boolean m_isClearAll;
 
-		private final List<MsoEvent.Change> m_events =
-			new ArrayList<MsoEvent.Change>();
+		private List<MsoEvent.Change> m_events;
 
 		private final Map<MsoClassCode, List<MsoEvent.Change>> m_map =
 			new HashMap<MsoClassCode, List<MsoEvent.Change>>();
@@ -287,8 +317,10 @@ public abstract class MsoEvent extends java.util.EventObject
 		public ChangeList(Collection<MsoEvent.Change> items, boolean isClearAll) {
 			// initialize
 			List<MsoEvent.Change> list;
+			// sort items
+			List<MsoEvent.Change> events = sort(new Vector<MsoEvent.Change>(items),false);
 			// get all classes
-			for(MsoEvent.Change it : items) {
+			for(MsoEvent.Change it : events) {
 				MsoClassCode classCode = it.getSource().getClassCode();
 				list = m_map.get(classCode);
 				if(list==null) {
@@ -298,7 +330,7 @@ public abstract class MsoEvent extends java.util.EventObject
 				list.add(it);
 			}
 			// prepare
-			m_events.addAll(items);
+			m_events = events;
 			m_isClearAll = isClearAll;
 		}
 

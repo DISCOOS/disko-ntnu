@@ -413,7 +413,7 @@ public class DiskoWpTacticsImpl extends AbstractDiskoWpModule
 			// keep current object selected?
 			if(!keep) clearSelected();
 			// select next element?
-			if(getMap().getSelectionCount(false)==0) getMap().getDrawAdapter().nextElement();
+			//if(getMap().getSelectionCount(false)==0) getMap().getDrawAdapter().nextElement();
 		}
 		catch(Exception e) {
 			m_logger.error("Failed to reset selection in map",e);

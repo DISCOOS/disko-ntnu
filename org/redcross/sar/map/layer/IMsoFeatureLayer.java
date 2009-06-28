@@ -9,14 +9,14 @@ import org.redcross.sar.map.event.IMsoLayerEventListener;
 import org.redcross.sar.map.feature.IMsoFeature;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoObjectIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 
 import com.esri.arcgis.carto.IFeatureLayer;
 import com.esri.arcgis.geometry.IEnvelope;
 import com.esri.arcgis.interop.AutomationException;
 
-public interface IMsoFeatureLayer extends IMapLayer<IMsoObjectIf,IMsoFeature>, IFeatureLayer, IMsoUpdateListenerIf {
+public interface IMsoFeatureLayer extends IMapLayer<IMsoObjectIf,IMsoFeature>, IFeatureLayer, IMsoChangeListenerIf {
 
 	public enum LayerCode {
 		AREA_LAYER,

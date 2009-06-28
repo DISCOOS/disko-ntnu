@@ -50,8 +50,37 @@ public abstract class AbstractWork implements IWork {
     protected WorkerType m_workOn;
 
     protected final EventListenerList m_listeners = new EventListenerList();
-    protected final ProgressMonitor m_monitor = ProgressMonitor.getInstance();
+    
+    protected static ProgressMonitor m_monitor;
 
+    /* ==================================================
+     * Static constructor
+     * ================================================== */
+    
+    static 
+    {
+    	try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+
+				@Override
+				public void run() {
+			    	try {
+						m_monitor = ProgressMonitor.getInstance();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}    					
+				}
+				
+			});
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
     /* ==================================================
      * Constructors
      * ================================================== */
@@ -107,7 +136,7 @@ public abstract class AbstractWork implements IWork {
      * ================================================== */
 
     public final int compareTo(IWork work) {
-    	return work.getPriority() - m_priority;
+    	return m_priority - work.getPriority();
     }
 
     /* ==================================================
@@ -242,7 +271,7 @@ public abstract class AbstractWork implements IWork {
             // is user input prevention required? (keeps work pool concurrent)
             if (m_isModal) Application.getInstance().setLocked(true);
             // increment suspend counter?
-            if (m_suspend) Application.getInstance().getMsoModel().suspendUpdate();
+            if (m_suspend) Application.getInstance().getMsoModel().suspendChange();
             // forward
             afterPrepare();
         } else {

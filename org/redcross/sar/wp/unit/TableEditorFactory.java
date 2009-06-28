@@ -18,6 +18,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.table.TableCellContainer;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.data.ICalloutIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
@@ -311,8 +312,12 @@ public class TableEditorFactory {
 	                {
 	                    try
 	                    {
-	                    	if(unit.isPaused()) unit.resume(); else unit.pause();
-							m_wp.onFlowPerformed(new FlowEvent(this,unit,FlowEvent.EVENT_CHANGE));
+	                    	IChangeIf change; 
+	                    	if(unit.isPaused()) change = unit.resume(); else change = unit.pause();
+	                    	if(change!=null)
+	                    	{
+	                    		m_wp.onFlowPerformed(new FlowEvent(this,change,FlowEvent.EVENT_CHANGE));
+	                    	}
 						}
 	                    catch (IllegalOperationException ex)
 	                    {

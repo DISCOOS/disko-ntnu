@@ -412,22 +412,36 @@ public class FieldPane extends TogglePanel {
 	private void addInterest(IField<?> field) {
 		Object source = field.getModel().getSource();
 		if(source instanceof IMsoAttributeIf<?>) {
-			// get IMsoObject from attribute
-			IMsoAttributeIf<?> attr = (IMsoAttributeIf<?>)source;
-			IMsoObjectIf msoObj = attr.getOwnerObject();
-			// get all fields bound to this IMsoObjectIf instances 
-			List<IField<?>> fields = m_boundFields.get(msoObj);
-			// initialize?
-			if(fields==null) {
-				fields=new ArrayList<IField<?>>();
-				m_boundFields.put(msoObj,fields);
+			// forward
+			addInterest(field,(IMsoAttributeIf<?>)source);
+		}
+		else if(source instanceof List<?>)
+		{
+			for(Object it : (List<?>)source){
+				if(it instanceof IMsoAttributeIf<?>)
+				{
+					// forward
+					addInterest(field,(IMsoAttributeIf<?>)it);					
+				}
 			}
-			// add interest
-			m_msoInterests.add(msoObj.getClassCode());				
-			// add field to field list
-			fields.add(field);
 		}
 	}
+	
+	private void addInterest(IField<?> field, IMsoAttributeIf<?> attr) {
+		// get IMsoObject from attribute
+		IMsoObjectIf msoObj = attr.getOwnerObject();
+		// get all fields bound to this IMsoObjectIf instances 
+		List<IField<?>> fields = m_boundFields.get(msoObj);
+		// initialize?
+		if(fields==null) {
+			fields=new ArrayList<IField<?>>();
+			m_boundFields.put(msoObj,fields);
+		}
+		// add interest
+		m_msoInterests.add(msoObj.getClassCode());				
+		// add field to field list
+		fields.add(field);			
+	}	
 
 	private void removeInterest(IField<?> field) {
 		// initialize remove list
@@ -436,10 +450,10 @@ public class FieldPane extends TogglePanel {
 		for(IMsoObjectIf it : m_boundFields.keySet()) {
 			List<IField<?>> fields = m_boundFields.get(it);
 			if(fields!=null) {
-				if(fields.remove(field)) {
-					if(fields.size()==0) {
-						removeList.add(it);
-					}
+				// remove all occurrences
+				while(fields.remove(field));
+				if(fields.size()==0) {
+					removeList.add(it);
 				}
 			} else {
 				removeList.add(it);

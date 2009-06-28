@@ -512,7 +512,7 @@ public abstract class AbstractWorkLoop implements IWorkLoop {
 			// add to log
 			m_startupDelayLog.add(new Long(dl-dc));
 			// log event
-			m_logger.warn("id:=" + m_id + ", dutyCycle:="+ dc + ", delay:="+dl+", difference:="+dt+", LOG_DELAY_PRECISION:="+LOG_DELAY_PRECISION);
+			//m_logger.info("id:=" + m_id + ", dutyCycle:="+ dc + ", delay:="+dl+", difference:="+dt+", LOG_DELAY_PRECISION:="+LOG_DELAY_PRECISION);
 		}
 		
 		// save new start time

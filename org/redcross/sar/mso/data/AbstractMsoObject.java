@@ -101,19 +101,19 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     /**
      * Endless loop prevention
      */
-    private boolean m_suspendUpdateInProgress = false;
+    private boolean m_suspendChangeInProgress = false;
     
     /**
      * Suspend client event count
      */
-    private int m_suspendUpdateCount = 0;
+    private int m_suspendChangeCount = 0;
     
     /**
      * Change buffer implementation. This list 
      * contains all changes occurred since change updates was 
      * suspended.
      */
-    private List<IChangeIf> m_changeBuffer = new Vector<IChangeIf>();
+    private List<IChangeIf> m_slaveChangeBuffer = new Vector<IChangeIf>();
     
     /**
      * Derived change buffer implementation. This list
@@ -123,15 +123,9 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     private List<IChangeIf> m_coChangeBuffer = new Vector<IChangeIf>();
     
     /**
-     * Client updates buffered between suspendLocalUpdate() and resumeLocalUpdate()
-     */
-    //private final Map<IMsoDataIf,List<IChangeIf>> 
-    //	m_clientChangeBuffer = new HashMap<IMsoDataIf, List<IChangeIf>>();
-    
-    /**
      * Suspend derived update events flag
      */
-    private boolean m_suspendCoUpdate = false;
+    private boolean m_suspendCoChange = false;
     
     /**
      * Change tracking counter
@@ -182,8 +176,8 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         m_model = theMsoModel;
         m_eventManager = m_model.getEventManager();
         // prepare creation
-        suspendUpdate();
-        suspendCoUpdate();
+        suspendChange();
+        suspendCoChange();
         // finalize creation
         registerCreatedObject();
         // log the occurrence
@@ -218,8 +212,8 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         defineAttributes();
         defineLists();
         defineObjects();
-        resumeCoUpdate();
-        if(resume) resumeUpdate(false);
+        resumeCoChange();
+        if(resume) resumeChange(false);
     }
 
     /**
@@ -514,7 +508,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     {
         if (isDeletable())
         {
-        	suspendUpdate();        	
+        	suspendChange();        	
         	if(deep)
         	{
 	            for (MsoListImpl<?> list : m_relationLists.values())
@@ -532,7 +526,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 	            }
         	}
             destroy();
-            resumeUpdate(true);
+            resumeChange(true);
             return true;
         }
         return false;
@@ -554,10 +548,6 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     @SuppressWarnings("unchecked")
 	private void destroy()
     {
-        /* get dirty flag (requires server update notification 
-         * if true and update mode is LOCAL_UPDATE_MODE)*/
-        boolean isDirty = !m_isDeleted;
-        
         /* Get loopback flag. This test is based on the assumption 
          * that an invocation of destroy() only occurs once in 
          * LOCAL_UPDATE_MODE, and once is REMOVE_UPDATE_MODE, when
@@ -574,7 +564,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         m_isDeleted = true;
         
         // suspend update notifications
-    	suspendUpdate();
+    	suspendChange();
     	
     	// notify object holders
     	m_logger.debug("Notify holders that relations to " + this + " should be deleted");
@@ -586,10 +576,10 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
         
         // notify client update listeners
-        registerDeletedObject(isDirty,isLoopback,isRollback);
+        registerDeletedObject(isLoopback,isRollback);
         
         // resume update notifications
-    	resumeUpdate(true);
+    	resumeChange(true);
     	
     }
     
@@ -1093,7 +1083,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     	if(rs!=null) {
     		
     		// suspend update
-    		m_model.suspendUpdate();
+    		m_model.suspendChange();
     		
         	// initialize restore flag
         	boolean bFlag = !m_model.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
@@ -1140,37 +1130,37 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     
     public boolean isUpdateSuspended() 
     {
-    	return m_suspendUpdateCount>0 || m_model.isUpdateSuspended();
+    	return m_suspendChangeCount>0 || m_model.isChangeSuspended();
     }
    
-    public void suspendUpdate()
+    public void suspendChange()
     {
-        m_suspendUpdateCount++;
+        m_suspendChangeCount++;
     }
 
-    public boolean resumeUpdate(boolean all)
+    public boolean resumeChange(boolean all)
     {    	
     	// consume?
-    	if(m_suspendUpdateInProgress) return false;
+    	if(m_suspendChangeInProgress) return false;
     	
     	// prevent endless resume loop
-    	m_suspendUpdateInProgress = true;
+    	m_suspendChangeInProgress = true;
     	
     	// initialize
     	boolean bFlag = false;
     	
     	// decrement counter?
-    	if(m_suspendUpdateCount>0) m_suspendUpdateCount--;
+    	if(m_suspendChangeCount>0) m_suspendChangeCount--;
     	
     	// consume?
-        if (m_suspendUpdateCount==0 && !m_model.isUpdateSuspended())
+        if (m_suspendChangeCount==0 && !m_model.isChangeSuspended())
         {
 
         	// notify MSO manager
 	        m_eventManager.enterResume();
 	
-	        // notify updates in this object locally
-	        bFlag |= notifyLocalUpdate();
+	        // notify changes occurred in this object
+	        bFlag |= notifyChange();
 	        
 	        // notify updates in related objects?
 	        if(all)
@@ -1179,15 +1169,15 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
 		        {
 		        	IMsoObjectIf msoObj = it.get();
 		        	if(msoObj!=null) {
-		        		bFlag |= msoObj.resumeUpdate(all);
-			            m_logger.debug("resumeLocalUpdate::"+this);
+		        		bFlag |= msoObj.resumeChange(all);
+			            //m_logger.debug("resumeLocalUpdate::"+this);
 		        	}
 		        }
 		        
 		        for (MsoListImpl<IMsoObjectIf> list : m_relationLists.values())
 		        {
-		            bFlag = list.resumeClientUpdate(all);
-		            m_logger.debug("resumeLocalUpdate::"+this);
+		            bFlag |= list.resumeClientUpdate(all);
+		            //m_logger.debug("resumeLocalUpdate::"+this);
 		        }
 	
 	        }
@@ -1198,7 +1188,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         }
         
         // reset in-progress flag
-        m_suspendUpdateInProgress = false;
+        m_suspendChangeInProgress = false;
         
         // finished
         return bFlag;
@@ -1229,7 +1219,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         return true;
     }
 
-    public IMsoModelIf getModel () {
+    public IMsoModelIf getModel() {
     	return m_model;
     }
 
@@ -1474,61 +1464,61 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     {
     	registerChange(new ChangeImpl.ChangeObject(
     			this, m_model.getUpdateMode(), 
-        		MsoEventType.DELETED_OBJECT_EVENT.maskValue(), 
-        		false, false), true) ;    	
+        		MsoEventType.CREATED_OBJECT_EVENT, 
+        		false, false)) ;    	
     	m_logger.debug("Registered CREATED_OBJECT_EVENT in " + this);
     }
 
-    private void registerDeletedObject(boolean updateRemote, boolean isLoopback, boolean isRollback)
+    private void registerDeletedObject(boolean isLoopback, boolean isRollback)
     {
     	registerChange(new ChangeImpl.ChangeObject(
     			this, m_model.getUpdateMode(), 
-        		MsoEventType.DELETED_OBJECT_EVENT.maskValue(), 
-        		isLoopback, isRollback), updateRemote) ;    	
+        		MsoEventType.DELETED_OBJECT_EVENT, 
+        		isLoopback, isRollback)) ;    	
     	m_logger.debug("Registered DELETED_OBJECT_EVENT in " + this);
     }
     
-    protected void registerModifiedData(IChangeIf aChange, boolean updateRemote)
+    protected void registerModifiedData(IChangeIf aChange)
     {
     	if(MsoEvent.isMask(aChange.getMask(),MsoEventType.MODIFIED_DATA_EVENT))
     	{
-	        registerChange(aChange, updateRemote);
+	        registerChange(aChange);
 	    	m_logger.debug("Registered MODIFIED_DATA_EVENT in " + this);
     	}
     }
 
-    protected void registerAddedRelation(IChangeIf aChange, boolean updateRemote)
+    protected void registerAddedRelation(IChangeIf aChange)
     {
     	if(MsoEvent.isMask(aChange.getMask(),MsoEventType.ADDED_RELATION_EVENT))
     	{
-    		registerChange(aChange, updateRemote);
+    		registerChange(aChange);
         	m_logger.debug("Raised ADDED_RELATION_EVENT in " + this);    		
     	}
     }
 
-    protected void registerRemovedRelation(IChangeIf aChange, boolean updateRemote)
+    protected void registerRemovedRelation(IChangeIf aChange)
     {
     	if(MsoEvent.isMask(aChange.getMask(),MsoEventType.REMOVED_RELATION_EVENT))
     	{
-    		registerChange(aChange, updateRemote);
+    		registerChange(aChange);
         	m_logger.debug("Raised REMOVED_RELATION_EVENT in " + this);
     	}
     }
 
     /**
-     * Notify server listeners
+     * Notify that master should be updated.
      *
      * @param aChange - the change
      */
-    protected void notifyRemoteUpdate(IChangeIf aChange)
+    protected void notifyUpdate(IChangeIf aChange)
     {
         if (aChange.getMask() != 0)
         {
         	ChangeRecordImpl rs = new ChangeRecordImpl(this,aChange.getUpdateMode());
-        	rs.record(aChange);
+        	rs.record(aChange,false);
         	if(rs.isChanged())
         	{
-        		m_eventManager.notifyRemoteUpdate(rs);
+        		m_eventManager.notifyUpdate(rs);
         	}
         }
     }
@@ -1536,7 +1526,7 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     /**
      * Notify derived listeners
      */
-    protected boolean notifyCoUpdate()
+    protected boolean notifyCoChange()
     {
     	boolean bFlag = false;
         if (m_coChangeBuffer.size() > 0)
@@ -1545,19 +1535,19 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
         	ChangeRecordImpl lRs = new ChangeRecordImpl(this,UpdateMode.LOCAL_UPDATE_MODE);
         	for(IChangeIf it : m_coChangeBuffer)
         	{
-        		rRs.record(it);
-        		lRs.record(it);
+        		rRs.record(it,false);
+        		lRs.record(it,false);
         	}
         	// notify remote changes?
         	if(rRs.isChanged())
         	{
-        		m_eventManager.notifyCoUpdate(rRs);
+        		m_eventManager.notifyCoChange(rRs);
         		bFlag = true;
         	}
         	// notify local changes?
         	if(lRs.isChanged())
         	{
-        		m_eventManager.notifyCoUpdate(lRs);
+        		m_eventManager.notifyCoChange(lRs);
         		bFlag = true;
         	}
         	// clear buffered changes
@@ -1567,81 +1557,88 @@ public abstract class AbstractMsoObject implements IMsoObjectIf
     }
 
 
-    protected void suspendCoUpdate()
+    protected void suspendCoChange()
     {
-        m_suspendCoUpdate = true;
+        m_suspendCoChange = true;
     }
 
-    protected void resumeCoUpdate()
+    protected void resumeCoChange()
     {
-        m_suspendCoUpdate = false;
-        notifyCoUpdate();
+        m_suspendCoChange = false;
+        notifyCoChange();
     }
 
     /*-------------------------------------------------------------------------------------------
 	 * Helper methods
 	 *-------------------------------------------------------------------------------------------*/
 
-    private void registerChange(IChangeIf aChange, boolean updateRemote)
+    private void registerChange(IChangeIf aChange)
     {
     	
     	// track change
     	incrementChangeCount();
 
         // buffer changes
-    	m_changeBuffer.add(aChange);
+    	m_slaveChangeBuffer.add(aChange);
         m_coChangeBuffer.add(aChange);
         
         // notify derived update listeners?
-        if (!m_suspendCoUpdate)
+        if (!m_suspendCoChange)
         {
-            notifyCoUpdate();
+            notifyCoChange();
         }
 
         // notify server update listeners?
-        if(updateRemote && m_model.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE))
+        if(m_model.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE)
+        		|| aChange.isLoopbackMode())
         {
-        	notifyRemoteUpdate(aChange);
+        	notifyUpdate(aChange);
         }
 
-        // notify client update listeners?
+        // notify slave change listeners?
         if (!isUpdateSuspended())
         {
-            notifyLocalUpdate();
+            notifyChange();
         }  
 
     }
         
     /**
-     * Notify update listeners
+     * Notify change listeners
      */
-    private boolean notifyLocalUpdate()
-    {
-    	
+    private boolean notifyChange()
+    {	
     	boolean bFlag = false;
-        if (m_changeBuffer.size() > 0)
+        if (m_slaveChangeBuffer.size() > 0)
         {
         	ChangeRecordImpl rRs = new ChangeRecordImpl(this,UpdateMode.REMOTE_UPDATE_MODE);
         	ChangeRecordImpl lRs = new ChangeRecordImpl(this,UpdateMode.LOCAL_UPDATE_MODE);
-        	for(IChangeIf it : m_changeBuffer)
+        	for(IChangeIf it : m_slaveChangeBuffer)
         	{
-        		rRs.record(it);
-        		lRs.record(it);
+        		switch(it.getUpdateMode())
+        		{
+        		case REMOTE_UPDATE_MODE:
+            		rRs.record(it,false);
+            		break;
+        		case LOCAL_UPDATE_MODE:
+            		lRs.record(it,false);
+            		break;
+        		}
         	}
         	// notify remote changes?
         	if(rRs.isChanged())
         	{
-        		m_eventManager.notifyLocalUpdate(rRs);
+        		m_eventManager.notifyChange(rRs);
         		bFlag = true;
         	}
         	// notify local changes?
         	if(lRs.isChanged())
         	{
-        		m_eventManager.notifyLocalUpdate(lRs);
+        		m_eventManager.notifyChange(lRs);
         		bFlag = true;
         	}
         	// clear buffered changes
-            m_changeBuffer.clear();
+            m_slaveChangeBuffer.clear();
         }
         return bFlag;
     }    

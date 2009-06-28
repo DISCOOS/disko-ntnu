@@ -61,7 +61,6 @@ public class AreaLayer extends AbstractMsoFeatureLayer {
  		IMsoFeature msoFeature = new AreaFeature();
  		msoFeature.setSpatialReference(srs);
  		msoFeature.setMsoObject(msoObject);
- 		System.out.println("Created AreaFeature " + msoObject);
  		return msoFeature;
  	}
 

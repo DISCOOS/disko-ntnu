@@ -341,9 +341,9 @@ public class APRSMapper extends AbstractService implements IIOMapper<APRSBroker>
 					IUnitIf unit = cmdPost.getUnitList().getObject(objID);
 					// found?
 					if(unit!=null) {
-						unit.suspendUpdate();
+						unit.suspendChange();
 						unit.logPosition(p, packet.getTime());
-						unit.resumeUpdate(true);
+						unit.resumeChange(true);
 					} else {
 						logger.warn("APRSStation " + station.getCue() + " is identified but not found in unit list");
 					}

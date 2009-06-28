@@ -69,6 +69,13 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.ChangeList>, IMsoTrans
     public IDispatcherIf getDispatcher();
 
     /**
+     * Set the dispatcher for this model.
+     * 
+     * @param aDispatcher - the model dispatcher
+     */
+    public void setDispatcher(IDispatcherIf aDispatcher);
+
+    /**
      * Set update mode to {@link UpdateMode#LOCAL_UPDATE_MODE LOCAL_UPDATE_MODE}.
      */
     public void setLocalUpdateMode();
@@ -106,26 +113,26 @@ public interface IMsoModelIf extends IDataSource<MsoEvent.ChangeList>, IMsoTrans
     public IMsoTransactionManagerIf getMsoTransactionManager();
 
     /**
-     * Check if updates are suspended.
+     * Check if changes are suspended.
      *  
      * @return Returns <code>true</code> if updates are suspended.
      */
-    public boolean isUpdateSuspended();
+    public boolean isChangeSuspended();
 
     /**
-     * Suspend update notifications to listeners. <p/>
+     * Suspend change notifications to listeners. <p/>
      * 
-     * Use this method to group all update notifications into one single event. This
-     * will greatly improve the event handling process when a large number of
-     * updates is pending. The method has memory function, which ensures 
-     * that the same number invocations of {@code suspendUpdate()} and 
-     * {@code resumeUpdate()} is required to return to the same state. 
-     * For example, if updates are suspended by calling {@code suspendUpdate()}
-     * four times, resuming updates requires {@code resumeUpdate()} to be called
-     * four times. This make it possible to enable and disable updates in a
+     * Use this method to group all change notifications into one single 
+     * event. This will greatly improve the event handling process when a 
+     * large number of changes are pending. The method has memory function, 
+     * which ensures that the same number invocations of {@code suspendChange()} and 
+     * {@code resumeChange()} is required to return to the same state. 
+     * For example, if changes are suspended by calling {@code suspendChange()}
+     * four times, resuming changes requires {@code resumeChange()} to be called
+     * four times. This make it possible to enable and disable changes in a
      * object hierarchy.
      */
-    public void suspendUpdate();
+    public void suspendChange();
 
     /**
      * Resume pending update notification to listeners. <p/>

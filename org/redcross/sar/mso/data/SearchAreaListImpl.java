@@ -16,7 +16,7 @@ public class SearchAreaListImpl extends MsoListImpl<ISearchAreaIf> implements IS
     public ISearchAreaIf createSearchArea()
     {
         checkCreateOp();
-        return createdUniqueItem(new SearchAreaImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new SearchAreaImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public ISearchAreaIf createSearchArea(IMsoObjectIf.IObjectIdIf anObjectId)

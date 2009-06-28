@@ -3,13 +3,13 @@ package org.redcross.sar.gui;
 import java.awt.GraphicsConfiguration;
 import java.awt.Shape;
 import java.awt.Window;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
- *
+ * Class that wrap the AWTUtilities used to make translucent, opaque and change form.
+ * 
  * @author Anthony Petrov
  */
 public class AWTUtilitiesWrapper {
@@ -54,12 +54,8 @@ public class AWTUtilitiesWrapper {
             m_setWindowShape = m_awtUtilitiesClass.getMethod("setWindowShape", Window.class, Shape.class);
             m_setWindowOpacity = m_awtUtilitiesClass.getMethod("setWindowOpacity", Window.class, float.class);
             m_setWindowOpaque = m_awtUtilitiesClass.getMethod("setWindowOpaque", Window.class, boolean.class);
-        } catch (NoSuchMethodException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(AWTUtilitiesWrapper.class).error("Failed to initialize AWTUtilitiesWrapper", ex);
         }
     }
 
@@ -74,12 +70,8 @@ public class AWTUtilitiesWrapper {
             if (ret instanceof Boolean) {
                 return ((Boolean)ret).booleanValue();
             }
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvocationTargetException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(AWTUtilitiesWrapper.class).error("Method failed", ex);
         }
         return false;
     }
@@ -103,12 +95,8 @@ public class AWTUtilitiesWrapper {
         }
         try {
             method.invoke(null, window, value);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvocationTargetException ex) {
-            Logger.getLogger(AWTUtilitiesWrapper.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(AWTUtilitiesWrapper.class).error("Method failed", ex);
         }
     }
 
@@ -121,6 +109,7 @@ public class AWTUtilitiesWrapper {
     }
 
     public static void setWindowOpaque(Window window, boolean opaque) {
+		//System.out.println("setWindowOpaque("+window.getClass().getSimpleName()+"@"+window.hashCode()+","+opaque+")");
         set(m_setWindowOpaque, window, Boolean.valueOf(opaque));
     }
 }

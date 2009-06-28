@@ -366,25 +366,25 @@ public interface IMsoObjectIf extends IMsoDataIf
     public boolean isUpdateSuspended();
     
     /**
-     * Suspend update notifications to listeners.
+     * Suspend change notifications to listeners.
      * <p/>
-     * Use this method to group all update notifications into one single event. This
-     * will greatly improve the event handling process when a large number of
-     * updates is pending.
+     * Use this method to group all change notifications into one single 
+     * event. This will greatly improve the event handling process when a 
+     * large number of updates is pending.
      */
-    public void suspendUpdate();
+    public void suspendChange();
 
     /**
-     * Resume pending update notification to listeners. <p/>
+     * Resume pending change notification to listeners. <p/>
      *
-     * Use this method to group all update notifications into one single event. 
+     * Use this method to group all change notifications into one single event. 
      * This will greatly improve the event handling process when a large number of
      * updates is pending. The method has memory function, which ensures 
-     * that the same number invocations of {@code suspendUpdate()} and 
-     * {@code resumeUpdate()} is required to return to the same state. 
-     * For example, if updates are suspended by calling {@code suspendUpdate()}
-     * four times, resuming updates requires {@code resumeUpdate()} to be called
-     * four times. This make it possible to enable and disable updates in a
+     * that the same number invocations of {@code suspendChange()} and 
+     * {@code resumeChange()} is required to return to the same state. 
+     * For example, if changes are suspended by calling {@code suspendChange()}
+     * four times, resuming changes requires {@code resumeChange()} to be called
+     * four times. This make it possible to enable and disable changes in a
      * object hierarchy.
      * 
      * @param boolean all - if <code>true</code>, resume is also forwarded to all
@@ -392,11 +392,11 @@ public interface IMsoObjectIf extends IMsoDataIf
      * with object are resumed (changed attributes, references from and to this object).
      * 
      * @return Returns <code>true</code> if suspended updates were resumed. 
-     * If no suspended updates were resumed and notified to listeners, or
-     * if updates are suspended at the model level (see {@link IMsoModelIf}), 
+     * If no suspended changes were resumed and notified to listeners, or
+     * if changes are suspended at the model level (see {@link IMsoModelIf}), 
      * this method returns <code>false</code>.
      */
-    public boolean resumeUpdate(boolean all);
+    public boolean resumeChange(boolean all);
 
     /**
      * Validates object states (cardinality of attributes and relations)

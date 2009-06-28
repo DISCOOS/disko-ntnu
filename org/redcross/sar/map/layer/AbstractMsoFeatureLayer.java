@@ -69,10 +69,10 @@ public abstract class AbstractMsoFeatureLayer
 	protected EnumSet<MsoClassCode> interests;
 	protected MsoLayerEventStack eventStack;
 	protected IDiskoMapManager manager;
-
+	
 	protected final Map<Integer,Selector<IMsoObjectIf>> selectors = new HashMap<Integer,Selector<IMsoObjectIf>>();
 	
-	private static Logger logger;
+	private Logger logger;
 
 	/* ===============================================================
 	 * Constructors
@@ -86,6 +86,9 @@ public abstract class AbstractMsoFeatureLayer
 			ISpatialReference srs,
 			MsoLayerEventStack eventStack) {
 
+		// initialize logger
+		logger = Logger.getLogger(getClass());
+
 		// prepare
 		this.classCode = classCode;
 		this.layerCode = layerCode;
@@ -98,9 +101,6 @@ public abstract class AbstractMsoFeatureLayer
 		interests = EnumSet.of(classCode);
 		interests.addAll(coClasses);
 		
-		// initialize logger?
-		if(logger==null) logger = Logger.getLogger(getClass());
-
 	}
 
 	/* ===============================================================
@@ -137,9 +137,12 @@ public abstract class AbstractMsoFeatureLayer
 				List<IMsoObjectIf> geodata = getGeodataMsoObjects(msoObj);
 				// loop over all object
 				for(IMsoObjectIf it: geodata) {
+					// create MSO feature
 					IMsoFeature msoFeature = createMsoFeature(it);
 					featureClass.addFeature(msoFeature);
 					workList.add(msoFeature);
+					// log event
+					logger.info("Created " + msoFeature.getClass().getSimpleName() + " from " + it);
 				}
 			}
 			setDirty(true);
@@ -833,6 +836,8 @@ public abstract class AbstractMsoFeatureLayer
 							if (createdObject && msoFeature == null && isFeature) {
 								// create feature
 								msoFeature = createMsoFeature(it);
+								// log event
+								logger.info("Created " + msoFeature.getClass().getSimpleName() + " from " + it);
 								// try to add feature
 								if(msoFC.addFeature(msoFeature)) {
 									// add load work?

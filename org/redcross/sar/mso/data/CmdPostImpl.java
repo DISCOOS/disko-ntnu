@@ -30,9 +30,6 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     private final AttributeImpl.MsoString m_telephone3 = new AttributeImpl.MsoString(this, "Telephone3");
     private final AttributeImpl.MsoEnum<CmdPostStatus> m_status = new AttributeImpl.MsoEnum<CmdPostStatus>(this, "Status", 1, CmdPostStatus.IDLE);
 
-    private final AbstractCoList<ICommunicatorIf> m_communicatorList;
-    private final TimeLineImpl m_timeLine = new TimeLineImpl();
-
     private final AreaListImpl m_areaList = new AreaListImpl(this, "AreaList", true, 100);
     private final AssignmentListImpl m_assignmentList = new AssignmentListImpl(this, "AssignmentList", true, 100);
     private final PersonnelListImpl m_attendanceList = new PersonnelListImpl(this, "AttendanceList", true, 100);
@@ -57,17 +54,20 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
     private final TrackListImpl m_trackList = new TrackListImpl(this, "TrackList", true, 100);
     private final UnitListImpl m_unitList = new UnitListImpl(this, "UnitList", true, 100);
 
+    private final TimeLineImpl m_timeLine;
+    private final AbstractCoList<ICommunicatorIf> m_communicatorList;
+
     public CmdPostImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId)
     {
         super(theMsoModel, anObjectId);
-        m_status.setValue(CmdPostStatus.IDLE);
-
+        m_status.set(CmdPostStatus.IDLE);
         m_communicatorList = createCommunicatorList();
+        m_timeLine = new TimeLineImpl(theMsoModel);                
     }
 
     AbstractCoList<ICommunicatorIf> createCommunicatorList()
     {
-        return new AbstractCoList<ICommunicatorIf>()
+        return new AbstractCoList<ICommunicatorIf>(getModel())
         {
             public boolean hasInterestIn(Object anObject)
             {
@@ -187,17 +187,17 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public void setStatus(CmdPostStatus aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public void setStatus(String aStatus)
     {
-        m_status.setValue(aStatus);
+        m_status.set(aStatus);
     }
 
     public CmdPostStatus getStatus()
     {
-        return m_status.getValue();
+        return m_status.get();
     }
 
     public String getStatusText()
@@ -221,7 +221,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public void setEstablished(Calendar anEstablished)
     {
-        m_established.setValue(anEstablished);
+        m_established.set(anEstablished);
     }
 
     public Calendar getEstablished()
@@ -281,7 +281,7 @@ public class CmdPostImpl extends AbstractMsoObject implements ICmdPostIf, IHiera
 
     public void setReleased(Calendar aReleased)
     {
-        m_released.setValue(aReleased);
+        m_released.set(aReleased);
     }
 
     public Calendar getReleased()

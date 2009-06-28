@@ -26,9 +26,8 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IMsoListIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
-import org.redcross.sar.mso.event.MsoEventManagerImpl;
 import org.redcross.sar.mso.event.MsoEvent.ChangeList;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.TransactionException;
@@ -42,11 +41,11 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.ChangeList>
  
 	private static final Logger m_logger = Logger.getLogger(MsoModelImpl.class); 
 	
-    private final IDispatcherIf m_dispatcher;
+    private IDispatcherIf m_dispatcher;
     private final MsoManagerImpl m_msoManager;
     private final MsoEventManagerImpl m_msoEventManager;
     private final TransactionManagerImpl m_msoTransactionManager;
-    private final IMsoUpdateListenerIf m_updateRepeater;
+    private final IMsoChangeListenerIf m_updateRepeater;
 
     private final Object m_lock = new Object();
     private final Stack<UpdateMode> m_updateModeStack = new Stack<UpdateMode>();
@@ -63,18 +62,16 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.ChangeList>
      * <p/>
      * @throws Exception
      */
-    public MsoModelImpl(IDispatcherIf dispatcher) throws Exception
+    public MsoModelImpl() throws Exception
     {
-    	// prepare
-    	m_dispatcher = dispatcher;
     	// create objects
-        m_msoEventManager = new MsoEventManagerImpl();
+        m_msoEventManager = new MsoEventManagerImpl(this);
         m_msoManager = new MsoManagerImpl(this,m_msoEventManager);
         m_msoTransactionManager = new TransactionManagerImpl(this);
         // initialize to local update mode
         m_updateModeStack.push(UpdateMode.LOCAL_UPDATE_MODE);
         // create update event repeater
-        m_updateRepeater = new IMsoUpdateListenerIf() {
+        m_updateRepeater = new IMsoChangeListenerIf() {
 
 			public EnumSet<MsoClassCode> getInterests()
 			{
@@ -90,7 +87,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.ChangeList>
 
         };
         // connect repeater to client update events
-        m_msoEventManager.addLocalUpdateListener(m_updateRepeater);
+        m_msoEventManager.addChangeListener(m_updateRepeater);
     }
 
     /* ====================================================================
@@ -98,7 +95,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.ChangeList>
      * ==================================================================== */
     
     public String getID() {
-    	return m_dispatcher.getActiveOperationID();
+    	return m_dispatcher.getCurrentOperationID();
     }
     
     public boolean isAvailable() {
@@ -138,6 +135,17 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.ChangeList>
     public IDispatcherIf getDispatcher()
     {
         return m_dispatcher;
+    }
+    
+    public void setDispatcher(IDispatcherIf aDispatcher)
+    {
+    	if(m_dispatcher == null)
+    	{
+	    	// prepare
+	    	m_dispatcher = aDispatcher;
+	        m_msoEventManager.addTransactionListener(aDispatcher);
+	    	
+    	}
     }
 
     /**
@@ -181,7 +189,7 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.ChangeList>
     /**
      * This method is thread safe
      */
-    public void suspendUpdate()
+    public void suspendChange()
     {
     	// increment
     	synchronized(m_lock) {
@@ -201,10 +209,14 @@ public class MsoModelImpl 	extends AbstractDataSource<MsoEvent.ChangeList>
 	        	m_suspendUpdate--;
     	}
         if(m_suspendUpdate==0)
+        {
+        	long tic = System.currentTimeMillis();
         	m_msoManager.resumeUpdate();
+        	m_logger.debug("resumeUpdate() took " + (System.currentTimeMillis() - tic) + " milliseconds to complete");
+        }
     }
 
-    public synchronized boolean isUpdateSuspended()
+    public synchronized boolean isChangeSuspended()
     {
         return (m_suspendUpdate>0);
     }

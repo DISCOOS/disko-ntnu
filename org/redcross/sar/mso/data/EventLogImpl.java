@@ -18,7 +18,7 @@ public class EventLogImpl extends MsoListImpl<IEventIf> implements IEventLogIf
     public IEventIf createEvent(Calendar aCalendar)
     {
         checkCreateOp();
-        return createdUniqueItem(new EventImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber(), aCalendar));
+        return createdUniqueItem(new EventImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber(), aCalendar));
     }
 
     public IEventIf createEvent(IMsoObjectIf.IObjectIdIf anObjectId)

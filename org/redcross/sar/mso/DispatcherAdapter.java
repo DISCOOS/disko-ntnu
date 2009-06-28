@@ -6,7 +6,7 @@ public class DispatcherAdapter implements IDispatcherListenerIf {
 		// TODO Auto-generated method stub
 	}
 
-	public void onOperationCreated(String oprID, boolean current) {
+	public void onOperationCreated(String oprID, boolean isLoopback) {
 		// TODO Auto-generated method stub
 	}
 
@@ -14,7 +14,7 @@ public class DispatcherAdapter implements IDispatcherListenerIf {
 		// TODO Auto-generated method stub
 	}
 
-	public void onOperationFinished(String oprID, boolean current) {
+	public void onOperationFinished(String oprID, boolean isLoopback) {
 		// TODO Auto-generated method stub
 	}
 

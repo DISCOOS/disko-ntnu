@@ -24,6 +24,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 
 import org.disco.io.IBroker;
+import org.disco.io.ILink;
 import org.disco.io.IOManager;
 import org.disco.io.ISession;
 import org.disco.io.aprs.APRSBroker;
@@ -33,6 +34,7 @@ import org.disco.io.event.IManagerListener;
 import org.disco.io.event.ProtocolEvent;
 import org.disco.io.event.SessionEvent;
 import org.disco.io.net.NetSession;
+import org.disco.io.net.SocketLink;
 import org.disco.io.serial.TNCSession;
 import org.redcross.sar.Application;
 import org.redcross.sar.gui.dialog.ConsoleDialog;
@@ -60,7 +62,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 	
 	private TNCDialog tncDialog;
 	private NetDialog netDialog;
-	private LoginDialog loginDialog;
+	private TelnetLoginDialog loginDialog;
 	private ConsoleDialog consoleDialog;
 	private ListSelectorDialog selectorDialog;
 	
@@ -247,9 +249,9 @@ public class ServiceManagerPanel extends DefaultPanel {
 	 * 	
 	 * @return org.redcross.sar.gui.panel.ServiceManagerPanel.LoginDialog
 	 */	
-	private LoginDialog getLoginDialog() {
+	private TelnetLoginDialog getLoginDialog() {
 		if(loginDialog == null) {
-			loginDialog = new LoginDialog();
+			loginDialog = new TelnetLoginDialog();
 			loginDialog.setLocationRelativeTo(Application.getFrameInstance());			
 		}
 		return loginDialog;
@@ -389,19 +391,6 @@ public class ServiceManagerPanel extends DefaultPanel {
 		}
 		
 		public void onOpen(SessionEvent e) {
-			if(e.getSource() instanceof NetSession) {
-				// prepare
-				NetSession session = (NetSession)e.getSource();				
-				// prompt user
-				String[] login = getLoginDialog().prompt(
-						session.getUsername(),
-						session.getPassword(),
-						"filter r/64/10/25");
-				// login supplied?
-				if(login!=null) {
-					session.login(login[0],login[1],login[2]);
-				}
-			}
 			fireTableDataChanged();
 		}
 
@@ -409,16 +398,37 @@ public class ServiceManagerPanel extends DefaultPanel {
 			fireTableDataChanged();			
 		}
 		
-		public void onCurrentSessionChanged(ISession session) { /* NOP */ }
-		public void onReceive(ISession session, ProtocolEvent e) { /* NOP */ }
+		public void onReceive(ISession session, ProtocolEvent e) {
+			// is net session?
+			if(session instanceof NetSession) {
+				// cast to socket link
+				NetSession netSession = (NetSession)session;	
+				// prompt login?
+				if(netSession.isLoginREADY())
+				{
+					// prompt user
+					String[] login = getLoginDialog().prompt(
+							netSession.getUsername(),
+							netSession.getPassword(),
+							"filter r/64/10/25");
+					// login supplied?
+					if(login!=null) {
+						netSession.login(login[0],login[1],login[2]);
+					}
+				}
+				fireTableDataChanged();
+			}
+			
+		}
 		public void onTransmit(ISession session, ProtocolEvent e) { /* NOP */ }
+		public void onCurrentSessionChanged(ISession session) { /* NOP */ }
 		public void onEntityDetected(IBroker<?> broker,EntityEvent e) { /* NOP */ }
 		public void onBufferOverflow(ISession session, ProtocolEvent e) {  /* NOP */ }
 
 		
 	}
 	
-	private class LoginDialog extends DefaultDialog {
+	private class TelnetLoginDialog extends DefaultDialog {
 
 		private static final long serialVersionUID = 1L;
 		
@@ -441,7 +451,7 @@ public class ServiceManagerPanel extends DefaultPanel {
 				           getCommandField().getValue().toString()}; 
 		}
 		
-		public LoginDialog() {
+		public TelnetLoginDialog() {
 			// forward
 			super(Application.getFrameInstance());
 			// initialize gui
@@ -563,9 +573,37 @@ public class ServiceManagerPanel extends DefaultPanel {
 				if(value instanceof ISession)
 				{
 					ISession session = (ISession)value;
-					if(session.isOpen()) {
-						text = ((ISession)value).getName() + " (tilkoblet::" + session.getLink().getName().replace("//./","") +")";
-						b = Color.GREEN;
+					ILink link = session.getLink();
+					if(link.isOpen()) {
+						if(link instanceof SocketLink) {
+							SocketLink socketLink = (SocketLink)link;
+							if(socketLink.isLoginNO() || socketLink.isLoginREADY())
+							{
+								text = ((ISession)value).getName() 
+									+ " (login påkrevd::" 
+									+ session.getLink().getName().replace("//./","") +")";
+								b = Color.YELLOW;
+							}
+							else if(socketLink.isLoginPROGRESS())
+							{
+								text = ((ISession)value).getName() 
+									+ " (logger på::" 
+									+ session.getLink().getName().replace("//./","") +")";
+								b = Color.YELLOW;
+							}
+							else if(socketLink.isLoginYES())
+							{
+								text = ((ISession)value).getName() 
+									+ " (tilkoblet::" 
+									+ session.getLink().getName().replace("//./","") +")";
+								b = Color.GREEN;
+							}
+
+						}
+						else {
+							text = ((ISession)value).getName() + " (tilkoblet::" + session.getLink().getName().replace("//./","") +")";
+							b = Color.GREEN;							
+						}
 					}
 					else
 						text = ((ISession)value).getName() + " (frakoblet)";

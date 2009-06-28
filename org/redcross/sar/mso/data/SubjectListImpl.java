@@ -16,7 +16,7 @@ public class SubjectListImpl extends MsoListImpl<ISubjectIf> implements ISubject
     public ISubjectIf createSubject()
     {
         checkCreateOp();
-        return createdUniqueItem(new SubjectImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new SubjectImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public ISubjectIf createSubject(IMsoObjectIf.IObjectIdIf anObjectId)

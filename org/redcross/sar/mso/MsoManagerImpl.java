@@ -3,6 +3,7 @@ package org.redcross.sar.mso;
 import org.apache.log4j.Logger;
 import org.redcross.sar.mso.data.*;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.event.MsoEvent.ChangeList;
@@ -33,14 +34,14 @@ public class MsoManagerImpl implements IMsoManagerIf
     {
         m_model = theMsoModel;
 
-    	anEventManager.addRemoteUpdateListener(new IMsoUpdateListenerIf()
+    	anEventManager.addUpdateListener(new IMsoUpdateListenerIf()
         {
 			public EnumSet<MsoClassCode> getInterests()
 			{
 				return EnumSet.allOf(MsoClassCode.class);
 			}
 
-			public void handleMsoChangeEvent(ChangeList events)
+			public void handleMsoUpdateEvent(ChangeList events)
             {
 				for(MsoEvent.Change e : events.getEvents())
 				{
@@ -50,7 +51,7 @@ public class MsoManagerImpl implements IMsoManagerIf
 
 		});
 
-        anEventManager.addLocalUpdateListener(new IMsoUpdateListenerIf()
+        anEventManager.addChangeListener(new IMsoChangeListenerIf()
         {
 
 			public EnumSet<MsoClassCode> getInterests()
@@ -93,7 +94,7 @@ public class MsoManagerImpl implements IMsoManagerIf
         {
             throw new DuplicateIdException("An operation already exists");
         }
-        IMsoObjectIf.IObjectIdIf operationId = m_model.getDispatcher().makeObjectId();
+        IMsoObjectIf.IObjectIdIf operationId = m_model.getDispatcher().createObjectId();
         return createOperation(aNumberPrefix, aNumber, operationId);
     }
 
@@ -215,7 +216,7 @@ public class MsoManagerImpl implements IMsoManagerIf
 
     	if(operationExists()) {
     		// forward
-    		m_model.suspendUpdate();
+    		m_model.suspendChange();
     		// remove operation
     		try {
 
@@ -248,7 +249,7 @@ public class MsoManagerImpl implements IMsoManagerIf
     public void resumeUpdate()
     {
     	if(operationExists())
-    		getExistingOperation().resumeUpdate(true);
+    		getExistingOperation().resumeChange(true);
     }
 
     protected void rollback() throws TransactionException

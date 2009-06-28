@@ -322,7 +322,7 @@ public class MessagePOIPanel extends BasePanel implements IEditorIf
 		setChangeable(false);
 
 		// suspend update events
-		m_wp.getMsoModel().suspendUpdate();
+		m_wp.getMsoModel().suspendChange();
 
 		// get panel
 		POIPanel panel = getPOIPanel();

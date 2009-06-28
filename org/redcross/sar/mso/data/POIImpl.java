@@ -36,8 +36,8 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
     public POIImpl(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, POIType aType, Position aPosition)
     {
         super(theMsoModel, anObjectId);
-        m_type.setValue(aType);
-        m_position.setValue(aPosition);
+        m_type.set(aType);
+        m_position.set(aPosition);
     }
 
     /*-------------------------------------------------------------------------------------------
@@ -99,17 +99,17 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
 
     public void setType(POIType aType)
     {
-        m_type.setValue(aType);
+        m_type.set(aType);
     }
 
     public void setType(String aType)
     {
-        m_type.setValue(aType);
+        m_type.set(aType);
     }
 
     public POIType getType()
     {
-        return m_type.getValue();
+        return m_type.get();
     }
 
     public IData.DataOrigin getTypeState()
@@ -148,12 +148,12 @@ public class POIImpl extends AbstractMsoObject implements IPOIIf
 
     public void setPosition(Position aPosition)
     {
-        m_position.setValue(aPosition);
+        m_position.set(aPosition);
     }
 
     public Position getPosition()
     {
-        return m_position.getPosition();
+        return m_position.get();
     }
 
     public IData.DataOrigin getPositionState()

@@ -36,26 +36,30 @@ import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
+import org.redcross.sar.gui.field.AssocFieldParser;
 import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.IFieldParser;
+import org.redcross.sar.gui.field.MsoParserFieldModel;
 import org.redcross.sar.gui.field.PositionField;
 import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.table.DiskoTable;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.IMsoModelIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.IAssignmentIf;
 import org.redcross.sar.mso.data.ICmdPostIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IPersonnelListIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IUnitIf.UnitStatus;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.util.AssocUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.util.AssocUtils.Association;
 import org.redcross.sar.util.except.IllegalOperationException;
 import org.redcross.sar.util.mso.DTG;
 import org.redcross.sar.work.event.FlowEvent;
@@ -65,7 +69,7 @@ import org.redcross.sar.work.event.FlowEvent;
  *
  * @author thomasl, kennetgu
  */
-public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, ITickEventListenerIf
+public class UnitDetailsPanel extends JPanel implements IMsoChangeListenerIf, ITickEventListenerIf
 {
     private static final long serialVersionUID = 1L;
     private static final long UPDATE_INTERVAL = 60000;
@@ -109,8 +113,8 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         initialize();
         // add listeners
         wp.addTickEventListener(this);
-        wp.getMsoEventManager().addLocalUpdateListener(this);
-        wp.getMsoEventManager().addLocalUpdateListener(getInfoPanel());
+        wp.getMsoEventManager().addChangeListener(this);
+        wp.getMsoEventManager().addChangeListener(getInfoPanel());
         getInfoPanel().addFlowListener(wp);
     }
 
@@ -168,16 +172,21 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 	                {
 	                    try
 	                    {
+	                    	IChangeIf change;
 	                    	// change status
 	                    	if(m_currentUnit.isPaused()) {
-	                    		m_currentUnit.resume();
+	                    		change = m_currentUnit.resume();
 	                    		m_pauseToggleButton.setIcon(m_pauseIcon);
 	                    	} else {
-	                    		m_currentUnit.pause();
+	                    		change = m_currentUnit.pause();
 	                    		m_pauseToggleButton.setIcon(m_resumeIcon);
 	                    	}
-	                    	// notify
-	                    	m_wp.onFlowPerformed(new FlowEvent(e.getSource(),m_currentUnit,FlowEvent.EVENT_CHANGE));
+	                    	// notify?
+	                    	if(change!=null)
+	                    	{
+	                    		// is changed, notify flow change
+	                    		m_wp.onFlowPerformed(new FlowEvent(e.getSource(),change,FlowEvent.EVENT_CHANGE));
+	                    	}
 	                    }
 	                    catch (IllegalOperationException ex)
 	                    {
@@ -323,7 +332,11 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 			doc.addAutoCompleteListener(new IAutoCompleteListener() {
 
 				public void onSuggestionFound(AutoCompleteDocument document, String suggestion) {
-					if(!isSet() || !m_associationTextField.isChangeable()) return;
+					// consume?
+					if(!isSet() || getAssociationTextField().isAdjusting() || true) return;
+					// save suggestion to model
+					getAssociationTextField().getModel().setValue(suggestion);
+					/*
 					Association[] items = null;
 					if(suggestion!=null) {
 						items = AssocUtils.parse(suggestion,false,false);
@@ -344,6 +357,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 						m_associationTextField.setChangeable(true);
 						m_wp.onFlowPerformed(new FlowEvent(this,m_currentUnit,FlowEvent.EVENT_CHANGE));
 					}
+					*/
 				}
 				
 			});
@@ -470,17 +484,33 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
         if(unit!=null) {
         	getPositionField().setMsoAttribute(unit.getPositionAttribute());
         	getCallSignTextField().setMsoAttribute(unit.getCallSignAttribute());
+        	getAssociationTextField().setModel(createAssocModel(unit));
         	getToneIDTextField().setMsoAttribute(unit.getToneIDAttribute());
         	getTrackingIDTextField().setMsoAttribute(unit.getTrackingIDAttribute());
         }  else {
-        	getPositionField().clearMsoAttribute("");
-        	getCallSignTextField().clearMsoAttribute("");
-        	getToneIDTextField().clearMsoAttribute("");
-        	getTrackingIDTextField().clearMsoAttribute("");
+        	getPositionField().clearModel("");
+        	getCallSignTextField().clearModel("");
+        	getAssociationTextField().clearModel("");
+        	getToneIDTextField().clearModel("");
+        	getTrackingIDTextField().clearModel("");
         }
     }
 
-    public void updateContents()
+	private MsoParserFieldModel<String> createAssocModel(IUnitIf unit) {
+		IFieldParser<String,Object[]> parser = new AssocFieldParser();
+		IMsoAttributeIf<?>[] attrs = getAssocAttrs(unit);
+		return new MsoParserFieldModel<String>(parser,attrs);
+	}
+	
+	private IMsoAttributeIf<?>[] getAssocAttrs(IUnitIf unit) {
+    	return new IMsoAttributeIf<?>[]{
+			unit.getOrganizationAttribute(),
+			unit.getDivisionAttribute(),
+			unit.getDepartmentAttribute()};
+		
+	}
+	
+	public void updateContents()
     {
         updateFieldContents();
         updateUnitPersonnel();
@@ -512,6 +542,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
             String cell = leader == null ? "" : leader.getTelephone1();
             getCellPhoneTextField().setValue(cell);
             
+            /*
             if(getAssociationTextField().isChangeable()) {
 	            if(m_currentUnit.getOrganization()!=null) {
 		            Association assoc = AssocUtils.getOrganization(m_currentUnit.getOrganization());
@@ -533,6 +564,7 @@ public class UnitDetailsPanel extends JPanel implements IMsoUpdateListenerIf, IT
 		            getAssociationTextField().setChangeable(true);        		
 	        	}
             }
+            */
             
             String created = DTG.CalToDTG(m_currentUnit.getCreatedTime());
 			getCreatedDTGField().setValue(created);

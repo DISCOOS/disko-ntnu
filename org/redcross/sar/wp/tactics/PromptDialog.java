@@ -164,7 +164,7 @@ public class PromptDialog extends DefaultDialog {
 			// initialize
 			changeCount=0;
 			// suspend for faster update
-			app.getMsoModel().suspendUpdate();
+			app.getMsoModel().suspendChange();
 			// change status
 			JTable table = getAssignmentTable();
 			for (int i = 0; i < table.getRowCount(); i++) {

@@ -64,17 +64,17 @@ public class AircraftImpl extends AbstractTransportUnit implements IAircraftIf
 
     public void setSubType(AircraftSubType aSubType)
     {
-        m_subType.setValue(aSubType);
+        m_subType.set(aSubType);
     }
 
     public void setSubType(String aSubType)
     {
-        m_subType.setValue(aSubType);
+        m_subType.set(aSubType);
     }
 
     public AircraftSubType getSubType()
     {
-        return m_subType.getValue();
+        return m_subType.get();
     }
 
     public IData.DataOrigin getSubTypeState()

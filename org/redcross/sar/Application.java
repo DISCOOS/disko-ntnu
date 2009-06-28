@@ -46,6 +46,7 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -114,7 +115,6 @@ public class Application implements IApplication
 
 	// flags
 	private boolean isLoading = false;
-	private boolean waitingForNewOp = false;
 
 	// login information
 	private Object[] loggedIn = new Object[3];
@@ -273,9 +273,11 @@ public class Application implements IApplication
 					WorkPool.getInstance();
 					// initialize decision support to ensure that this is done on the EDT
 					DsPool.getInstance();
-					//initiate model driver
-					getMsoModel().getDispatcher().initiate();
-					getMsoModel().getDispatcher().addDispatcherListener(m_dispatcherAdapter);
+					// initiate dispatcher 
+					getDispatcher().initiate(WorkPool.getInstance());
+					// initiate model
+					getDispatcher().initiate(getMsoModel());
+					getDispatcher().addDispatcherListener(m_dispatcherAdapter);
 					// prepare IO  
 					IOManager.getInstance();
 					// load services?
@@ -445,9 +447,13 @@ public class Application implements IApplication
 	}
 
 	public IDispatcherIf getDispatcher() {
-		if(m_dispatcher == null) {
-	        boolean integrate = AppProps.getText("integrate.sara").equalsIgnoreCase("true");
-	        m_dispatcher = integrate ? new SaraDispatcherImpl() : new DispatcherImpl();
+		try {
+			if(m_dispatcher == null) {
+			    boolean integrate = AppProps.getText("integrate.sara").equalsIgnoreCase("true");
+			    m_dispatcher = integrate ? new SaraDispatcherImpl() : new DispatcherImpl();
+			}
+		} catch (UnknownHostException e) {
+			onFatalError("Fatal failure", "Failed to create dispatcher", e);
 		}
 		return m_dispatcher;
 	}
@@ -457,7 +463,7 @@ public class Application implements IApplication
 		if (m_msoModel == null)
 		{
 			try {
-				m_msoModel = new MsoModelImpl(getDispatcher());
+				m_msoModel = new MsoModelImpl();
 			} catch (Exception e) {
 				onFatalError("Fatal error","Failed to create Mso Model instance",e);
 			}
@@ -560,7 +566,7 @@ public class Application implements IApplication
 			loggedIn[1] = user;
 			loggedIn[2] = password;
 			// is model driver initiated?
-			if (getMsoModel().getDispatcher().isInitiated()) {
+			if (getMsoModel().getDispatcher().isReady()) {
 				// forward
 				selectActiveOperation(false);
 			} else {
@@ -630,7 +636,7 @@ public class Application implements IApplication
 		// switch operation?
 		if(ans == JOptionPane.YES_OPTION) {
 
-			String oprId = Application.getInstance().getMsoModel().getDispatcher().getActiveOperationID();
+			String oprId = Application.getInstance().getMsoModel().getDispatcher().getCurrentOperationID();
 
 			// forward
 			return getUIFactory().getOperationDialog().selectOperation(isLoading() || oprId==null);
@@ -684,7 +690,7 @@ public class Application implements IApplication
 						null);
 				if(ans==JOptionPane.YES_OPTION) {
 					// forward
-					getMsoModel().getDispatcher().finishActiveOperation();
+					getMsoModel().getDispatcher().finishCurrentOperation();
 				}
 			}
 		}
@@ -715,9 +721,8 @@ public class Application implements IApplication
 
 		// create?
 		if(ans==JOptionPane.YES_OPTION) {
-			waitingForNewOp = true;
-			getMsoModel().getDispatcher().createNewOperation();
-			return true;
+			// forward
+			return getMsoModel().getDispatcher().createNewOperation(5000);
 		}
 
 		// failed
@@ -914,7 +919,7 @@ public class Application implements IApplication
 				// loop until maximum milliseconds is reached
 				while ((tic - schedule) < m_millisToWait) {
 					// is initiated
-					if(m_msoModel.getDispatcher().isInitiated())
+					if(m_msoModel.getDispatcher().isReady())
 						//Get back onto awt thread
 						return true;
 					else
@@ -1023,7 +1028,7 @@ public class Application implements IApplication
 				{
 
 					// return status
-					boolean flag = Application.getInstance().getMsoModel().getDispatcher().setActiveOperation(m_opID);
+					boolean flag = Application.getInstance().getMsoModel().getDispatcher().setCurrentOperation(m_opID);
 
 					// return flag
 					return flag;
@@ -1210,37 +1215,33 @@ public class Application implements IApplication
 
 	private final IDispatcherListenerIf m_dispatcherAdapter = new DispatcherAdapter() {
 
-		public void onOperationCreated(final String oprId, final boolean current)
+		public void onOperationCreated(final String oprId, final boolean isLoopback)
 		{
 
 			// only handle if current
-			if(!current) return;
+			if(!isLoopback) return;
 
 			if (SwingUtilities.isEventDispatchThread()) {
-				// is waiting for this operation
-				if (waitingForNewOp) {
-					// reset flag
-					waitingForNewOp = false;
-					// notify user of new operation created?
-					if (!isLocked())
-						Utils.showMessage(String.format(bundle
-								.getString(OPERATION_CREATED_TEXT), oprId));
-					// schedule work
-					scheduleSetActiveOperation(oprId);
+				// notify user of new operation created?
+				if (!isLocked())
+				{
+					Utils.showMessage(String.format(bundle.getString(OPERATION_CREATED_TEXT), oprId));
 				}
+				// schedule work
+				scheduleSetActiveOperation(oprId);
 			} else {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						onOperationCreated(oprId,current);
+						onOperationCreated(oprId,isLoopback);
 					}
 				});
 			}
 		}
 
-		public void onOperationFinished(final String oprID, final boolean current)
+		public void onOperationFinished(final String oprID, final boolean isLoopback)
 		{
 			// only handle if current
-			if(!current) return;
+			if(!isLoopback) return;
 
 			if (SwingUtilities.isEventDispatchThread()) {
 				// force finish progress dialog
@@ -1279,7 +1280,7 @@ public class Application implements IApplication
 			} else {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						onOperationFinished(oprID,current);
+						onOperationFinished(oprID,isLoopback);
 					}
 				});
 			}

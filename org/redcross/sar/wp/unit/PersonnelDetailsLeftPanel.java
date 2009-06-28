@@ -20,25 +20,28 @@ import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.DiskoIconFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
+import org.redcross.sar.gui.field.AssocFieldParser;
 import org.redcross.sar.gui.field.ComboBoxField;
 import org.redcross.sar.gui.field.DTGField;
+import org.redcross.sar.gui.field.IFieldParser;
+import org.redcross.sar.gui.field.MsoFormatFieldModel;
+import org.redcross.sar.gui.field.MsoParserFieldModel;
 import org.redcross.sar.gui.field.TextAreaField;
 import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.renderer.BundleListCellRenderer;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
 import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelStatus;
 import org.redcross.sar.mso.data.IPersonnelIf.PersonnelType;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.util.AssocUtils;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
-import org.redcross.sar.util.AssocUtils.Association;
-import org.redcross.sar.work.event.IFlowListener;
 import org.redcross.sar.work.event.FlowEvent;
 
 /**
@@ -46,7 +49,7 @@ import org.redcross.sar.work.event.FlowEvent;
  *
  * @author thomasl, kenneth
  */
-public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListenerIf
+public class PersonnelDetailsLeftPanel extends JPanel implements IMsoChangeListenerIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -82,8 +85,8 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		// initialize GUI
 		initialize();
 		// add listeners
-		wp.getMsoEventManager().addLocalUpdateListener(this);
-		wp.getMsoEventManager().addLocalUpdateListener(getInfoPanel());
+		wp.getMsoEventManager().addChangeListener(this);
+		wp.getMsoEventManager().addChangeListener(getInfoPanel());
         getInfoPanel().addFlowListener(wp);
 	}
 
@@ -189,12 +192,13 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	private TextField getFullNameTextField() {
 		if(m_nameTextField==null) {
 			m_nameTextField = new TextField("fullname",m_resources.getString("FullName.text"),true);
+			/*
 			m_nameTextField.addFlowListener(new IFlowListener() {
 
 				@Override
 				public void onFlowPerformed(FlowEvent e) {
 					// is changed?
-					if(isSet()&&m_nameTextField.isChangeable() && e.isChange() && e.isSourceComponent()) {
+					if(isSet()&&m_nameTextField.isChangeable() && e.isFinish() && e.isSourceComponent()) {
 						String[] names = getNames(false);
 						if(names!=null) {
 							m_currentPersonnel.suspendUpdate();
@@ -208,6 +212,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 				}
 				
 			});
+			*/
 		}
 		return m_nameTextField;
 	}
@@ -240,13 +245,16 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 			doc.addAutoCompleteListener(new IAutoCompleteListener() {
 
 				public void onSuggestionFound(AutoCompleteDocument document, String suggestion) {
-					if(!isSet() || !m_associationTextField.isChangeable()) return;
+					// consume?
+					if(!isSet() || getAssociationTextField().isAdjusting() || true) return;
+					// save suggestion to model
+					getAssociationTextField().getModel().setValue(suggestion);
+					/*
 					Association[] items = null;
 					if(suggestion!=null) {
 						items = AssocUtils.parse(suggestion,false,false);
 					}
 					if(m_currentPersonnel!=null) {
-						m_associationTextField.setChangeable(false);
 						m_currentPersonnel.suspendUpdate();
 						if(items!=null) {
 							m_currentPersonnel.setOrganization(items[0].getName(1));
@@ -258,9 +266,9 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 							m_currentPersonnel.setDepartment(null);
 						}
 						m_currentPersonnel.resumeUpdate(false);
-						m_associationTextField.setChangeable(true);
 						m_wp.onFlowPerformed(new FlowEvent(this,m_currentPersonnel,FlowEvent.EVENT_CHANGE));
 					}
+					*/
 				}
 				
 			});
@@ -354,6 +362,8 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 	{
 		m_currentPersonnel = personnel;
         if(personnel!=null) {
+        	getFullNameTextField().setModel(createFullNameModel(personnel));
+        	getAssociationTextField().setModel(createAssocModel(personnel));
         	getCellPhoneTextField().setMsoAttribute(personnel.getTelephone1Attribute());
         	getPropertyTextField().setMsoAttribute(personnel.getTypeAttribute());
         	getCallOutTextField().setMsoAttribute(personnel.getCallOutAttribute());
@@ -362,13 +372,15 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         	getReleasedTextField().setMsoAttribute(personnel.getReleasedAttribute());
         	getRemarksTextArea().setMsoAttribute(personnel.getRemarksAttribute());
         }  else {
-        	getCellPhoneTextField().clearMsoAttribute("");
-        	getPropertyTextField().clearMsoAttribute(PersonnelType.VOLUNTEER);
-        	getCallOutTextField().clearMsoAttribute("");
-        	getETATextField().clearMsoAttribute("");
-        	getArrivedTextField().clearMsoAttribute("");
-        	getReleasedTextField().clearMsoAttribute("");
-        	getRemarksTextArea().clearMsoAttribute("");
+        	getFullNameTextField().clearModel("");
+        	getAssociationTextField().clearModel("");
+        	getCellPhoneTextField().clearModel("");
+        	getPropertyTextField().clearModel(PersonnelType.VOLUNTEER);
+        	getCallOutTextField().clearModel("");
+        	getETATextField().clearModel("");
+        	getArrivedTextField().clearModel("");
+        	getReleasedTextField().clearModel("");
+        	getRemarksTextArea().clearModel("");
         }
         if(personnel==null || PersonnelStatus.RELEASED.equals(personnel.getStatus()))
         {
@@ -379,6 +391,31 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
         }
         updateFieldContents();
 	}	
+
+	private MsoFormatFieldModel createFullNameModel(IPersonnelIf personnel) {
+		return new MsoFormatFieldModel("{0} {1}",getNameAttrs(personnel));
+	}
+	
+	private IMsoAttributeIf<?>[] getNameAttrs(IPersonnelIf personnel) {
+    	return new IMsoAttributeIf<?>[]{
+   			personnel.getFirstnameAttribute(),
+			personnel.getLastnameAttribute()};
+		
+	}
+	
+	private MsoParserFieldModel<String> createAssocModel(IPersonnelIf personnel) {
+		IFieldParser<String,Object[]> parser = new AssocFieldParser();
+		IMsoAttributeIf<?>[] attrs = getAssocAttrs(personnel);
+		return new MsoParserFieldModel<String>(parser,attrs);
+	}
+	
+	private IMsoAttributeIf<?>[] getAssocAttrs(IPersonnelIf personnel) {
+    	return new IMsoAttributeIf<?>[]{
+   			personnel.getOrganizationAttribute(),
+			personnel.getDivisionAttribute(),
+			personnel.getDepartmentAttribute()};
+		
+	}
 	
 	/**
 	 * Updates field contents with current personnel attribute values
@@ -389,9 +426,31 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 
 			// update caption
 			getInfoPanel().setCaptionText(MsoUtils.getPersonnelName(m_currentPersonnel, true));
+			/*
 			if(getFullNameTextField().isChangeable()) {
+				String localName = String.format(MsoUtils.FULLNAME_FORMAT,
+						m_currentPersonnel.getFirstnameAttribute().getLocalValue(),
+						m_currentPersonnel.getLastnameAttribute().getLocalValue());
+				String remoteName = String.format(MsoUtils.FULLNAME_FORMAT,
+						m_currentPersonnel.getFirstnameAttribute().getRemoteValue(),
+						m_currentPersonnel.getLastnameAttribute().getRemoteValue());
+				IFieldModel<String> model = getFullNameTextField().getModel();
+				// isLocal? 
+				if(m_currentPersonnel.getFirstnameAttribute().isOriginLocal()
+				   || m_currentPersonnel.getLastnameAttribute().isOriginLocal())
+				{
+					model.setLocalValue(value)
+					model.setLocalValue(name);
+				}
+				else if(m_currentPersonnel.getFirstnameAttribute().isOriginConflict()
+				   || m_currentPersonnel.getLastnameAttribute().isOriginConflict())
+				{
+					model.setRemoteValue(name);
+				}
+					
 				getFullNameTextField().setValue(MsoUtils.getPersonnelName(m_currentPersonnel, false),false);
 			}
+			*/
 
 			IUnitIf unit = m_currentPersonnel.getOwningUnit();
 			getUnitTextField().setValue(MsoUtils.getUnitName(unit));
@@ -419,6 +478,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 			}
 			updateChangeStatusButton(status);
 			
+			/*
             if(getAssociationTextField().isChangeable()) {
 	            if(m_currentPersonnel.getOrganization()!=null) {
 		            Association assoc = AssocUtils.getOrganization(m_currentPersonnel.getOrganization());
@@ -436,6 +496,7 @@ public class PersonnelDetailsLeftPanel extends JPanel implements IMsoUpdateListe
 		            getAssociationTextField().setValue("",false);
 	        	}
             }
+            */
             
 			getInfoPanel().setEditable(true);            
             			

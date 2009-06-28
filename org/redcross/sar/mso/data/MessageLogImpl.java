@@ -18,13 +18,13 @@ public class MessageLogImpl extends MsoListImpl<IMessageIf> implements IMessageL
     public IMessageIf createMessage()
     {
         checkCreateOp();
-        return createdUniqueItem(new MessageImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber()));
+        return createdUniqueItem(new MessageImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber()));
     }
 
     public IMessageIf createMessage(Calendar aCalendar)
     {
         checkCreateOp();
-        return createdUniqueItem(new MessageImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber(), aCalendar));
+        return createdUniqueItem(new MessageImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber(), aCalendar));
     }
 
     public IMessageIf createMessage(IMsoObjectIf.IObjectIdIf anObjectId)

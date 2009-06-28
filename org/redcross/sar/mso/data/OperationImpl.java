@@ -178,7 +178,7 @@ public class OperationImpl extends AbstractMsoObject implements IOperationIf
     */
 
     public ISystemIf createSystem() {
-    	IObjectIdIf id = Application.getInstance().getMsoModel().getDispatcher().makeObjectId();
+    	IObjectIdIf id = Application.getInstance().getMsoModel().getDispatcher().createObjectId();
         return createSystem(id);
     }
 

@@ -26,12 +26,12 @@ public class Progressor implements IStepProgressor {
 	private ProgressDialog progressDialog;
 
 	public Progressor(Component locationAt)  {
-		this.progressDialog = new ProgressDialog(Application.getFrameInstance(),false,ProgressStyleType.ICON_STYLE);
-		this.progressDialog.setTrancluent(true);
-		this.progressDialog.setSnapToLocation(locationAt, DefaultDialog.POS_CENTER, 0, true, false);
-		this.bar = progressDialog.getProgressPanel().getProgressBar();
-		this.listeners = new EventListenerList();
-		this.bar.setString(DiskoStringFactory.getText(PROGRESS_DEFAULT_MAP_TEXT));
+		progressDialog = new ProgressDialog(Application.getFrameInstance(),false,ProgressStyleType.ICON_STYLE);
+		//progressDialog.setTrancluent(true);
+		progressDialog.setSnapToLocation(locationAt, DefaultDialog.POS_CENTER, 0, true, false);
+		bar = progressDialog.getProgressPanel().getProgressBar();
+		listeners = new EventListenerList();
+		bar.setString(DiskoStringFactory.getText(PROGRESS_DEFAULT_MAP_TEXT));
 		this.bar.setIndeterminate(true);
 	}
 

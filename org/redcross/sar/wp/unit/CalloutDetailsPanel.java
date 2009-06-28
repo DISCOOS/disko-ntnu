@@ -4,20 +4,22 @@ import org.redcross.sar.gui.document.AutoCompleteDocument;
 import org.redcross.sar.gui.event.IAutoCompleteListener;
 import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
+import org.redcross.sar.gui.field.AssocFieldParser;
+import org.redcross.sar.gui.field.IFieldParser;
+import org.redcross.sar.gui.field.MsoParserFieldModel;
 import org.redcross.sar.gui.field.TextField;
 import org.redcross.sar.gui.panel.BasePanel;
 import org.redcross.sar.gui.panel.FieldPane;
 import org.redcross.sar.gui.table.DiskoTable;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.ICalloutIf;
+import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.IPersonnelIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.AssocUtils;
 import org.redcross.sar.util.Internationalization;
-import org.redcross.sar.util.AssocUtils.Association;
 import org.redcross.sar.util.mso.DTG;
-import org.redcross.sar.work.event.FlowEvent;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -40,7 +42,7 @@ import java.util.ResourceBundle;
  *
  * @author thomasl
  */
-public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
+public class CalloutDetailsPanel extends JPanel implements IMsoChangeListenerIf
 {
 	private static final long serialVersionUID = 1L;
 
@@ -67,8 +69,8 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
         // initialize GUI
         initialize();
         // add listeners
-        wp.getMsoEventManager().addLocalUpdateListener(this);
-        wp.getMsoEventManager().addLocalUpdateListener(getInfoPanel());
+        wp.getMsoEventManager().addChangeListener(this);
+        wp.getMsoEventManager().addChangeListener(getInfoPanel());
         getInfoPanel().addFlowListener(wp);
 	}
 
@@ -135,6 +137,11 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 
 				public void onSuggestionFound(AutoCompleteDocument document, String suggestion) {
 					if(!isSet() || m_associationTextField.isChangeable()) return;
+					// consume?
+					if(!isSet() || getAssociationTextField().isAdjusting() || true) return;
+					// save suggestion to model
+					getAssociationTextField().getModel().setValue(suggestion);
+					/*
 					Association[] items = null;
 					if(suggestion!=null) {
 						items = AssocUtils.parse(suggestion,false,false);
@@ -155,6 +162,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 						m_associationTextField.setChangeable(true);
 						m_wp.onFlowPerformed(new FlowEvent(this,m_currentCallout,FlowEvent.EVENT_CHANGE));
 					}
+					*/
 				}
 
 			});
@@ -209,12 +217,14 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 		m_currentCallout = callout;
         if(callout!=null) {
         	getTitleTextField().setMsoAttribute(callout.getTitleAttribute());
+        	getAssociationTextField().setModel(createAssocModel(callout));
         	getCreatedTextField().setMsoAttribute(callout.getCreatedAttribute());
         	getTitleTextField().reset();
         	getCreatedTextField().reset();
         }  else {
-        	getTitleTextField().clearMsoAttribute("");
-        	getCreatedTextField().clearMsoAttribute("");
+        	getTitleTextField().clearModel("");
+        	getCreatedTextField().clearModel("");
+        	getAssociationTextField().clearModel("");
         }
 	}
 
@@ -231,6 +241,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
             // update caption
             getInfoPanel().setCaptionText(m_resources.getString("CallOut.text") + " " + DTG.CalToDTG(m_currentCallout.getCreated()));
 			
+            /*
             if(getAssociationTextField().isChangeable()) {
 	            if(m_currentCallout.getOrganization()!=null) {
 		            Association assoc = AssocUtils.getOrganization(m_currentCallout.getOrganization());
@@ -252,6 +263,7 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 		            getAssociationTextField().setChangeable(true);        		
 	        	}
             }
+            */
             CalloutPersonnelTableModel model = (CalloutPersonnelTableModel)m_personnelTable.getModel();
 			model.setPersonnelList(m_wp.getMsoModel(),m_currentCallout.getPersonnelList());
 			
@@ -267,7 +279,21 @@ public class CalloutDetailsPanel extends JPanel implements IMsoUpdateListenerIf
 
 	}
 
-    public boolean isChanged() {
+	private MsoParserFieldModel<String> createAssocModel(ICalloutIf callout) {
+		IFieldParser<String,Object[]> parser = new AssocFieldParser();
+		IMsoAttributeIf<?>[] attrs = getAssocAttrs(callout);
+		return new MsoParserFieldModel<String>(parser,attrs);
+	}
+	
+	private IMsoAttributeIf<?>[] getAssocAttrs(ICalloutIf callout) {
+    	return new IMsoAttributeIf<?>[]{
+   			callout.getOrganizationAttribute(),
+			callout.getDivisionAttribute(),
+			callout.getDepartmentAttribute()};
+		
+	}
+	
+	public boolean isChanged() {
     	return m_currentCallout!=null?m_currentCallout.isChanged():false;
     }
     

@@ -27,18 +27,66 @@ public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 	}
 
 	@Override
+	public void setOrigin(DataOrigin origin) {
+		if(origin!=null && !m_origin.equals(origin))
+		{
+			m_origin = origin;
+			incrementChangeCount();
+		}
+	}
+
+	@Override
+	public void setState(DataState state) {
+		if(state!=null && !m_state.equals(state))
+		{
+			m_state = state;
+			incrementChangeCount();
+		}
+	}
+	
+	@Override
+	public V getValue() {
+		switch(getOrigin())
+		{
+		case LOCAL:
+		case CONFLICT:
+			return getLocalValue();
+		case REMOTE:
+			return getRemoteValue();
+		}
+		// NONE or MIXED origins.
+		return null;
+	}
+	
+	@Override
+	public boolean setValue(V value) {
+		switch(getOrigin())
+		{
+		case LOCAL:
+		case CONFLICT:
+			return setLocalValue(value);
+		case REMOTE:
+			return setLocalValue(value);
+		}
+		// NONE or MIXED origins
+		return false;
+	}
+
+	@Override
 	public V getLocalValue() {
 		return m_localValue;
 	}
 
 	@Override
-	public void setLocalValue(V value) {
+	public boolean setLocalValue(V value) {
 		if(!isEqual(m_localValue,value)) {
 			m_localValue = value;
 			m_state = !isState(DataState.CONFLICT) ? DataState.CHANGED : m_state;
 			m_origin = !isOrigin(DataOrigin.CONFLICT) ? DataOrigin.LOCAL : m_origin;
 			incrementChangeCount();
+			return true;
 		}
+		return false;
 	}
 
 	@Override
@@ -46,14 +94,17 @@ public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 		return m_remoteValue;
 	}
 
-	public void setRemoteValue(V value) {
+	@Override
+	public boolean setRemoteValue(V value) {
 		if(!isEqual(m_remoteValue,value)) {
 			boolean isConflict = (m_localValue!=null && !isEqual(m_localValue, value));
 			m_remoteValue = value;
 			m_state = !isState(DataState.CONFLICT) ? (isConflict ? DataState.CONFLICT : DataState.LOOPBACK) : m_state;
 			m_origin = !isOrigin(DataOrigin.CONFLICT) ? (isConflict ? DataOrigin.CONFLICT : DataOrigin.REMOTE) : m_origin;
 			incrementChangeCount();
+			return true;
 		}
+		return false;
 	}
 	
 	@Override
@@ -129,5 +180,5 @@ public class DefaultFieldModel<V> extends AbstractFieldModel<V> {
 	private void incrementChangeCount() {
 		m_changeCount++;
 	}
-	
+
 }

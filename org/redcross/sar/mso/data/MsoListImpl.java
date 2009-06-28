@@ -62,10 +62,18 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	protected final HashMap<String, IMsoRelationIf<M>> m_deleted;
 
 	/**
-	 * The relations pending deletion locally. This list store deleted 
-	 * relations until resumeClientUpdate() is called.
+	 * Relations both added and deleted locally. This situation is different
+	 * from deleting an existing relation locally. A rollback on the latter 
+	 * implies that the deleted relation should be reinserted in the list of
+	 * created (remote origin) relation. A rollback on the former however, 
+	 * does not involve such an operation, since a rollback would remove the 
+	 * relation completely (hence, "killed"). This "non-existence" property
+	 * of deleting relations added locally (does not exist remotely) 
+	 * requires special care, especially when updates are suspended. In this
+	 * case, the list needs a way to notify deleted objects (main list) that
+	 * they has been deleted. The killed list fulfills this function.
 	 */
-	protected final HashMap<IMsoObjectIf, IMsoRelationIf<M>> m_deleting;
+	protected final HashMap<IMsoObjectIf, IMsoRelationIf<M>> m_killed;
 
 	/**
 	 * The owner to objects relation cardinality (0,1,..,n,...*)
@@ -93,6 +101,11 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	 * The change count since initialization
 	 */
 	protected int m_changeCount;
+	
+	/**
+	 * Relation sequence number used to generate unique relation object ids
+	 */
+	protected int m_nameSeqNo = 0;
 
 	/* =========================================================
 	 * Constructors
@@ -132,7 +145,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 		m_created = new LinkedHashMap<String, IMsoRelationIf<M>>(aSize);
 		m_added = new LinkedHashMap<String, IMsoRelationIf<M>>(aSize);
 		m_deleted = new LinkedHashMap<String, IMsoRelationIf<M>>(aSize);
-		m_deleting = new LinkedHashMap<IMsoObjectIf, IMsoRelationIf<M>>(aSize);
+		m_killed = new LinkedHashMap<IMsoObjectIf, IMsoRelationIf<M>>(aSize);
 		m_objectClass = theObjectClass;
 	}
 
@@ -144,6 +157,15 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	{
 		return m_name;
 	}
+	
+	/**
+	 * Get list object id.
+	 * 
+	 * @return Returns attribute object id.
+	 */
+	public String getObjectId() {
+		return getOwnerObject().getObjectId() + "." + m_name;
+	}	
 
 	@Override
     public IMsoObjectIf getOwnerObject() 
@@ -270,7 +292,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	}
 
 	public boolean isChanged() {
-		return m_added.size()>0 || m_deleted.size()>0 || m_deleting.size()>0;
+		return m_added.size()>0 || m_deleted.size()>0 || m_killed.size()>0;
 	}
 	
 	public boolean isDeleted() 
@@ -402,12 +424,12 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
 	@Override
 	public IMsoRelationIf<M> getRelation(M anObject) {
-		return getRelation(anObject.getObjectId());
+		return anObject!=null ? getRelation(anObject.getObjectId()) : null;
 	}
 
 	@Override
 	public IMsoRelationIf<M> getRelation(IObjectIdIf anObjectId) {
-		return getRelation(anObjectId.getId());
+		return anObjectId!=null ? getRelation(anObjectId.getId()) : null;
 	}
 
 	@Override
@@ -446,14 +468,14 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
 	public boolean isDeleted(IMsoObjectIf anObject) {
 		if(anObject!=null) {
-			return m_deleted.containsKey(anObject.getObjectId()) || isDeleting(anObject);
+			return m_deleted.containsKey(anObject.getObjectId());
 		}
 		return false;
 	}
 
 	public boolean isDeleting(IMsoObjectIf anObject) {
 		if(anObject!=null) {
-			return m_deleting.containsKey(anObject);
+			return m_killed.containsKey(anObject);
 		}
 		return false;
 	}
@@ -534,7 +556,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 					if(isOriginLocal(anObject))
 					{
 						// remove local delete if exists (no action required)
-						m_deleting.remove(anObject);
+						m_killed.remove(anObject);
 						m_deleted.remove(id);
 
 						// remove local existence from lists if exists (loopback)
@@ -576,7 +598,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 				 * IMPORTANT
 				 * ================================================================
 				 *
-				 * The new object can not exist neither remotely nor locally.
+				 * The new reference can not exist neither remotely nor locally.
 				 *
 				 * =========================================================== */
 
@@ -587,7 +609,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 					String id = anObject.getObjectId();
 
 					// add to LOCAL state list
-					m_added.put(id,createRelation(id, anObject));
+					m_added.put(id,createRelation(anObject));
 
 					// is changed
 					isDirty = true;
@@ -715,7 +737,41 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
 	@Override
 	public boolean rollback()
-	{
+	{		
+		// get changes
+		Collection<IChangeRelationIf> changes = getChanges();
+		
+		// has changes?
+		if(changes.size()>0)
+		{						
+			// suspend update
+			m_model.suspendChange();
+
+	    	// initialize restore flag
+	    	boolean bFlag = !m_model.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
+	
+	    	// ensure that model is in local update mode
+	    	if(bFlag) m_model.setLocalUpdateMode();
+	
+			// rollback changes
+			for(IChangeRelationIf it : changes)
+			{
+				it.getMsoRelation().rollback();
+			}
+	
+	    	// restore previous update mode?
+	        if(bFlag) m_model.restoreUpdateMode();
+	        
+	        // finalize
+	        m_model.resumeUpdate();
+	        
+	        // success
+	        return true;
+		}
+        // failure
+		return false;		
+		
+		/*
 		if(isChanged())
 		{
 			// suspend update
@@ -757,6 +813,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 		}
         // failure
 		return false;
+		*/
 	}
 
 	/**
@@ -825,13 +882,6 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 			{
 				// add to list
 				m_deleted.put(id, refObj);
-
-				// add to pending deletions?
-				if(isUpdateSuspended)
-				{
-					m_deleting.put(anObject, refObj);
-				}
-
 			}
 
 			/* remove this list as holder of  the object and reset 
@@ -866,7 +916,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 				 * until resumeClientUpdate() is called */
 				if(isUpdateSuspended)
 				{
-					m_deleting.put(anObject, refObj);
+					m_killed.put(anObject, refObj);
 				}
 			}
 			else 
@@ -893,7 +943,8 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
 	public M selectSingleItem(Selector<M> aSelector)
 	{
-		return selectSingleItem(aSelector, getObjects());
+		Collection<M> list = getObjects();
+		return selectSingleItem(aSelector, list);
 	}
 
 	/* =========================================================
@@ -934,7 +985,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 				// prevent endless loop
 				if(object!=m_owner)
 				{				
-					bFlag |= object.resumeUpdate(all);
+					bFlag |= object.resumeChange(all);
 				}
 			}
 		}
@@ -944,18 +995,18 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 			// prevent endless loop
 			if(msoObj!=null && msoObj!=m_owner) 
 			{
-				bFlag |= msoObj.resumeUpdate(all);
+				bFlag |= msoObj.resumeChange(all);
 			}
 		}
-		for(IMsoObjectIf it : m_deleting.keySet()) {
+		for(IMsoObjectIf it : m_killed.keySet()) {
 			// prevent endless loop
 			if(it!=m_owner)
 			{
-				bFlag |= it.resumeUpdate(all);
+				bFlag |= it.resumeChange(all);
 			}
 		}
 		// reset pending deletions
-		m_deleting.clear();
+		m_killed.clear();
 
 		// finished
 		return bFlag;
@@ -963,21 +1014,34 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 
 	public Collection<IChangeIf.IChangeRelationIf> getChanges()
 	{
+
 		// initialize collection
 		Vector<IChangeIf.IChangeRelationIf> list = new Vector<IChangeIf.IChangeRelationIf>();
-
-		// add changes
-		for (IMsoRelationIf<M> it : m_added.values())
+		
+		// get changes
+		IChangeRecordIf rs = m_owner.getChanges();
+		
+		// has changes?
+		if(rs!=null)
 		{
-			list.addAll(it.getChanges());
-		}
-		for (IMsoRelationIf<M> it : m_deleted.values())
-		{
-			list.addAll(it.getChanges());
+			// add filters
+			for (IMsoRelationIf<M> it : m_added.values())
+			{
+				rs.addFilter(it);
+			}
+			for (IMsoRelationIf<M> it : m_deleted.values())
+			{
+				rs.addFilter(it);
+			}
+			
+			// add changes to list
+			list.addAll(rs.getListReferenceChanges());
+						
 		}
 
 		// finished
 		return list;
+		
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1057,39 +1121,13 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	 * ========================================================= */
 
 	/**
-	 * Remove all added and deleted relations properly
-	 */
-	private void rollbackRelations(Map<String, IMsoRelationIf<M>> list)
-	{
-
-		// has no relations?
-		if (list.size() == 0)
-		{
-			return;
-		}
-
-		/* Copy the list and clear the original before any
-		 * events are sent around, since the events are checking
-		 * the original list */
-		Collection<IMsoRelationIf<M>> items = new Vector<IMsoRelationIf<M>>(list.size());
-		items.addAll(list.values());
-
-		// loop over list copy
-		for(IMsoRelationIf<M> it : items)
-		{
-			it.rollback();
-		}
-	}
-
-	/**
 	 * Create a relation.
 	 * 
-	 * @param id - the object id
 	 * @param msoObj - the object to create a relation to
 	 * 
 	 * @return Create IMsoRelationIf instance
 	 */
-	private IMsoRelationIf<M> createRelation(String id, M msoObj) {
+	private IMsoRelationIf<M> createRelation(M msoObj) {
 		IMsoRelationIf<M> aRelObj = null;
 		if(msoObj!=null) {
 			/* The list need to manage relation objects list in a 
@@ -1107,9 +1145,12 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 			 * Furthermore, by passing a relation to this list, ensure
 			 * that the list can track any activities executed on the
 			 * relation object directly. */
-			aRelObj = new MsoRelationImpl<M>(m_owner,id,1,true,this);
+			aRelObj = new MsoRelationImpl<M>(m_owner,m_name+"."+m_nameSeqNo,1,true,this);
 			((AbstractMsoObject)msoObj).addMsoObjectHolder(this);
 			aRelObj.set(msoObj);
+			// increment name sequence number
+			m_nameSeqNo++;
+			// notify 
 			String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
 			m_logger.info("Added list relation from " + s + " to " + msoObj + " in list " + m_name);
 		}
@@ -1133,7 +1174,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 		else if(isDataRemote)
 		{
 			// create a new relation
-			aRelObj = createRelation(id, msoObj);		                	
+			aRelObj = createRelation(msoObj);		                	
 		}
 
 		// finished
@@ -1204,21 +1245,25 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 			// get referred object
 			IMsoObjectIf msoObj = aRelObj.get();
 			
-			// reinsert, remove from deletion and 
-			// add this list as object holder once more?    		
+			// relates to an object?    		
 			if(msoObj!=null) 
 			{
-				// add to items
-				m_created.put(aRelObj.getName(),aRelObj);
+				// add to items?
+				if(isDeleted(msoObj))
+				{
+					
+					// add to created list again
+					m_created.put(msoObj.getObjectId(),aRelObj);
+					
+					// add list as object holder of referred object again
+					((AbstractMsoObject)msoObj).addMsoObjectHolder(this);
+					String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
+					m_logger.info("Rollback list relation from " + s + " to " + msoObj + " in list " + m_name);
+					
+					// remove from deletion
+					m_deleted.remove(msoObj.getObjectId());
+				}
 				
-				// remove from deletion
-				m_deleting.remove(msoObj);
-				m_deleted.remove(msoObj.getObjectId());
-				
-				// add list as object holder of referred object
-				((AbstractMsoObject)msoObj).addMsoObjectHolder(this);
-				String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
-				m_logger.info("Rollback list relation from " + s + " to " + msoObj + " in list " + m_name);
 			}
 			return true;
 
@@ -1236,7 +1281,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 		Collection<M> allList = new Vector<M>();
 		allList.addAll(getObjects());
 		allList.addAll(getItems(m_deleted.values()));
-		allList.addAll(getItems(m_deleting.values()));
+		allList.addAll(getItems(m_killed.values()));
 		return allList;
 	}
 
@@ -1316,6 +1361,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	 * true, before a relation is found changeable: </p>
 	 * 
 	 * <ol>
+	 * 	<li>old object is not null</li>
 	 * 	<li>the relation object aRel is managed by this list</li>
 	 * 	<li>new object is not null</li>
 	 * 	<li>new object can not already be contained (added, 
@@ -1326,12 +1372,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	protected boolean isChangeable(MsoRelationImpl<M> aRel, M oldObj, M newObj)
 	{
 		// validate relation object, cardinality and uniqueness
-		if( getRelation(oldObj) == aRel 
-			&& newObj!=null && !contains(newObj)) 
-		{
-			return true;
-		}
-		return false;
+		return oldObj!=null && getRelation(oldObj) == aRel && newObj!=null && !contains(newObj); 
 	}
 	
 	/**
@@ -1344,7 +1385,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	protected boolean change(MsoRelationImpl<M> aRel, M oldObj, M newObj)
 	{
 		// is allowed?
-		if(isChangeable(aRel, oldObj, newObj))
+		if(oldObj!=null && isChangeable(aRel, oldObj, newObj))
 		{
 			/* ======================================================
 			 * Change algorithm
@@ -1451,7 +1492,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 		((AbstractMsoObject) anObject).setup(false);
 		((AbstractMsoObject) anObject).setMainList(this);
 		add(anObject);
-		anObject.resumeUpdate(false);
+		anObject.resumeChange(false);
 		return anObject;
 	}
 
@@ -1468,12 +1509,12 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 		return null;
 	}
 
-	protected IObjectIdIf makeUniqueId()
+	protected IObjectIdIf createUniqueId()
 	{
 		IObjectIdIf retVal;
 		do
 		{
-			retVal = m_model.getDispatcher().makeObjectId();
+			retVal = m_model.getDispatcher().createObjectId();
 		}
 		while (m_created.get(retVal.getId()) != null || m_added.get(retVal.getId()) != null || m_deleted.get(retVal.getId()) != null);
 		return retVal;
@@ -1529,7 +1570,12 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	protected Collection<M> getItems(Collection<IMsoRelationIf<M>> list) {
 		Collection<M> items = new Vector<M>();
 		for(IMsoRelationIf<M> it : list) {
-			items.add(it.get());
+			M msoObj = it.get();
+			if(msoObj==null)
+			{
+				System.out.println();
+			}
+			items.add(msoObj);
 		}
 		return items;
 	}
@@ -1537,7 +1583,7 @@ public class MsoListImpl<M extends IMsoObjectIf> implements IMsoListIf<M>, IMsoO
 	protected Map<String, IMsoRelationIf<M>> selectRelations(Map<String, IMsoRelationIf<M>> relations, Collection<IChangeRelationIf> objects) {
 		Map<String, IMsoRelationIf<M>> map = new HashMap<String, IMsoRelationIf<M>>();
 		for(IChangeRelationIf it : objects) {
-			IMsoObjectIf msoObj = it.getReferredObject();
+			IMsoObjectIf msoObj = it.getRelatedObject();
 			String id = msoObj.getObjectId();
 			IMsoRelationIf<M> refObj = relations.get(id);
 			if(refObj!=null) map.put(id,refObj);

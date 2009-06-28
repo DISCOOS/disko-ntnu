@@ -16,7 +16,7 @@ public class HypothesisListImpl extends MsoListImpl<IHypothesisIf> implements IH
     public IHypothesisIf createHypothesis()
     {
         checkCreateOp();
-        return createdUniqueItem(new HypothesisImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber()));
+        return createdUniqueItem(new HypothesisImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber()));
     }
 
     public IHypothesisIf createHypothesis(IMsoObjectIf.IObjectIdIf anObjectId)

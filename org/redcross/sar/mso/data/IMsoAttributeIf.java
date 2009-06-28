@@ -288,100 +288,70 @@ public interface IMsoAttributeIf<T> extends IMsoDataIf
     /**
      * Interface for {@link java.util.Calendar} attributes.
      */
-    public interface IMsoCalendarIf extends IMsoAttributeIf<Calendar>
-    {
-        public void setValue(Calendar aDTG);
-
-        public void set(Calendar aDTG);
-
-        public Calendar getCalendar();
-    }
+    public interface IMsoCalendarIf extends IMsoAttributeIf<Calendar> { }
 
     /**
      * Interface for {@link org.redcross.sar.util.mso.Position} attributes.
      */
     public interface IMsoPositionIf extends IMsoAttributeIf<Position>
     {
-        public void setValue(Position aPosition);
-
-        public void setValue(String anId, Point2D.Double aPoint);
-
-        public Position getPosition();
+        public void set(String anId, Point2D.Double aPoint);
     }
 
     /**
      * Interface for {@link org.redcross.sar.util.mso.TimePos} attributes.
      */
-    public interface IMsoTimePosIf extends IMsoAttributeIf<TimePos>
-    {
-        public void setValue(TimePos aTimePos);
-
-        public TimePos getTimePos();
-    }
+    public interface IMsoTimePosIf extends IMsoAttributeIf<TimePos> { }
 
     /**
      * Interface for {@link org.redcross.sar.util.mso.Polygon} attributes.
      */
-    public interface IMsoPolygonIf extends IMsoAttributeIf<Polygon>
-    {
-        public void setValue(Polygon aPolygon);
-
-        public Polygon getPolygon();
-    }
+    public interface IMsoPolygonIf extends IMsoAttributeIf<Polygon> { }
 
     /**
      * Interface for {@link org.redcross.sar.util.mso.Route} attributes.
      */
-    public interface IMsoRouteIf extends IMsoAttributeIf<Route>
-    {
-        public void setValue(Route aRoute);
-
-        public Route getRoute();
-    }
+    public interface IMsoRouteIf extends IMsoAttributeIf<Route> { }
 
     /**
      * Interface for {@link org.redcross.sar.util.mso.Track} attributes.
      */
-    public interface IMsoTrackIf extends IMsoAttributeIf<Track>
-    {
-        public void setValue(Track aTrack);
-
-        public Track getTrack();
-    }
+    public interface IMsoTrackIf extends IMsoAttributeIf<Track> { }
 
     /**
      * Interface for {@link org.redcross.sar.util.mso.GeoList} attributes.
      */
-    public interface IMsoGeoListIf extends IMsoAttributeIf<GeoList>
-    {
-        public void setValue(GeoList aGeoList);
-
-        public GeoList getGeoList();
-    }
+    public interface IMsoGeoListIf extends IMsoAttributeIf<GeoList> { }
 
     /**
      * Interface for {@link Enum} attributes.
      */
     public interface IMsoEnumIf<E extends Enum<E>> extends IMsoAttributeIf<E>
     {
-        public void setValue(E anEnum);
+        public void set(String aName);
 
-        public void setValue(String aName);
-
-        public E getValue();
-
-        public String getValueName();
+        public void set(E anEnum, Calendar aTime);
+        
+        public void set(String aName, Calendar aTime);
+        
+        public String getEnumName();
 
         public E enumValue(String aName);
+        
+        public String getInternationalName();
 
         public List<Calendar> getHistory(E aStatus);
 
+        public E getInitialValue();
+        
+        public Calendar getInitialTime();
+        
         public Calendar getFirstTime(E aStatus);
 
         public Calendar getLastTime(E aStatus);
 
         public double getDuration(E aStatus, boolean total);
-
+        
         public double getDuration(EnumSet<E> aList, boolean total);
 
     }

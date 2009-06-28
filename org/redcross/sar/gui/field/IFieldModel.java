@@ -10,7 +10,7 @@ import org.redcross.sar.gui.event.IFieldModelListener;
  * @author kenneth
  *
  */
-public interface IFieldModel<V> { 
+public interface IFieldModel<V extends Object> { 
 	
 	/**
 	 * Get model source if exists
@@ -57,17 +57,63 @@ public interface IFieldModel<V> {
 	public V getValue();
 	
 	/**
-	 * Set local field model value.</p>
+	 * Set model value. </>
 	 * 
-	 * If data origin is LOCAL or CONFLICT, the value is retrieved 
-	 * from the local source. If the data origin is REMOTE, the vale
-	 * is retrieved from the remote source.</p>
+	 * If the model is in REMOTE mode, the remote value is set.
+	 * Otherwise, the local value is set.
+	 * @param value TODO
+	 * 
+	 * @return
+	 */
+	public boolean setValue(V value);
+	
+	/**
+	 * Get local value (from local source)
+	 */
+	public V getLocalValue();
+	
+	/**
+	 * Set local field model value.</p>
 	 * 
 	 * <i>The mapping of data items to value is implementation dependent</i>.
 	 * 
 	 * @param value
+	 * 
+	 * @return TODO
 	 */
-	public void setLocalValue(V value);
+	public boolean setLocalValue(V value);
+	
+	/**
+	 * Get remote value (from remote source)
+	 */
+	public V getRemoteValue();
+	
+	/**
+	 * Set remote field model value.</p>
+	 * 
+	 * This method is OPTIONAL. If the implementation does not support this
+	 * method a {@link UnsupportedOperationException} is thrown.
+	 * 
+	 * <i>The mapping of data items to value is implementation dependent</i>.
+	 * 
+	 * @param value
+	 * @return TODO
+	 */
+	public boolean setRemoteValue(V value);
+	
+	/**
+	 * Accepts the remote value if data state is CONFLICT  
+	 * (replaces local value with remote value).
+	 * @return Returns <code>true</code> if anything is changed.
+	 */
+	public boolean acceptRemoteValue();
+	
+	/**
+	 * Accepts the local value if data state is CONFLICT  
+	 * (replaces local value with remote value).
+	 * @return Returns <code>true</code> if anything is changed.
+	 */
+	public boolean acceptLocalValue();
 	
 	/**
 	 * Get current data origin
@@ -75,6 +121,15 @@ public interface IFieldModel<V> {
 	 * @return DataOrigin
 	 */
 	public DataOrigin getOrigin();
+	
+	/**
+	 * Set current data origin. </p>
+	 * 
+	 * This method is OPTIONAL. Implementations that does not 
+	 * support this method throws {@link UnsupportedOperationException}.
+	 * 
+	 */
+	public void setOrigin(DataOrigin origin);
 	
 	/**
 	 * Check for given data origin
@@ -91,35 +146,20 @@ public interface IFieldModel<V> {
 	public DataState getState();
 	
 	/**
+	 * Set current data state. </p>
+	 * 
+	 * This method is OPTIONAL. Implementations that does not 
+	 * support this method throws {@link UnsupportedOperationException}.
+	 * 
+	 */
+	public void setState(DataState state);
+	
+	/**
 	 * Check for given data state
 	 * 
 	 * @return boolean
 	 */
 	public boolean isState(DataState state);
-	
-	/**
-	 * Get local value (from local source)
-	 */
-	public V getLocalValue();
-	
-	/**
-	 * Get remote value (from remote source)
-	 */
-	public V getRemoteValue();
-	
-	/**
-	 * Accepts the remote value if data state is CONFLICT  
-	 * (replaces local value with remote value).
-	 * @return Returns <code>true</code> if anything is changed.
-	 */
-	public boolean acceptRemoteValue();
-	
-	/**
-	 * Accepts the local value if data state is CONFLICT  
-	 * (replaces local value with remote value).
-	 * @return Returns <code>true</code> if anything is changed.
-	 */
-	public boolean acceptLocalValue();
 	
 	/**
 	 * Reset internal counters and states. This method force a 
@@ -159,5 +199,5 @@ public interface IFieldModel<V> {
 	 * @param listener - the listener to remove
 	 */
 	public void removeFieldModelListener(IFieldModelListener listener);
-	
+			
 }

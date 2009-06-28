@@ -16,7 +16,7 @@ public class PersonnelListImpl extends MsoListImpl<IPersonnelIf> implements IPer
     public IPersonnelIf createPersonnel()
     {
         checkCreateOp();
-        return createdUniqueItem(new PersonnelImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new PersonnelImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public IPersonnelIf createPersonnel(IMsoObjectIf.IObjectIdIf anObjectId)

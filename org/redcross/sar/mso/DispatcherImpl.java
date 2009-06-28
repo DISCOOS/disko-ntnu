@@ -5,6 +5,7 @@ import org.redcross.sar.mso.data.AbstractMsoObject;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoTransactionListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
+import org.redcross.sar.work.IWorkPool;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,7 +22,7 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
 {
     Random m_rand = new Random(89652467667623L);
 
-    public IMsoObjectIf.IObjectIdIf makeObjectId()
+    public IMsoObjectIf.IObjectIdIf createObjectId()
     {
         int rand = m_rand.nextInt(1000);
         long time = new Date().getTime();
@@ -29,12 +30,12 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
 
     }
 
-    public void initiate()
+    public boolean initiate(IMsoModelIf aMsoModel)
     {
-        //To change body of implemented methods use File | Settings | File Templates.
+    	return true;
     }
 
-    public boolean isInitiated()
+    public boolean isReady()
     {
         return true;
     }
@@ -46,29 +47,29 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
         return list;
     }
 
-    public boolean setActiveOperation(String operationid)
+    public boolean setCurrentOperation(String operationid)
     {
         return true;
     }
 
-	public String getActiveOperationID() {
+	public String getCurrentOperationID() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public String getActiveOperationName() {
+	public String getCurrentOperationName() {
 		// TODO Auto-generated method stub
 		return null;
 	}    
 	
-	public void finishActiveOperation()
+    public boolean createNewOperation(long timeOutMillis)
     {
-        //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
-    public void createNewOperation()
+	public boolean finishCurrentOperation()
     {
-        //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     public void merge()
@@ -91,7 +92,7 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
     {
         // 
         ITransactionIf wrapper = (ITransactionIf) e.getSource();
-        List<IChangeRecordIf> objectList = wrapper.getChanges();
+        List<IChangeRecordIf> objectList = wrapper.getRecords();
         for (IChangeRecordIf it : objectList)
         {
             //IF created, create SARA object
@@ -99,20 +100,20 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
             //if deleted remove Sara object
         }
 
-        List<IChangeIf.IChangeRelationIf> attrList = wrapper.getObjectRelations();
+        List<IChangeIf.IChangeRelationIf> attrList = wrapper.getObjectRelationChanges();
         for (IChangeIf.IChangeRelationIf ico : attrList)
         {
             String attName = ico.getName();
-            IMsoObjectIf owner = ico.getReferringObject();
-            IMsoObjectIf attribute = ico.getReferredObject();
+            IMsoObjectIf owner = ico.getRelatingObject();
+            IMsoObjectIf attribute = ico.getRelatedObject();
         }
 
-        List<IChangeIf.IChangeRelationIf> listList = wrapper.getListRelations();
+        List<IChangeIf.IChangeRelationIf> listList = wrapper.getListRelationChanges();
         for (IChangeIf.IChangeRelationIf ico : listList)
         {
             String refName = ico.getName();
-            IMsoObjectIf owner = ico.getReferringObject();
-            IMsoObjectIf ref = ico.getReferredObject();
+            IMsoObjectIf owner = ico.getRelatingObject();
+            IMsoObjectIf ref = ico.getRelatedObject();
         }
 
     }
@@ -127,5 +128,27 @@ public class DispatcherImpl implements IDispatcherIf, IMsoTransactionListenerIf
 		return false;
 	}
 
+	@Override
+	public boolean initiate(IWorkPool pool) {
+		return false;
+	}
+
+	@Override
+	public boolean isCreationInProgress() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isInitiated() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isInitiated(IMsoModelIf model) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

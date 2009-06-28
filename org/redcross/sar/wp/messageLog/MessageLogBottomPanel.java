@@ -48,7 +48,7 @@ import org.redcross.sar.mso.data.IUnitIf;
 import org.redcross.sar.mso.data.IMessageIf.MessageStatus;
 import org.redcross.sar.mso.data.IMessageLineIf.MessageLineType;
 import org.redcross.sar.mso.data.IPOIIf.POIType;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent.Change;
 import org.redcross.sar.util.Utils;
 import org.redcross.sar.util.except.IllegalOperationException;
@@ -63,7 +63,7 @@ import org.redcross.sar.wp.messageLog.IDiskoWpMessageLog.MessageLogActionType;
  *
  * @author thomasl
  */
-public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListenerIf, IFlowListener
+public class MessageLogBottomPanel extends BasePanel implements IMsoChangeListenerIf, IFlowListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -627,7 +627,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	}
 
 	/**
-	 * {@link IMsoUpdateListenerIf#handleMsoChangeEvent(Change)}
+	 * {@link IMsoChangeListenerIf#handleMsoChangeEvent(Change)}
 	 */
 	public void handleMsoUpdateEvent(Change e)
 	{
@@ -1264,7 +1264,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 	{
 		if(m_currentMessage == null && create)
 		{
-			m_wp.getMsoModel().suspendUpdate();
+			m_wp.getMsoModel().suspendChange();
 			m_currentMessage = m_wp.getMsoManager().createMessage();
 			m_currentMessage.setBroadcast(isBroadcast);
 			m_wp.getMsoModel().resumeUpdate();
@@ -1397,7 +1397,7 @@ public class MessageLogBottomPanel extends BasePanel implements IMsoUpdateListen
 		if(m_currentMessage != null && !m_currentMessage.isBroadcast())
 		{
 			// suspend updates
-			Application.getInstance().getMsoModel().suspendUpdate();
+			Application.getInstance().getMsoModel().suspendChange();
 
 			// initialize
 			List<IMessageLineIf> lines = new LinkedList<IMessageLineIf>();

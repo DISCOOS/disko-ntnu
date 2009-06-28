@@ -18,7 +18,7 @@ public class EnvironmentListImpl extends MsoListImpl<IEnvironmentIf> implements 
     public IEnvironmentIf createEnvironment(Calendar aCalendar, String aText)
     {
         checkCreateOp();
-        return createdUniqueItem(new EnvironmentImpl(getOwner().getModel(), makeUniqueId(), aCalendar, aText));
+        return createdUniqueItem(new EnvironmentImpl(getOwner().getModel(), createUniqueId(), aCalendar, aText));
     }
 
 

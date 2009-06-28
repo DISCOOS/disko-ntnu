@@ -28,14 +28,14 @@ import org.redcross.sar.map.IDiskoMap;
 import org.redcross.sar.mso.IMsoManagerIf;
 import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.*;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.mso.util.MsoUtils;
 import org.redcross.sar.output.DiskoReportManager;
 import org.redcross.sar.wp.IDiskoWpModule;
 import org.redcross.sar.wp.unit.IDiskoWpUnit;
 
-public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, ITickEventListenerIf
+public class InfoPanelHandler implements IMsoChangeListenerIf, ActionListener, ITickEventListenerIf
 {
     private final static String EMPTY_PANEL_NAME = "EmptyPanel";
     private final static String UNIT_PANEL_NAME = "UnitPanel";
@@ -89,7 +89,7 @@ public class InfoPanelHandler implements IMsoUpdateListenerIf, ActionListener, I
         initAssignmentListPanel();
         showPanel(EMPTY_PANEL_NAME);
 
-        aWpModule.getMsoEventManager().addLocalUpdateListener(this);
+        aWpModule.getMsoEventManager().addChangeListener(this);
         aWpModule.addTickEventListener(this);
     }
 

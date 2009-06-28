@@ -186,7 +186,9 @@ public class WorkLoop extends AbstractWorkLoop {
 			 * ========================================================== */
 
 			// add to reschedule list?
-			if(work.isLoop()) loops.add(m_current);
+			if(work.isLoop()) { 
+				loops.add(m_current);
+			}
 
 			// update duration of this cycle so far
 			duration = System.currentTimeMillis()-tic;

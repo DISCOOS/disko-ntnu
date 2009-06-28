@@ -120,7 +120,7 @@ public class EventImpl extends AbstractTimeItem implements IEventIf
 	}
 
 	public void setStatus(String status) {
-		m_status.setValue(status);
+		m_status.set(status);
 
 	}
 

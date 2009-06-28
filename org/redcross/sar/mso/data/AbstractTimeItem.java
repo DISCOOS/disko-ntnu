@@ -23,7 +23,7 @@ public abstract class AbstractTimeItem extends AbstractMsoObject implements ITim
     public AbstractTimeItem(IMsoModelIf theMsoModel, IMsoObjectIf.IObjectIdIf anObjectId, Calendar aCalendar, boolean aVisible)
     {
         super(theMsoModel, anObjectId);
-        m_timeStamp.setValue(aCalendar);
+        m_timeStamp.set(aCalendar);
         setVisible(aVisible);
     }
 
@@ -43,7 +43,7 @@ public abstract class AbstractTimeItem extends AbstractMsoObject implements ITim
 
     public void setTimeStamp(Calendar aDTG)
     {
-        m_timeStamp.setValue(aDTG);
+        m_timeStamp.set(aDTG);
     }
 
     public Calendar getTimeStamp()

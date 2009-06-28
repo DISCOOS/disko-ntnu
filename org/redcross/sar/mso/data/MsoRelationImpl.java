@@ -144,6 +144,15 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
     	return m_owner;
     }    
 
+	/**
+	 * Get relation object id.
+	 * 
+	 * @return Returns relation object id.
+	 */
+	public String getObjectId() {
+		return getOwnerObject().getObjectId() + "#" + getName();
+	}
+	
     public T getLocal()
     {
         return m_localValue;
@@ -329,7 +338,7 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
 	        boolean isRollback = false;
 	
 	        // get current relation
-	        T oldRef = get();
+	        T oldObj = get();
 	
 	        // replace current relation
 	        switch (updateMode)
@@ -392,11 +401,11 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
 	                if (!equal(m_remoteValue, aRelation))
 	                {
 	                	// register
-	                    registerRelationRemoved(m_remoteValue,true,false,isLoopback,false);
+	                    registerRelationRemoved(m_remoteValue,true,isLoopback,false);
 	                    // prepare next
 	                    m_remoteValue = aRelation;
 	                    // register
-	                    registerRelationAdded(aRelation,true,false,isLoopback,false);
+	                    registerRelationAdded(aRelation,true,isLoopback,false);
 	                    // set flag
 	                    isDirty = true;
 	                }
@@ -444,14 +453,14 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
 	                {
 	                	// set server origin
 	                    newOrigin = DataOrigin.REMOTE;
-	                	// register change
-	                    registerRelationRemoved(m_localValue,true,true,false,true);
-	                    // set flag
-	                    isDirty = (m_localValue!=null);
+	                    // set change flag
+	                    isRollback = (m_localValue!=null || m_origin!=newOrigin);
+	                    // a change indicates that a rollback has occured
+	                    isDirty = isRollback;
+	                	// register rollback to remote value
+	                    registerRelationRemoved(m_localValue,true,false,isRollback);
 	                    // prepare next
 	                    m_localValue = null;
-	                    // set flag
-	                    isRollback = true;
 	                } 
 	            	else if(!equal(m_localValue, aRelation))
 	                {
@@ -463,9 +472,16 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
 	            		 * they belongs. See MsoListImpl.isAllowed();
 	            		 * ============================================= */
 	            		
+	            		// If this relation is part of an list relation, validating
+	            		// the change is required. However, the first time the local
+	            		// relation is set, this validation is not required because 
+	            		// the previous relation is null. The list only require
+	            		// that changes of non-null relations are validated.
+	            		//
 	            		// validate?
-	            		if(m_inList!=null)
+	            		if(m_inList!=null && m_localValue!=null)
 	            		{
+	            			// validate
 	            			if(!m_inList.isChangeable(this, m_localValue, aRelation)) 
             				{
 	            				// change was not allowed by list
@@ -474,13 +490,14 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
 	            		}
 	                	// set local origin
 	                    newOrigin = DataOrigin.LOCAL;
-	                	// register deletion of current local value
-	                    registerRelationRemoved(m_localValue,true,true,false,false);
+	                	// register deletion of current local 
+	                    // value (if exists, this is a rollback)
+	                    registerRelationRemoved(m_localValue,true,false,true);
 	                    // prepare next
 	                    m_localValue = aRelation;
 	                    // register
-	                    registerRelationAdded(aRelation,true,true,false,false);
-	                    // set flag
+	                    registerRelationAdded(aRelation,true,false,false);
+	                    // set dirty flag
 	                    isDirty = true;
 	                }
 	            }
@@ -500,9 +517,9 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
 	        m_isRollbackMode = isRollback;
 	        
 	        // notify change?
-	        if (isDirty || isLoopback)
+	        if (isDirty || isLoopback || isRollback)
 	        {
-	            registerRelationModified(aRelation, oldRef, isDirty, isLoopback, isRollback);
+	            registerRelationModified(oldObj, aRelation, isLoopback, isRollback);
 	        }
 	        
 	        // success
@@ -529,20 +546,20 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
         {
             String s = this.m_owner != null ? this.m_owner.toString() : this.toString();
 
+        	// remove local relation?
+        	if (m_localValue != null)
+            {
+            	// register rollback
+                registerRelationRemoved(m_localValue,true,false,true);
+            }
+        	
         	// remove remote relation?
         	if (m_remoteValue != null)
             {
             	// remove from object holder
-                registerRelationRemoved(m_remoteValue,true,true,false,false);
+                registerRelationRemoved(m_remoteValue,true,false,false);
             }
 
-        	// remove local relation?
-        	if (m_localValue != null)
-            {
-            	// register
-                registerRelationRemoved(m_localValue,true,true,false,false);
-            }
-        	
         	// log event
             m_logger.debug("Deleted relation from " + s + " to " + anObject + " in relation " + m_name);
             
@@ -574,40 +591,44 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
     
     public boolean rollback()
     {
-
     	// initialize restore flag
     	boolean bFlag = !m_model.isUpdateMode(UpdateMode.LOCAL_UPDATE_MODE);
 
     	// ensure that model is in local update mode
     	if(bFlag) m_model.setLocalUpdateMode();
     	
-    	// prepare
-        T oldLocalValue = m_localValue;
-        m_localValue = null;
-
         // get change flag
         boolean isDirty = m_origin == DataOrigin.LOCAL
         				 || m_origin == DataOrigin.CONFLICT;
 
-        // update origin
-        m_origin = DataOrigin.REMOTE;
-
         // notify?
         if (isDirty)
         {
+        	// in list (part of one-to-many relation)?
+        	if(m_inList!=null)
+        	{
+        		// forward to list
+        		if(!m_inList.rollback(this)) 
+    			{
+        			// rollback not allowed by list
+        			return false;
+    			}
+        	}
         	// reset loopback mode
             m_isLoopbackMode = false;            
             // set rollback mode
             m_isRollbackMode = true;
-        	// in list (part of one-to-many relation)?
-        	if(m_inList!=null)
-        	{
-        		m_inList.rollback(this);
-        	}
+        	// get old value
+            T oldLocalValue = m_localValue;
+            // reset local value
+            m_localValue = null;
+            // update origin
+            m_origin = DataOrigin.REMOTE;
+            
         	// notify
-            registerRelationRemoved(oldLocalValue,true,false,false,true);
-            registerRelationAdded(m_remoteValue,false,false,false,true);
-            registerRelationModified(m_remoteValue,oldLocalValue,false,false,true);
+            registerRelationRemoved(oldLocalValue,true,false,true);
+            registerRelationAdded(m_remoteValue,false,false,true);
+            registerRelationModified(oldLocalValue,m_remoteValue,false,true);
         }
         
     	// restore previous update mode?
@@ -719,7 +740,7 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
      * ================================================================ */
     
 	private boolean isSetup(T msoObj) {
-		if(msoObj == null) return false;
+		if(msoObj == null) return true;
 		return msoObj.isSetup();	
 	}
 	
@@ -740,8 +761,8 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
             	 * future conflict detection
             	 *
             	 * ========================================================== */
-                registerRelationAdded(m_localValue,false,false,false,false);
-                registerRelationRemoved(m_remoteValue,false,false,false,false);
+                registerRelationAdded(m_localValue,false,false,false);
+                registerRelationRemoved(m_remoteValue,false,false,false);
             } else
             {
             	/* ==========================================================
@@ -751,13 +772,14 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
             	 * erased, together with any delete listener
             	 *
             	 * ========================================================== */
-            	registerRelationAdded(m_remoteValue,false,false,false,false);
-                registerRelationRemoved(m_localValue,true,false,false,false);
+            	registerRelationAdded(m_remoteValue,false,false,false);
+                registerRelationRemoved(m_localValue,true,false,false);
                 m_localValue = null;
             }
+            // update origin
             m_origin = aOrigin;
             // notify
-            registerRelationModified(newRef, oldRef, false, false, false);
+            registerRelationModified(oldRef, newRef, false, false);
             return true;
         }
         return false;
@@ -772,14 +794,14 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
 	 * UpdateMode is LOCAL_UPDATE_MODE.
 	 * @param isLoopback - the registration is a loopback (ACK from server)
 	 */
-    private void registerRelationAdded(T anObject, boolean add, boolean updateRemote, boolean isLoopback, boolean isRollback)
+    private void registerRelationAdded(T anObject, boolean add, boolean isLoopback, boolean isRollback)
     {
         if (anObject != null)
         {
         	if(add) ((AbstractMsoObject) anObject).addMsoObjectHolder(this);
         	((AbstractMsoObject) anObject).registerAddedRelation(new ChangeImpl.ChangeRelation(
-        			this,m_model.getUpdateMode(),MsoEventType.ADDED_RELATION_EVENT.maskValue(),
-        			anObject,isLoopback,isRollback),updateRemote);
+        			this,m_model.getUpdateMode(),MsoEventType.ADDED_RELATION_EVENT,
+        			anObject,isLoopback,isRollback));
         }
     }
 
@@ -792,29 +814,28 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
 	 * UpdateMode is LOCAL_UPDATE_MODE.
      * @param isLoopback - the registration is a loopback (ACK from server)
      */
-    private void registerRelationRemoved(T anObject, boolean remove, boolean updateRemote, boolean isLoopback, boolean isRollback)
+    private void registerRelationRemoved(T anObject, boolean remove, boolean isLoopback, boolean isRollback)
     {
         if (anObject != null)
         {
         	if(remove) ((AbstractMsoObject) anObject).removeMsoObjectHolder(this);
         	((AbstractMsoObject) anObject).registerRemovedRelation(new ChangeImpl.ChangeRelation(
-        			this,m_model.getUpdateMode(),MsoEventType.REMOVED_RELATION_EVENT.maskValue(),
-        			anObject,isLoopback,isRollback),updateRemote);
+        			this,m_model.getUpdateMode(),MsoEventType.REMOVED_RELATION_EVENT,
+        			anObject,isLoopback,isRollback));
 
         }
     }
     
     /**
      * Notify relation owner that a relation has been changed
-     * 
-     * @param newObj - the relation object after update
      * @param oldObj - the relation object before update
-     * @param updateRemote -the relation change is forwarded to server if <code>true</code> and 
-	 * UpdateMode is LOCAL_UPDATE_MODE (checked by the AbstractMsoObject instance).
+     * @param newObj - the relation object after update
      * @param isLoopback - the registration is a loopback (ACK from server)
      * @param isRollback - the registration is a rollback of local value to remote value
+     * @param updateRemote -the relation change is forwarded to server if <code>true</code> and 
+	 * UpdateMode is LOCAL_UPDATE_MODE (checked by the AbstractMsoObject instance).
      */
-    private void registerRelationModified(T newObj, T oldObj, boolean updateRemote, boolean isLoopback, boolean isRollback)
+    private void registerRelationModified(T oldObj, T newObj, boolean isLoopback, boolean isRollback)
     {
     	boolean bFlag = (oldObj != null || newObj != null);
     	
@@ -823,21 +844,21 @@ public class MsoRelationImpl<T extends IMsoObjectIf> implements IMsoRelationIf<T
         if (oldObj != null)
         {
             m_owner.registerRemovedRelation(new ChangeImpl.ChangeRelation(
-        			this,m_model.getUpdateMode(),MsoEventType.REMOVED_RELATION_EVENT.maskValue(),
-        			oldObj,isLoopback,isRollback),updateRemote);
+        			this,m_model.getUpdateMode(),MsoEventType.REMOVED_RELATION_EVENT,
+        			oldObj,isLoopback,isRollback));
             
         } 
         if (newObj != null)
         {
             m_owner.registerAddedRelation(new ChangeImpl.ChangeRelation(
-        			this,m_model.getUpdateMode(),MsoEventType.ADDED_RELATION_EVENT.maskValue(),
-        			newObj,isLoopback,isRollback),updateRemote);
+        			this,m_model.getUpdateMode(),MsoEventType.ADDED_RELATION_EVENT,
+        			newObj,isLoopback,isRollback));
             
         } 
         // only notify list if data is not in conflict. If data
         // is in conflict, the relation is already registered
         // with the local value. Hence, no notification is required             
-        if(bFlag && m_inList!=null && isOriginLocal() && !isOriginConflict())
+        if(m_inList!=null && oldObj!=null && bFlag && isOriginLocal() && !isOriginConflict())
         {
         	m_inList.change(this, oldObj, newObj);
         }

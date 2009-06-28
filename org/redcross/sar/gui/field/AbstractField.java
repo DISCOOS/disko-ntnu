@@ -48,6 +48,7 @@ import org.redcross.sar.gui.factory.DiskoButtonFactory;
 import org.redcross.sar.gui.factory.UIFactory;
 import org.redcross.sar.gui.UIConstants.ButtonSize;
 import org.redcross.sar.map.IDiskoMap;
+import org.redcross.sar.mso.IChangeIf;
 import org.redcross.sar.mso.data.IMsoAttributeIf;
 import org.redcross.sar.mso.data.AttributeImpl.MsoPolygon;
 import org.redcross.sar.mso.data.AttributeImpl.MsoRoute;
@@ -65,16 +66,17 @@ import org.redcross.sar.wp.IDiskoWpModule;
  * 
  * @author Administrator
  *
- * @param O - object value type
+ * @param I - field value type
+ * @param M - field model value type
  * @param E - edit component type
  * @param V - view component type
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractField<O, E extends Component, V extends Component> extends JPanel implements IField<O> {
+public abstract class AbstractField<F, E extends Component, V extends Component> extends JPanel implements IField<F> {
 
 	private static final long serialVersionUID = 1L;	
 	
-	private static final int REMOTE_STATE_RESET = 5000;
+	private static final int REMOTE_STATE_RESET = 3000;
 
 	protected static final int MINIMUM_COMPONENT_WIDTH = 50;
 	protected static final int DEFAULT_CAPTION_WIDTH = 80;
@@ -92,9 +94,9 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 
 	protected String m_caption;
 	
-	protected O m_oldEditValue;
+	protected F m_oldEditValue;
 
-	protected IFieldModel<O> m_model;
+	protected IFieldModel<F> m_model;
 
 	protected int m_isMarked = 0;
 
@@ -108,6 +110,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	
 	private boolean m_isDirty = false;
 	private boolean m_isTrackingFocus = false;
+	private boolean m_isValueAdjusting = false;
 	private boolean m_isEditValueAdjusting = false;
 	
 	private Color m_vBg;					// remote data origin view background 
@@ -193,7 +196,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		m_vBg = getBackground();
 		m_eBg = getEditComponent().getBackground();
 		// initialize model
-		setModel(new DefaultFieldModel<O>());
+		setModel(new DefaultFieldModel<F>());
 		// update
 		setName(name);
 		setCaptionText(caption);
@@ -203,7 +206,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		setChangeable(true);
 	}
 
-	protected AbstractField(IMsoAttributeIf<O> attribute, String caption, boolean isEditable) {
+	protected AbstractField(IMsoAttributeIf<F> attribute, String caption, boolean isEditable) {
 		// forward
 		this(attribute.getName(),caption,isEditable);
 		// set attribute
@@ -212,7 +215,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		reset();
 	}
 
-	protected AbstractField(IMsoAttributeIf<O> attribute,
+	protected AbstractField(IMsoAttributeIf<F> attribute,
 			String caption, boolean isEditable,
 			int width, int height) {
 		// forward
@@ -301,11 +304,11 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		}
 	}
 	
-	protected O getOldEditValue() {
+	protected F getOldEditValue() {
 		return m_oldEditValue;
 	}
 	
-	protected void setOldEditValue(O value) {
+	protected void setOldEditValue(F value) {
 		m_oldEditValue = value;
 	}
 	
@@ -326,14 +329,14 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	}
 	
 	/**
-	 * Get the edit value adjusting flag. This flag indicate that
-	 * a change in edit value has occurred, and that  event 
-	 * handling is in progress.
-	 *  
-	 * @return Returns {@code true} if edit value is adjusting. 
+	 * Set the value adjusting flag. This flag indicate that
+	 * a change in value is occurring, and that event handling
+	 * is in progress. Use this method to indicate that
+	 * the value is changing, and that any change events should
+	 * be handled accordingly.
 	 */
-	protected boolean isEditValueAdjusting() {
-		return m_isEditValueAdjusting;
+	protected void setValueAdjusting(boolean isAdjusting) {
+		m_isValueAdjusting = isAdjusting;
 	}
 	
 	/**
@@ -346,7 +349,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	protected void setEditValueAdjusting(boolean isAdjusting) {
 		m_isEditValueAdjusting = isAdjusting;
 	}
-	
+		
 	protected static boolean isValueChanged(Object oldValue, Object newValue) {
 		return !isEqual(oldValue, newValue);
 	}
@@ -365,7 +368,8 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 			break;
 		case REMOTE:
 			// any change?
-			if(!(m_origin.equals(origin) || bFlag)) {
+			if(!(bFlag || m_origin.equals(origin) 
+					   || m_origin.equals(DataOrigin.NONE))) {
 				// set server change indication
 				getComponent().setBackground(m_sBg);
 				/* ==========================================
@@ -502,7 +506,38 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	public void setTrackingFocus(boolean isTrackingFocus) {
 		m_isTrackingFocus = isTrackingFocus;
 	}
+	
+	/**
+	 * Check if a value or edit value is in progress.
+	 * @return Returns {@code true} if change is in progress.
+	 */
+	public boolean isAdjusting() {
+		return m_isValueAdjusting || m_isEditValueAdjusting;
+	}	
+	
 
+	/**
+	 * Get the value adjusting flag. This flag indicate that
+	 * a change in value is occurring, and that  event 
+	 * handling is in progress.
+	 *  
+	 * @return Returns {@code true} if value is adjusting. 
+	 */
+	public boolean isValueAdjusting() {
+		return m_isValueAdjusting;
+	}	
+	
+	/**
+	 * Get the edit value adjusting flag. This flag indicate that
+	 * a change in edit value is occurring, and that  event 
+	 * handling is in progress.
+	 *  
+	 * @return Returns {@code true} if edit value is adjusting. 
+	 */
+	public boolean isEditValueAdjusting() {
+		return m_isEditValueAdjusting;
+	}		
+	
 	public int getVerticalAlignment() {
 		return getCaption().getVerticalAlignment();
 	}
@@ -679,7 +714,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		setChangeable(false);
 
 		// forward
-		m_model.setLocalValue(getEditValue());
+		m_model.setValue(getEditValue());
 		
 		// forward
 		m_model.parse();
@@ -730,12 +765,12 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	}
 	
 	@Override
-	public IFieldModel<O> getModel() {
+	public IFieldModel<F> getModel() {
 		return m_model;
 	}
 
 	@Override
-	public void setModel(IFieldModel<O> model) {
+	public void setModel(IFieldModel<F> model) {
 		// not allowed?
 		if(model==null) 
 			throw new IllegalArgumentException("IFieldModel can not be null");
@@ -757,27 +792,40 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 		// notify listeners of model set
 		fireFieldChanged(FieldEvent.EVENT_MODEL_SET);
 	}
+	
+	public List<IChangeIf> getChanges()
+	{
+		List<IChangeIf> changes = new Vector<IChangeIf>();
+		if(m_model instanceof MsoAttributeFieldModel) {
+			IChangeIf change = ((MsoAttributeFieldModel)m_model).getChange();
+			if(change!=null)
+			{
+				changes.add(change);
+			}
+		}
+		else if(m_model instanceof MsoFormatFieldModel) {
+			changes.addAll(((MsoFormatFieldModel)m_model).getChanges());
+		}
+		else if(m_model instanceof MsoParserFieldModel) {
+			changes.addAll(((MsoParserFieldModel)m_model).getChanges());
+		}
+		return changes;
+	}
 
-	public IMsoAttributeIf<O> getMsoAttribute() {
+	public IMsoAttributeIf<F> getMsoAttribute() {
 		if(m_model instanceof MsoAttributeFieldModel) {
 			return ((MsoAttributeFieldModel)m_model).getMsoAttribute(); 
 		}
 		return null;
 	}
 
-	public IMsoAttributeIf<O> clearMsoAttribute() {
-		IMsoAttributeIf<O> attr = getMsoAttribute();
-		if(attr!=null) {
-			setModel(new DefaultFieldModel<O>());
-		}
-		// finished
-		return attr;
+	public void clearModel() {
+		setModel(new DefaultFieldModel<F>());
 	}
 	
-	public IMsoAttributeIf<O> clearMsoAttribute(Object newEditValue) {
-		IMsoAttributeIf<O> attr = clearMsoAttribute();
+	public void clearModel(Object newEditValue) {
+		clearModel();
 		setEditValue(newEditValue);
-		return attr;		
 	}
 	
 	/**
@@ -911,19 +959,19 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 
 	public abstract String getFormattedText();
 	
-	public final O getValue() {
+	public final F getValue() {
 		if(m_isDirty) {
 			return getEditValue();
 		}
 		return m_model.getValue();
 	}
 	
-	public abstract O getEditValue();
+	public abstract F getEditValue();
 	
 	public final boolean setEditValue(Object value) {
 		/* get old edit value (the value stored last
 		 * time the edit value was changed) */
-		O oldValue = getOldEditValue();
+		F oldValue = getOldEditValue();
 		/* if edit value is already adjusting, 
 		 * calling setNewEditValue is not need since 
 		 * the edit value already is changed. */
@@ -949,12 +997,16 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 	}
 	
 	public final boolean setValue(Object value) {
+		// set value adjustment in progress flag
+		setValueAdjusting(true);
+		// initialize result flag
+		boolean bFlag = false;
 		// get old value 
-		O oldValue = getValue();
+		F oldValue = getValue();
 		// set current edit value 
 		setEditValue(value);			
 		// get new edit value
-		O newValue = getEditValue();
+		F newValue = getEditValue();
 		// update model?
 		if(isValueChanged(oldValue, newValue)) {
 			// set model value
@@ -962,10 +1014,12 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 			// reset dirty flag
 			m_isDirty = false;
 			// success
-			return true;
+			bFlag = true;
 		}
-		// failure
-		return false;
+		// value change is completed
+		setValueAdjusting(false);
+		// finished
+		return bFlag;
 	}
 	
 	public final boolean setValue(Object value, boolean notify) {
@@ -983,7 +1037,7 @@ public abstract class AbstractField<O, E extends Component, V extends Component>
 				// update name
 				setName(attribute.getName());
 				// create model
-				setModel(new MsoAttributeFieldModel<O>(attribute));
+				setModel(new MsoAttributeFieldModel<F>(attribute));
 				// success
 				return true;
 			}

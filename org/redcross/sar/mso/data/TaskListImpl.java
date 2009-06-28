@@ -18,7 +18,7 @@ public class TaskListImpl extends MsoListImpl<ITaskIf> implements ITaskListIf
     public ITaskIf createTask(Calendar aCalendar)
     {
         checkCreateOp();
-        return createdUniqueItem(new TaskImpl(getOwner().getModel(), makeUniqueId(), makeSerialNumber(), aCalendar));
+        return createdUniqueItem(new TaskImpl(getOwner().getModel(), createUniqueId(), makeSerialNumber(), aCalendar));
     }
 
     public ITaskIf createTask(IMsoObjectIf.IObjectIdIf anObjectId)

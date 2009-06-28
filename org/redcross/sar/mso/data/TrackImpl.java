@@ -67,12 +67,12 @@ public class TrackImpl extends AbstractMsoObject implements ITrackIf
 
     public void setGeodata(Track aGeodata)
     {
-        m_geodata.setValue(aGeodata);
+        m_geodata.set(aGeodata);
     }
 
     public Track getGeodata()
     {
-        return m_geodata.getTrack();
+        return m_geodata.get();
     }
 
     public IData.DataOrigin getGeodataState()

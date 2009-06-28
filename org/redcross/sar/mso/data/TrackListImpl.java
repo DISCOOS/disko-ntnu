@@ -13,7 +13,7 @@ public class TrackListImpl extends MsoListImpl<ITrackIf> implements ITrackListIf
     public ITrackIf createTrack()
     {
         checkCreateOp();
-        return createdUniqueItem(new TrackImpl(getOwner().getModel(), makeUniqueId()));
+        return createdUniqueItem(new TrackImpl(getOwner().getModel(), createUniqueId()));
     }
 
     public ITrackIf createTrack(IMsoObjectIf.IObjectIdIf anObjectId)
@@ -26,7 +26,7 @@ public class TrackListImpl extends MsoListImpl<ITrackIf> implements ITrackListIf
     public ITrackIf createTrack(Track aTrack)
     {
         checkCreateOp();
-        return createdUniqueItem(new TrackImpl(getOwner().getModel(), makeUniqueId(), aTrack));
+        return createdUniqueItem(new TrackImpl(getOwner().getModel(), createUniqueId(), aTrack));
     }
 
     public ITrackIf createTrack(IMsoObjectIf.IObjectIdIf anObjectId, Track aTrack)

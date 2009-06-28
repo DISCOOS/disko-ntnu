@@ -49,7 +49,7 @@ public class SaraMsoMapper {
         if (msoAttr instanceof AttributeImpl.MsoPosition) {
 
             AttributeImpl.MsoPosition lAttr = (AttributeImpl.MsoPosition) msoAttr;
-            if(lAttr.getPosition()!=null)
+            if(lAttr.get()!=null)
             {
             	// cast to SarFactLocation
             	SarFactLocation locFact = ((SarFactLocation) sarFact);
@@ -69,7 +69,7 @@ public class SaraMsoMapper {
 	            */
 
 	            // get attribute position
-	            Point2D.Double p = lAttr.getPosition().getPosition();
+	            Point2D.Double p = lAttr.get().getPosition();
 
 	            // update position
  	            locFact.updateLocation( p.getY(), p.getX(), distribute);
@@ -96,30 +96,30 @@ public class SaraMsoMapper {
         }
         if (msoAttr instanceof AttributeImpl.MsoTimePos) {
             AttributeImpl.MsoTimePos lAttr = (AttributeImpl.MsoTimePos) msoAttr;
-            if(lAttr.getTimePos()!=null && lAttr.getTimePos().getPosition()!=null && lAttr.getTimePos().getTime()!=null)
+            if(lAttr.get()!=null && lAttr.get().getPosition()!=null && lAttr.get().getTime()!=null)
             {
-                ((SarFactLocation) sarFact).updateLocation( lAttr.getTimePos().getPosition().getY(),
-                     lAttr.getTimePos().getPosition().getX(), lAttr.getTimePos().getTime(), distribute);
+                ((SarFactLocation) sarFact).updateLocation( lAttr.get().getPosition().getY(),
+                     lAttr.get().getPosition().getX(), lAttr.get().getTime(), distribute);
             }
         }
         if (msoAttr instanceof AttributeImpl.MsoPolygon) {
             AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) msoAttr;
-            List<TimePos> posList = mapGeoPosListToSaraTimePos(lAttr.getPolygon().getVertices());
-            ((SarFactArea) sarFact).setArea(posList, lAttr.getPolygon().getName(), lAttr.getPolygon().getLayout(), distribute);//TODO gjennomsøkt eller ei??
+            List<TimePos> posList = mapGeoPosListToSaraTimePos(lAttr.get().getVertices());
+            ((SarFactArea) sarFact).setArea(posList, lAttr.get().getName(), lAttr.get().getLayout(), distribute);//TODO gjennomsøkt eller ei??
         }
         if (msoAttr instanceof AttributeImpl.MsoRoute) {
             AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) msoAttr;
-            List<TimePos> posList = mapGeoPosListToSaraTimePos(lAttr.getRoute().getItems());
-            ((SarFactTrack) sarFact).setTrack(posList, lAttr.getRoute().getName(), lAttr.getRoute().getLayout(), distribute);
+            List<TimePos> posList = mapGeoPosListToSaraTimePos(lAttr.get().getItems());
+            ((SarFactTrack) sarFact).setTrack(posList, lAttr.get().getName(), lAttr.get().getLayout(), distribute);
         }
         if (msoAttr instanceof AttributeImpl.MsoTrack) {
             AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) msoAttr;
-            List<TimePos> posList = mapTimePosListToSaraTimePos(lAttr.getTrack().getItems());
-            ((SarFactTrack) sarFact).setTrack(posList, lAttr.getTrack().getName(), lAttr.getTrack().getLayout(), distribute);
+            List<TimePos> posList = mapTimePosListToSaraTimePos(lAttr.get().getItems());
+            ((SarFactTrack) sarFact).setTrack(posList, lAttr.get().getName(), lAttr.get().getLayout(), distribute);
         }
         if (msoAttr instanceof AttributeImpl.MsoEnum) {
             AttributeImpl.MsoEnum<?> lAttr = (AttributeImpl.MsoEnum<?>) msoAttr;
-            ((SarFactString) sarFact).setStringValue(lAttr.getValueName(), distribute);
+            ((SarFactString) sarFact).setStringValue(lAttr.getEnumName(), distribute);
         }
         }
         catch(Exception e)
@@ -153,17 +153,17 @@ public class SaraMsoMapper {
             lAttr.setValue(((SarFactString) sarFact).getStringValue());
         } else if (msoAttr instanceof AttributeImpl.MsoCalendar) {
             AttributeImpl.MsoCalendar lAttr = (AttributeImpl.MsoCalendar) msoAttr;
-            lAttr.setValue(((SarFactDate) sarFact).getDate());
+            lAttr.set(((SarFactDate) sarFact).getDate());
         } else if (msoAttr instanceof AttributeImpl.MsoPosition) {
             AttributeImpl.MsoPosition lAttr = (AttributeImpl.MsoPosition) msoAttr;
             SarFactLocation lFact = (SarFactLocation) sarFact;
-            lAttr.setValue(new Position(null,
+            lAttr.set(new Position(null,
             		lFact.getLongValue(), lFact.getLatValue(),
             		lFact.getLocationType())); // TODO: sjekk at dette er rett!!!
         } else if (msoAttr instanceof AttributeImpl.MsoTimePos) {
             AttributeImpl.MsoTimePos lAttr = (AttributeImpl.MsoTimePos) msoAttr;
             SarFactLocation lFact = (SarFactLocation) sarFact;
-            lAttr.setValue(new org.redcross.sar.util.mso.TimePos(lFact.getLongValue(), lFact.getLatValue(), lFact.getTimeAtPos()));
+            lAttr.set(new org.redcross.sar.util.mso.TimePos(lFact.getLongValue(), lFact.getLatValue(), lFact.getTimeAtPos()));
         } else if (msoAttr instanceof AttributeImpl.MsoPolygon) {
             AttributeImpl.MsoPolygon lAttr = (AttributeImpl.MsoPolygon) msoAttr;
             SarFactArea aFact = (SarFactArea) sarFact;
@@ -177,7 +177,7 @@ public class SaraMsoMapper {
             	else
             		lPoly.add(tp.getLongitude(), tp.getLatitude());
             }
-            lAttr.setValue(lPoly);
+            lAttr.set(lPoly);
         } else if (msoAttr instanceof AttributeImpl.MsoRoute) {
             AttributeImpl.MsoRoute lAttr = (AttributeImpl.MsoRoute) msoAttr;
             SarFactTrack aFact = (SarFactTrack) sarFact;
@@ -191,7 +191,7 @@ public class SaraMsoMapper {
             	else
             		lPoly.add(tp.getLongitude(), tp.getLatitude());
             }
-            lAttr.setValue(lPoly);
+            lAttr.set(lPoly);
         } else if (msoAttr instanceof AttributeImpl.MsoTrack) {
             AttributeImpl.MsoTrack lAttr = (AttributeImpl.MsoTrack) msoAttr;
             SarFactTrack aFact = (SarFactTrack) sarFact;
@@ -205,7 +205,7 @@ public class SaraMsoMapper {
             	else
                     lPoly.add(tp.getLongitude(), tp.getLatitude(), tp.getTimeInPos());
             }
-            lAttr.setValue(lPoly);
+            lAttr.set(lPoly);
         } else if (msoAttr instanceof AttributeImpl.MsoEnum) {
             AttributeImpl.MsoEnum<?> lAttr = (AttributeImpl.MsoEnum<?>) msoAttr;
             SarFactString strFact = (SarFactString) sarFact;
@@ -213,13 +213,13 @@ public class SaraMsoMapper {
             {
             	if(aTimeMillis == 0)
             	{
-            		lAttr.setValue(strFact.getStringValue());
+            		lAttr.set(strFact.getStringValue());
             	}
             	else
             	{
                 	Calendar aTime = Calendar.getInstance();
                 	aTime.setTimeInMillis(aTimeMillis);
-            		lAttr.setValue(strFact.getStringValue(), aTime);
+            		lAttr.set(strFact.getStringValue(), aTime);
             	}
             }
         } else {

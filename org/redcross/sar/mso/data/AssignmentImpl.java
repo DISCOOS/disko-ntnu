@@ -119,7 +119,8 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
      * Resets correct subclass in case of incorrect changes by application or others.
      * Renumber duplicate numbers
      */
-    public void registerModifiedData(IChangeIf aChange, boolean notifyServer)
+    @Override
+    public void registerModifiedData(IChangeIf aChange)
     {
         if (getType() != getTypeBySubclass())
         {
@@ -137,7 +138,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
             		getReportedArea(),aMode,updateServer,isLoopback,isRollback);
         }
         */
-        super.registerModifiedData(aChange,notifyServer);
+        super.registerModifiedData(aChange);
     }
 
     public static AssignmentImpl implementationOf(IAssignmentIf anInterface) throws MsoCastException
@@ -187,7 +188,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public AssignmentStatus getStatus()
     {
-        return m_status.getValue();
+        return m_status.get();
     }
 
     public IData.DataOrigin getStatusState()
@@ -207,12 +208,12 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public void setPriority(AssignmentPriority aPriority)
     {
-        m_priority.setValue(aPriority);
+        m_priority.set(aPriority);
     }
 
     public void setPriority(String aPriority)
     {
-        m_priority.setValue(aPriority);
+        m_priority.set(aPriority);
     }
 
     public int comparePriorityTo(IEnumPriorityHolder<AssignmentPriority> anObject)
@@ -222,7 +223,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public AssignmentPriority getPriority()
     {
-        return m_priority.getValue();
+        return m_priority.get();
     }
 
     public IData.DataOrigin getPriorityState()
@@ -243,12 +244,12 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     protected void setType(AssignmentType aType)
     {
-        m_type.setValue(aType);
+        m_type.set(aType);
     }
 
     public AssignmentType getType()
     {
-        return m_type.getValue();
+        return m_type.get();
     }
 
     public IData.DataOrigin getTypeState()
@@ -333,7 +334,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 
     public void setTimeEstimatedFinished(Calendar aTimeEstimatedFinished)
     {
-        m_timeEstimatedFinished.setValue(aTimeEstimatedFinished);
+        m_timeEstimatedFinished.set(aTimeEstimatedFinished);
     }
 
     public Calendar getTimeEstimatedFinished()
@@ -620,14 +621,14 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
         boolean changeOwner = aUnit != owner;
 
         // suspend MSO update
-		suspendUpdate();
+		suspendChange();
 
 		// remove this from owner?
 		if (changeOwner && owner != null) {
 			((AbstractUnit) owner).removeUnitAssignment(this);
 		}
 		// update status
-		m_status.setValue(aStatus);
+		m_status.set(aStatus);
 		/*
 		 * if assignment is going to be enqueue, then
 		 * add as tail which is default
@@ -650,7 +651,7 @@ public class AssignmentImpl extends AbstractMsoObject implements IAssignmentIf
 			}
 		}
 		// resume MSO update
-		resumeUpdate(true);
+		resumeChange(true);
 
     }
 

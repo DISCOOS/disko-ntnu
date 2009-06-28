@@ -137,7 +137,7 @@ public class MessageLogPanel
         m_messagePanel.setPreferredSize(new Dimension(PANEL_WIDTH, MessageLogBottomPanel.PANEL_HEIGHT));
 
         // Message panel should be informed of updates to MSO-model
-        m_wpModule.getMsoEventManager().addLocalUpdateListener(m_messagePanel);
+        m_wpModule.getMsoEventManager().addChangeListener(m_messagePanel);
 
         m_splitter1.setContinuousLayout(false);
         m_splitter1.setResizeWeight(1.0);
@@ -169,12 +169,11 @@ public class MessageLogPanel
 
         // listen for mouse events
         m_logTable.addMouseListener(new MouseAdapter() {
-
+        	
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void mousePressed(MouseEvent e) {
 				int row = m_logTable.rowAtPoint(e.getPoint());
-				int col = m_logTable.columnAtPoint(e.getPoint());
-				if(row!=-1 && (e.getClickCount()==1 && col==0 || e.getClickCount()>1)) {
+				if(row!=-1) {
 					IMessageIf message = model.getMessage(row);
 					if(message!=null) {
 						// get expanded/collapsed state
@@ -185,6 +184,25 @@ public class MessageLogPanel
 					}
 					MessageLogBottomPanel.showListPanel();
 				}
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				/*
+				int row = m_logTable.rowAtPoint(e.getPoint());
+				//int col = m_logTable.columnAtPoint(e.getPoint());
+				if(row!=-1 && (e.getClickCount()>0)) {
+					IMessageIf message = model.getMessage(row);
+					if(message!=null) {
+						// get expanded/collapsed state
+				        Boolean expanded = model.isMessageExpanded(message.getObjectId());
+				        expanded = (expanded == null ? false : !expanded);
+				        model.setMessageExpanded(message.getObjectId(),expanded);
+				        model.updateRowHeights();
+					}
+					MessageLogBottomPanel.showListPanel();
+				}
+				*/
 			}
 
 		});

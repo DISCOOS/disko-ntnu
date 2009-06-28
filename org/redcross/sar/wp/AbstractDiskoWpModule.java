@@ -37,7 +37,7 @@ import org.redcross.sar.mso.IMsoManagerIf.MsoClassCode;
 import org.redcross.sar.mso.data.ICmdPostIf;
 import org.redcross.sar.mso.data.IMsoObjectIf;
 import org.redcross.sar.mso.event.IMsoEventManagerIf;
-import org.redcross.sar.mso.event.IMsoUpdateListenerIf;
+import org.redcross.sar.mso.event.IMsoChangeListenerIf;
 import org.redcross.sar.mso.event.MsoEvent;
 import org.redcross.sar.util.Internationalization;
 import org.redcross.sar.util.Utils;
@@ -56,7 +56,7 @@ import com.esri.arcgis.interop.AutomationException;
  * @author geira
  */
 public abstract class AbstractDiskoWpModule
-			implements IDiskoWp, IMsoUpdateListenerIf {
+			implements IDiskoWp, IMsoChangeListenerIf {
 
 	private IDiskoRole m_role;
     private IDiskoMap m_map;
@@ -116,7 +116,7 @@ public abstract class AbstractDiskoWpModule
         // add listeners?
     	if(interests.size()>0) {
     		getApplication().getMsoModel().
-    			getEventManager().addLocalUpdateListener(this);
+    			getEventManager().addChangeListener(this);
     	}
 
         // initialize timer
@@ -425,7 +425,7 @@ public abstract class AbstractDiskoWpModule
     public void setFrameText(String text)
     {
         String s = "DISKO (" + getDiskoRole().getTitle() + ") - <Arbeidsprossess: " + getBundleText(getName()) +"> - ";
-        String o = "<Aksjon: " + getApplication().getMsoModel().getDispatcher().getActiveOperationName() + ">";
+        String o = "<Aksjon: " + getApplication().getMsoModel().getDispatcher().getCurrentOperationName() + ">";
         if (text != null && !text.isEmpty()) {
             s += text + " - " + o;
         }
@@ -551,7 +551,7 @@ public abstract class AbstractDiskoWpModule
 	}
 
 	public void suspendUpdate() {
-		Application.getInstance().getMsoModel().suspendUpdate();
+		Application.getInstance().getMsoModel().suspendChange();
 		if(m_map!=null) {
 			m_map.suspendNotify();
 			m_map.setSupressDrawing(true);

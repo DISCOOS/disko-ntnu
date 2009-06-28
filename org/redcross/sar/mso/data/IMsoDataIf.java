@@ -183,5 +183,13 @@ public interface IMsoDataIf extends IData {
 	 */
 	public MsoDataType getDataType();
 	
+	
+	/**
+	 * Get data object id.
+	 * 
+	 * @return Returns data object id.
+	 */
+	public String getObjectId();
+	
 
 }

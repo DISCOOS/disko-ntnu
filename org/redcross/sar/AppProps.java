@@ -76,7 +76,7 @@ public class AppProps {
 	public static void save() {
 		IDiskoRole role = Application.getInstance().getCurrentRole();
 		if(role!=null) setText("STARTUP.LAST.ROLE",role.getTitle());
-		String id = Application.getInstance().getDispatcher().getActiveOperationID();
+		String id = Application.getInstance().getDispatcher().getCurrentOperationID();
 		if(id!=null) setText("STARTUP.LAST.OPID",id);
 		Logger.getLogger(AppProps.class).info("Properties saved");
 	}

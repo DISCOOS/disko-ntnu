@@ -119,7 +119,7 @@ public class OperationDialog extends DefaultDialog {
 		// forward
 		getContentPanel().update();
 		// get active operation id
-		String id = Application.getInstance().getDispatcher().getActiveOperationID();
+		String id = Application.getInstance().getDispatcher().getCurrentOperationID();
 		// select last operation instead?
 		if(id==null)
 		{
