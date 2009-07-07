@@ -84,7 +84,7 @@ public class MsoModelTester
 		});
 		// initiate model
 		m_model = new MsoModelImpl();
-		// initiate work pool on EDT
+		// initiate work pool on EDT (required by work pool)
 		SwingUtilities.invokeAndWait(new Runnable() {
 
 			@Override

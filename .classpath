@@ -27,6 +27,15 @@
 	<classpathentry exported="true" kind="lib" path="lib/spring-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DISCO-IO"/>
-	<classpathentry kind="lib" path="lib/testng-5.9-jdk15.jar"/>
+	<classpathentry kind="lib" path="lib/testng-5.9-jdk15.jar" sourcepath="lib/testng/testng-5.9-source.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/DISKO-SAR-TRUNK/lib/testng/testng-5.9-javadoc.jar!/javadocs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/easymock-2.5.1.jar" sourcepath="lib/easymock/easymock-2.5.1-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/DISKO-SAR-TRUNK/lib/easymock/easymock-2.5.1-javadoc.jar!/\"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
