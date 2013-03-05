@@ -1,0 +1,1 @@
+set CLASSPATH=.\lib\vsde.jar;.\lib\disco-io.jar;.\lib\RXTXcomm.jar;

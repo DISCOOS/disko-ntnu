@@ -1,0 +1,112 @@
+====================================================================
+Read-me - Tools 
+====================================================================
+
+This document contains information about development tools
+
+--------------------------------------------------------------------
+VIRTUAL SERIAL PORTS EMULATOR
+--------------------------------------------------------------------
+Path: Tools\VSPE
+--------------------------------------------------------------------
+
+This tool make it possible to emulate serial ports on computers
+that do not have serial port physical installed.
+
+Downloaded from 
+
+http://www.eterlogic.com/Products.VSPE.html
+
+--------------------------------------------------------------------
+VIRTUAL SERIAL DEVICE EMULATOR
+--------------------------------------------------------------------
+Path: Tools\VSDE
+--------------------------------------------------------------------
+
+This tool emulate a serial device by sending packet to a serial
+manually or in responce to reived packets.
+
+The tool is implemented in Java using Eclipse as a part of the 
+DISKO project.
+
+--------------------------------------------------------------------
+RXTX - OS-independent serial port support in Java
+--------------------------------------------------------------------
+Path: Tools\RXTX
+--------------------------------------------------------------------
+
+Downloaded from 
+
+http://rxtx.qbang.org/wiki/index.php/Download
+
+Tutorial using RXTX in serial communication
+
+http://kuligowski.pl/java/rs232-in-java-for-windows,1
+
+--------------------------------------------------------------------
+EasyMock 2.5.1 - Test framework for using mock objects (uses JUnit)
+--------------------------------------------------------------------
+Path: Tools\EasyMock
+--------------------------------------------------------------------
+
+EasyMock provides Mock Objects for interfaces (and objects through 
+the class extension) by generating them on the fly using Java's 
+proxy mechanism. Due to EasyMock's unique style of recording 
+expectations, most refactorings will not affect the Mock Objects. 
+So EasyMock is a perfect fit for Test-Driven Development.
+
+EasyMock is open source software available under the terms of the 
+MIT license. Development, downloads and issue tracking are hosted 
+on SourceForge.
+
+EasyMock
+--------
+
+EasyMock core package. Allowing Mock Objects for interfaces.
+
+Downloaded from 
+
+http://www.easymock.org/Downloads.html
+
+EasyMock 2.5.1 Read Me (Tutorial)
+
+http://www.easymock.org/EasyMock2_5_1_Documentation.html
+
+
+EasyMock Class Extension
+------------------------
+
+This extension allows generating Mock Objects for classes. 
+
+Downloaded from 
+
+http://www.easymock.org/Downloads.html
+
+--------------------------------------------------------------------
+Telent Client
+--------------------------------------------------------------------
+Path: Tools\Telnet-Client
+--------------------------------------------------------------------
+
+This tool implements a simple telnet client. It serves as an 
+example on how a telnet client can be implemented.
+
+The tool is implemented in Java using Eclipse as a part of the 
+DISKO project.
+
+--------------------------------------------------------------------
+GPSLib4J
+--------------------------------------------------------------------
+Path: Tools\GPSLib4J
+--------------------------------------------------------------------
+HOME: http://gpslib4j.sourceforge.net/
+--------------------------------------------------------------------
+
+Mission: Create an easy to use, pluggable Java API for connecting 
+to and exchanging data from GPS units.  Let people concentrate on 
+writing cool Java GPS apps instead of getting bogged down in serial 
+port i/o problems.
+
+Downloaded from 
+
+http://sourceforge.net/projects/gpslib4j

@@ -1,0 +1,32 @@
+====================================================================
+Read-me - Tools 
+====================================================================
+
+This document explains how RXTX is included in Eclipse, and how
+RXTX should be distributed with java projects
+
+
+--------------------------------------------------------------------
+Howto include in Eclipse (v3.3)
+--------------------------------------------------------------------
+
+See 
+
+http://rxtx.qbang.org/wiki/index.php/Deploying_JAVA_with_RXTX#Simpler_approach_for_Windows
+http://embeddedfreak.wordpress.com/2008/08/08/using-rxtx-without-installing-it-to-java_home/
+http://kuligowski.pl/java/rs232-in-java-for-windows,1
+
+The following works
+
+1. Create the catalog ./lib in the root of the project
+2. Add RXTXcomm.jar, rxtxSerial.dll and rxtxParallel.dll to ./lib from 
+the catalog ./Windows/i368-mingw32 in the RXTX zip file
+3. Add RXTXcomm.jar to Java Build path
+4. Add .\lib as native library path to Java Build path
+
+--------------------------------------------------------------------
+Howto distribute
+--------------------------------------------------------------------
+
+Distribute RXTXcomm.jar, rxtxSerial.dll and rxtxParallel.dll with
+the Application Jar package in the same as the rest (typically .\lib)

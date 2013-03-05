@@ -1,0 +1,51 @@
+====================================================================
+Read-me - Tools 
+====================================================================
+
+--------------------------------------------------------------------
+EasyMock 2.5.1 - Test framework for using mock objects (uses JUnit)
+--------------------------------------------------------------------
+Path: Tools\EasyMock
+--------------------------------------------------------------------
+
+EasyMock provides Mock Objects for interfaces (and objects through 
+the class extension) by generating them on the fly using Java's 
+proxy mechanism. Due to EasyMock's unique style of recording 
+expectations, most refactorings will not affect the Mock Objects. 
+So EasyMock is a perfect fit for Test-Driven Development.
+
+EasyMock is open source software available under the terms of the 
+MIT license. Development, downloads and issue tracking are hosted 
+on SourceForge.
+
+EasyMock
+--------
+
+EasyMock core package. Allowing Mock Objects for interfaces.
+
+Downloaded from 
+
+http://www.easymock.org/Downloads.html
+
+EasyMock 2.5.1 Read Me (Tutorial)
+
+http://www.easymock.org/EasyMock2_5_1_Documentation.html
+
+
+EasyMock Class Extension
+------------------------
+
+This extension allows generating Mock Objects for classes. 
+
+Downloaded from 
+
+http://www.easymock.org/Downloads.html
+
+
+Recommended usage in Eclipse
+----------------------------
+
+1. Copy the easymock-2.5.1.jar (and others if required) to 
+   the \lib catalog
+2. include the jar in the build path
+3. Read the tutorial :-)

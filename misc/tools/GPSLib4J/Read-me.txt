@@ -1,0 +1,26 @@
+====================================================================
+Read-me - Tools 
+====================================================================
+
+--------------------------------------------------------------------
+GPSLib4J
+--------------------------------------------------------------------
+Path: Tools\GPSLib4J
+--------------------------------------------------------------------
+HOME: http://gpslib4j.sourceforge.net/
+--------------------------------------------------------------------
+
+Mission: Create an easy to use, pluggable Java API for connecting 
+to and exchanging data from GPS units.  Let people concentrate on 
+writing cool Java GPS apps instead of getting bogged down in serial 
+port i/o problems.
+
+Downloaded from 
+
+http://sourceforge.net/projects/gpslib4j
+
+
+Usage in DISKO
+--------------
+
+Integrated in DISKO name space...

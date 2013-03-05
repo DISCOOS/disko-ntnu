@@ -1,0 +1,18 @@
+====================================================================
+Read-me - Virtual Serial Device Emulator (VSDE)
+====================================================================
+
+This document contains information about the VSDE tool. 
+
+--------------------------------------------------------------------
+
+VSDE can emulate a simple serial device. The tool includes both
+automatic responces, and manuall input and out handling, much the
+same as Win32 Hyperterminal.
+
+The VSDE tool could be used together with \tools\VSDP if no physical 
+devices are available. 
+
+
+
+

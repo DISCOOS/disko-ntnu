@@ -1,0 +1,7 @@
+# Place here any TNC commands you want restored after the session quits.
+MONITOR OFF
+NEWMODE ON
+ECHO ON
+FLOW ON
+BK ON
+AX ON
